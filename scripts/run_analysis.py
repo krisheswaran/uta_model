@@ -45,6 +45,7 @@ def load_play(play_id: str):
             title=config["title"],
             author=config["author"],
             primary_character=config.get("primary_character", ""),
+            text_anchor=config.get("text_anchor", ""),
         )
     elif source == "folger_tei":
         raw_path = RAW_DIR / f"{play_id}.xml"

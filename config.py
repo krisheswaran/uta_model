@@ -56,6 +56,8 @@ PLAYS = {
         "source": "gutenberg",
         "gutenberg_id": 7986,
         "primary_character": "LOPAKHIN",
+        # Gutenberg #7986 is a multi-play volume; anchor to Cherry Orchard's title line
+        "text_anchor": "THE CHERRY ORCHARD",
     },
     "hamlet": {
         "title": "Hamlet",
