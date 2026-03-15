@@ -103,7 +103,7 @@ def initialize_beat_state(
         present=", ".join(context.characters_present),
         prior_events=context.prior_events,
         stakes=context.stakes,
-        register=context.register,
+        register=context.dramatic_register,
         constraint=context.constraint,
         character=character,
     )

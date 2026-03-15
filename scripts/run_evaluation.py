@@ -31,7 +31,7 @@ LOPAKHIN_EVAL_SCENES: list[SceneContext] = [
         prior_events="Lopakhin has just sealed a deal that makes him one of the wealthiest men in the province.",
         stakes="He should feel triumphant, but cannot.",
         partner_line="You've done it, Yermolai. You've really done it this time.",
-        register="dramatic",
+        dramatic_register="dramatic",
         constraint="alternate_universe_same_psyche",
     ),
     SceneContext(
@@ -42,7 +42,7 @@ LOPAKHIN_EVAL_SCENES: list[SceneContext] = [
         prior_events="Lopakhin has presented his plan to save the estate by subdividing it. Ranyevskaya has ignored the plan for months.",
         stakes="The estate will be lost in two days if she does not act.",
         partner_line="I cannot bear to think of cutting down the trees.",
-        register="dramatic",
+        dramatic_register="dramatic",
         constraint="faithful_to_arc",
     ),
     SceneContext(
@@ -53,7 +53,7 @@ LOPAKHIN_EVAL_SCENES: list[SceneContext] = [
         prior_events="Everyone has left the estate. Varya is the last to go.",
         stakes="This is the last chance to say what has never been said.",
         partner_line="Well. Goodbye then.",
-        register="dramatic",
+        dramatic_register="dramatic",
         constraint="alternate_universe_same_psyche",
     ),
 ]

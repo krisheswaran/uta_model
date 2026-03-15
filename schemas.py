@@ -247,7 +247,7 @@ class SceneContext(BaseModel):
     prior_events: str                    # what happened just before
     stakes: str                          # what's at risk
     partner_line: Optional[str] = None   # most recent line from the other character
-    register: str = "dramatic"           # comedic / tragic / dramatic / tragicomic
+    dramatic_register: str = "dramatic"  # comedic / tragic / dramatic / tragicomic
     constraint: str = "alternate_universe_same_psyche"
     # Options: faithful_to_arc | alternate_universe_same_psyche | post_play_continuation
 
