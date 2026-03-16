@@ -62,7 +62,7 @@ PLAYS = {
     "hamlet": {
         "title": "Hamlet",
         "author": "William Shakespeare",
-        "source": "dracor_tei",
+        "source": "folger_tei",
         "dracor_corpus": "shake",
         "dracor_play": "hamlet",
         "primary_character": "HAMLET",
