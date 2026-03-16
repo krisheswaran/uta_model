@@ -53,7 +53,7 @@ export default function CharacterView({ playId, character }: Props) {
 
       <main
         style={{ flex: 1, padding: '24px 16px' }}
-        className="ml-0 mb-[72px] md:ml-[88px] md:mb-0"
+        className="ml-0 mb-[84px] md:ml-[88px] md:mb-0"
       >
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
@@ -206,7 +206,20 @@ function CharacterContent({
                   onSelectBeat={setSelectedBeatId}
                 />
                 {selectedBeat && selectedBS && (
-                  <div style={{ marginTop: 16 }}>
+                  <div
+                    style={{
+                      marginTop: 16,
+                      maxHeight: 'calc(100vh - 320px)',
+                      minHeight: 240,
+                      overflowY: 'auto',
+                      overscrollBehavior: 'contain',
+                      borderRadius: 12,
+                      // Subtle scroll shadow at the bottom so the user knows more content is there
+                      maskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent 100%)',
+                      WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent 100%)',
+                      paddingBottom: 32,
+                    }}
+                  >
                     <BeatStateDetail beat={selectedBeat} beatState={selectedBS} />
                   </div>
                 )}

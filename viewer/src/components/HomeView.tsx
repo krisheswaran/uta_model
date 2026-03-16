@@ -34,7 +34,7 @@ export default function HomeView() {
       {/* Main content offset for desktop nav rail */}
       <main
         style={{ flex: 1, padding: '24px 16px' }}
-        className="ml-0 mb-[72px] md:ml-[88px] md:mb-0"
+        className="ml-0 mb-[84px] md:ml-[88px] md:mb-0"
       >
         {/* Top App Bar */}
         <header style={{ marginBottom: 32 }}>

@@ -1,6 +1,7 @@
 'use client';
 
-import { Home, BookOpen, User, LayoutList, Globe } from 'lucide-react';
+import { useState } from 'react';
+import { Home, BookOpen, User, LayoutList, Globe, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -18,49 +19,23 @@ interface NavRailProps {
 
 export default function NavRail({ playId, character, act, scene }: NavRailProps) {
   const path = typeof window !== 'undefined' ? window.location.pathname : '';
+  const [bottomHidden, setBottomHidden] = useState(false);
 
   const items: NavItem[] = [
-    {
-      label: 'Plays',
-      href: '/',
-      icon: <Home size={22} />,
-      exact: true,
-    },
+    { label: 'Plays', href: '/', icon: <Home size={22} />, exact: true },
   ];
 
   if (playId) {
-    items.push({
-      label: 'Overview',
-      href: `/plays/${playId}`,
-      icon: <BookOpen size={22} />,
-      exact: true,
-    });
+    items.push({ label: 'Overview', href: `/plays/${playId}`, icon: <BookOpen size={22} />, exact: true });
   }
-
   if (playId && character) {
-    items.push({
-      label: 'Character',
-      href: `/plays/${playId}/characters/${character}`,
-      icon: <User size={22} />,
-      exact: true,
-    });
+    items.push({ label: 'Character', href: `/plays/${playId}/characters/${character}`, icon: <User size={22} />, exact: true });
   }
-
   if (playId && act != null && scene != null) {
-    items.push({
-      label: 'Scene',
-      href: `/plays/${playId}/scenes/${act}/${scene}`,
-      icon: <LayoutList size={22} />,
-      exact: true,
-    });
+    items.push({ label: 'Scene', href: `/plays/${playId}/scenes/${act}/${scene}`, icon: <LayoutList size={22} />, exact: true });
   }
-
   if (playId) {
-    items.push({
-      label: 'World',
-      href: `/plays/${playId}#world`,
-      icon: <Globe size={22} />,
-    });
+    items.push({ label: 'World', href: `/plays/${playId}#world`, icon: <Globe size={22} /> });
   }
 
   function isActive(item: NavItem): boolean {
@@ -70,13 +45,11 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
 
   return (
     <>
-      {/* Desktop: Left navigation rail */}
+      {/* ── Desktop: Left navigation rail ─────────────────────────────── */}
       <nav
         style={{
           position: 'fixed',
-          top: 0,
-          left: 0,
-          bottom: 0,
+          top: 0, left: 0, bottom: 0,
           width: 88,
           background: 'var(--md-sys-color-surface-container-low)',
           display: 'flex',
@@ -90,26 +63,8 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
         }}
         className="hidden md:flex"
       >
-        {/* App logo / wordmark */}
-        <div
-          style={{
-            width: 56,
-            height: 56,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: 16,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--md-sys-typescale-display-font)',
-              fontSize: 24,
-              color: 'var(--md-sys-color-primary)',
-              fontWeight: 700,
-              letterSpacing: '-0.5px',
-            }}
-          >
+        <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <span style={{ fontFamily: 'var(--md-sys-typescale-display-font)', fontSize: 24, color: 'var(--md-sys-color-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>
             UTA
           </span>
         </div>
@@ -129,12 +84,8 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
                 padding: '12px 8px',
                 borderRadius: 16,
                 textDecoration: 'none',
-                background: active
-                  ? 'var(--md-sys-color-secondary-container)'
-                  : 'transparent',
-                color: active
-                  ? 'var(--md-sys-color-on-secondary-container)'
-                  : 'var(--md-sys-color-on-surface-variant)',
+                background: active ? 'var(--md-sys-color-secondary-container)' : 'transparent',
+                color: active ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)',
                 transition: 'background 0.2s, color 0.2s',
               }}
             >
@@ -145,50 +96,78 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
         })}
       </nav>
 
-      {/* Mobile: Bottom navigation bar */}
-      <nav
+      {/* ── Mobile: Bottom navigation bar (collapsible) ────────────────── */}
+      <div
         style={{
           position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 72,
-          background: 'var(--md-sys-color-surface-container-low)',
-          borderTop: '1px solid var(--md-sys-color-outline-variant)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-around',
+          bottom: 0, left: 0, right: 0,
           zIndex: 100,
-          paddingBottom: 'env(safe-area-inset-bottom)',
+          transform: bottomHidden ? 'translateY(calc(100% - 20px))' : 'translateY(0)',
+          transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
-        className="flex md:hidden"
+        className="flex flex-col md:hidden"
       >
-        {items.map((item) => {
-          const active = isActive(item);
-          return (
-            <a
-              key={item.href}
-              href={item.href}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 4,
-                padding: '8px 12px',
-                borderRadius: 12,
-                textDecoration: 'none',
-                color: active
-                  ? 'var(--md-sys-color-primary)'
-                  : 'var(--md-sys-color-on-surface-variant)',
-                transition: 'color 0.2s',
-              }}
-            >
-              {item.icon}
-              <span style={{ fontSize: 10, fontWeight: 500 }}>{item.label}</span>
-            </a>
-          );
-        })}
-      </nav>
+        {/* Drag handle / toggle strip */}
+        <button
+          onClick={() => setBottomHidden((v) => !v)}
+          aria-label={bottomHidden ? 'Show navigation' : 'Hide navigation'}
+          style={{
+            width: '100%',
+            height: 20,
+            background: 'var(--md-sys-color-surface-container-low)',
+            borderTop: '1px solid var(--md-sys-color-outline-variant)',
+            borderBottom: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            padding: 0,
+          }}
+        >
+          <div style={{ width: 32, height: 3, borderRadius: 2, background: 'var(--md-sys-color-outline)' }} />
+          {bottomHidden
+            ? <ChevronUp size={12} color="var(--md-sys-color-on-surface-variant)" />
+            : <ChevronDown size={12} color="var(--md-sys-color-on-surface-variant)" />}
+        </button>
+
+        {/* Nav items */}
+        <nav
+          style={{
+            background: 'var(--md-sys-color-surface-container-low)',
+            borderTop: '1px solid var(--md-sys-color-outline-variant)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            height: 64,
+            paddingBottom: 'env(safe-area-inset-bottom)',
+          }}
+        >
+          {items.map((item) => {
+            const active = isActive(item);
+            return (
+              <a
+                key={item.href}
+                href={item.href}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '8px 12px',
+                  borderRadius: 12,
+                  textDecoration: 'none',
+                  color: active ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface-variant)',
+                  transition: 'color 0.2s',
+                }}
+              >
+                {item.icon}
+                <span style={{ fontSize: 10, fontWeight: 500 }}>{item.label}</span>
+              </a>
+            );
+          })}
+        </nav>
+      </div>
     </>
   );
 }

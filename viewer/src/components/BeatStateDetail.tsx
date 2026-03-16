@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import type { Beat, BeatState } from '@/lib/types';
 import { confidenceClass, confidenceLabel } from '@/lib/data';
@@ -12,6 +12,18 @@ interface Props {
 
 export default function BeatStateDetail({ beat, beatState: bs }: Props) {
   const [epistemicOpen, setEpistemicOpen] = useState(false);
+  const epistemicContentRef = useRef<HTMLDivElement>(null);
+
+  function toggleEpistemic() {
+    const opening = !epistemicOpen;
+    setEpistemicOpen(opening);
+    if (opening) {
+      // After paint, scroll the revealed content into view
+      requestAnimationFrame(() => {
+        epistemicContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      });
+    }
+  }
 
   return (
     <div
@@ -165,7 +177,7 @@ export default function BeatStateDetail({ beat, beatState: bs }: Props) {
         bs.epistemic_state.false_beliefs.length > 0) && (
         <div>
           <button
-            onClick={() => setEpistemicOpen((v) => !v)}
+            onClick={toggleEpistemic}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -187,11 +199,13 @@ export default function BeatStateDetail({ beat, beatState: bs }: Props) {
 
           {epistemicOpen && (
             <div
+              ref={epistemicContentRef}
               style={{
                 marginTop: 10,
                 display: 'flex',
                 flexDirection: 'column',
                 gap: 10,
+                paddingBottom: 4,
               }}
             >
               {bs.epistemic_state.known_facts.length > 0 && (
