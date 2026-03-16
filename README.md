@@ -116,6 +116,62 @@ uta_model/
 └── proposal.md            # Original project proposal and design questions
 ```
 
+## Viewer
+
+A local web interface for browsing pipeline outputs — beats, character bibles, scene bibles, and parsed plays — with affect-space visualizations, beat segmentation strips, and epistemic state inspection.
+
+### Prerequisites
+
+- Node.js 18+ and npm
+
+### Setup
+
+```bash
+cd viewer
+npm install
+```
+
+### Workflow
+
+Run this after each analysis pass to copy the latest outputs into the viewer's asset directory and regenerate the play index:
+
+```bash
+npm run sync
+```
+
+Then start the dev server:
+
+```bash
+npm run dev
+# → http://localhost:5173
+```
+
+**Full example** — after analyzing Cherry Orchard for the first time:
+
+```bash
+# 1. Run analysis (from project root)
+conda activate uta_model
+python scripts/run_analysis.py cherry_orchard --characters LOPAKHIN
+
+# 2. Sync outputs into the viewer (from viewer/)
+cd viewer
+npm run sync
+
+# 3. Start the viewer
+npm run dev
+```
+
+Re-run `npm run sync` any time you add a new play or re-run analysis on existing characters. The dev server hot-reloads on code changes; a sync + browser refresh picks up new data.
+
+### Pages
+
+| URL | Contents |
+|-----|----------|
+| `/` | Play browser — all synced plays |
+| `/plays/:playId` | World bible, character grid, scene list, beat segmentation chart |
+| `/plays/:playId/characters/:character` | Character bible + Arc / Affect Space / Tactics / Arc-by-Scene tabs |
+| `/plays/:playId/scenes/:act/:scene` | Scene bible + beat-by-beat state inspector |
+
 ## Troubleshooting
 
 ### Clearing the beats cache
