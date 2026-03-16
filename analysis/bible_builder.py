@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import ANALYSIS_MODEL, ANTHROPIC_API_KEY, BIBLES_DIR
+from config import ANTHROPIC_API_KEY, BIBLES_DIR, get_model
 from schemas import (
     Beat, BeatState, CharacterBible, Play, SceneBible, WorldBible,
 )
@@ -112,7 +112,7 @@ def build_character_bible(character: str, play: Play) -> CharacterBible:
         sample_lines="\n".join(f"  - {l}" for l in sample_lines),
     )
     response = client.messages.create(
-        model=ANALYSIS_MODEL,
+        model=get_model("bible"),
         max_tokens=2048,
         system=_CHARACTER_BIBLE_SYSTEM,
         messages=[{"role": "user", "content": prompt}],
@@ -197,7 +197,7 @@ def build_scene_bible(act_num: int, scene_num: int, play: Play) -> SceneBible:
     bs_block = "\n".join(beat_states_lines)
 
     response = client.messages.create(
-        model=ANALYSIS_MODEL,
+        model=get_model("bible"),
         max_tokens=1024,
         system=_SCENE_BIBLE_SYSTEM,
         messages=[{"role": "user", "content": _SCENE_BIBLE_USER.format(
@@ -250,7 +250,7 @@ Return ONLY valid JSON:
 def build_world_bible(play: Play) -> WorldBible:
     """Build a WorldBible using LLM knowledge of the play."""
     response = client.messages.create(
-        model=ANALYSIS_MODEL,
+        model=get_model("world_bible"),
         max_tokens=1024,
         system=_WORLD_BIBLE_SYSTEM,
         messages=[{"role": "user", "content": f"Play: {play.title}\nAuthor: {play.author}"}],
@@ -277,27 +277,85 @@ def build_world_bible(play: Play) -> WorldBible:
 # Orchestrator
 # ────────────────────────────────────────────────────────────────────────────
 
-def build_all_bibles(play: Play, characters: list[str] | None = None) -> Play:
-    """Build and attach all bibles to the play, then save to disk."""
+def _count_character_beat_states(play: Play) -> dict[str, int]:
+    """Count how many beat states each character has across the play."""
+    from collections import Counter
+    counts: Counter = Counter()
+    for act in play.acts:
+        for scene in act.scenes:
+            for beat in scene.beats:
+                for bs in beat.beat_states:
+                    counts[bs.character] += 1
+    return dict(counts)
+
+
+def _existing_bible_characters(play: Play) -> set[str]:
+    """Return the set of characters that already have bibles."""
+    return {cb.character.upper() for cb in play.character_bibles}
+
+
+def build_all_bibles(
+    play: Play,
+    characters: list[str] | None = None,
+    skip_scene_bibles: bool = False,
+    skip_world_bible: bool = False,
+    min_beat_states: int = 0,
+) -> Play:
+    """Build and attach all bibles to the play, then save to disk.
+
+    Args:
+        play: The Play object with BeatStates already extracted.
+        characters: If provided, build bibles only for these characters.
+                    Otherwise build for all characters in the play.
+        skip_scene_bibles: If True, skip rebuilding SceneBibles.
+        skip_world_bible: If True, skip rebuilding WorldBible.
+        min_beat_states: Only build bibles for characters with at least
+                         this many beat states. 0 means no threshold.
+    """
     print(f"[bible_builder] Building bibles for {play.title}...")
 
     # World bible
-    play.world_bible = build_world_bible(play)
-    print("  [+] WorldBible done")
+    if not skip_world_bible:
+        play.world_bible = build_world_bible(play)
+        print("  [+] WorldBible done")
+    else:
+        print("  [skip] WorldBible (already exists)")
 
-    # Character bibles
-    target_chars = characters or play.characters
-    for character in target_chars:
-        print(f"  Building CharacterBible for {character}...")
+    # Determine target characters, with deduplication
+    existing = _existing_bible_characters(play)
+    beat_counts = _count_character_beat_states(play)
+
+    if characters:
+        target_chars = [c.upper() for c in characters]
+    else:
+        target_chars = play.characters
+
+    # Filter by min_beat_states
+    if min_beat_states > 0:
+        target_chars = [c for c in target_chars if beat_counts.get(c, 0) >= min_beat_states]
+
+    # Skip characters that already have bibles
+    new_chars = [c for c in target_chars if c.upper() not in existing]
+    skipped = len(target_chars) - len(new_chars)
+    if skipped > 0:
+        print(f"  [skip] {skipped} characters already have bibles")
+
+    for character in new_chars:
+        bs_count = beat_counts.get(character, 0)
+        print(f"  Building CharacterBible for {character} ({bs_count} beat states)...")
         bible = build_character_bible(character, play)
         play.character_bibles.append(bible)
 
     # Scene bibles
-    for act in play.acts:
-        for scene in act.scenes:
-            sb = build_scene_bible(act.number, scene.scene, play)
-            play.scene_bibles.append(sb)
-    print(f"  [+] {len(play.scene_bibles)} SceneBibles done")
+    if not skip_scene_bibles:
+        play.scene_bibles = []  # clear to avoid duplicates on re-run
+        for act in play.acts:
+            for scene in act.scenes:
+                sb = build_scene_bible(act.number, scene.scene, play)
+                play.scene_bibles.append(sb)
+        print(f"  [+] {len(play.scene_bibles)} SceneBibles done")
+    else:
+        print(f"  [skip] SceneBibles (already exist: {len(play.scene_bibles)})")
 
     # Persist
     out_path = BIBLES_DIR / f"{play.id}_bibles.json"

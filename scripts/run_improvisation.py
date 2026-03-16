@@ -82,7 +82,8 @@ def mode_session(args):
             continue
 
         turn_context = context.model_copy(update={"partner_line": partner_line})
-        turn, beat_state = run_turn(turn_index + 1, beat_state, bible, turn_context)
+        turn, beat_state = run_turn(turn_index + 1, beat_state, bible, turn_context,
+                                    min_revisions=args.min_revisions)
         print(f"\n{bible.character}: {turn.final_line}")
         print(f"  [score={turn.scored_line.mean_score:.2f} | tactic={beat_state.tactic_state} | "
               f"revisions={turn.revisions}]\n")
@@ -127,14 +128,16 @@ def mode_crossplay(args):
     for i in range(num_turns):
         # A speaks
         ctx = context_a.model_copy(update={"partner_line": last_line})
-        turn_a, state_a = run_turn(i + 1, state_a, bible_a, ctx)
+        turn_a, state_a = run_turn(i + 1, state_a, bible_a, ctx,
+                                   min_revisions=args.min_revisions)
         last_line = turn_a.final_line
         print(f"{bible_a.character}: {last_line}")
         print(f"  [tactic={state_a.tactic_state} | score={turn_a.scored_line.mean_score:.2f}]")
 
         # B speaks
         ctx = context_b.model_copy(update={"partner_line": last_line})
-        turn_b, state_b = run_turn(i + 1, state_b, bible_b, ctx)
+        turn_b, state_b = run_turn(i + 1, state_b, bible_b, ctx,
+                                   min_revisions=args.min_revisions)
         last_line = turn_b.final_line
         print(f"{bible_b.character}: {last_line}")
         print(f"  [tactic={state_b.tactic_state} | score={turn_b.scored_line.mean_score:.2f}]\n")
@@ -151,6 +154,8 @@ def main():
     session_p.add_argument("--setting", default="")
     session_p.add_argument("--stakes", default="")
     session_p.add_argument("--prior-events", default="")
+    session_p.add_argument("--min-revisions", type=int, default=None,
+                           help="Minimum revision rounds per turn (overrides config)")
 
     # Crossplay mode
     cross_p = sub.add_parser("crossplay", help="Two-character cross-play scene")
@@ -162,6 +167,8 @@ def main():
     cross_p.add_argument("--stakes", default="")
     cross_p.add_argument("--prior-events", default="")
     cross_p.add_argument("--turns", type=int, default=6)
+    cross_p.add_argument("--min-revisions", type=int, default=None,
+                           help="Minimum revision rounds per turn (overrides config)")
 
     args = parser.parse_args()
 

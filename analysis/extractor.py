@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import ANALYSIS_MODEL, ANTHROPIC_API_KEY
+from config import ANTHROPIC_API_KEY, get_model
 from schemas import (
     AffectState, Beat, BeatState, EpistemicState, Play, SocialState,
 )
@@ -127,7 +127,7 @@ def extract_beat_states(beat: Beat, play_title: str, all_beats: list[Beat]) -> l
     )
 
     response = client.messages.create(
-        model=ANALYSIS_MODEL,
+        model=get_model("extraction"),
         max_tokens=2048,
         system=_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],

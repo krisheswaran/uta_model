@@ -26,11 +26,38 @@ for _d in (RAW_DIR, PARSED_DIR, BEATS_DIR, BIBLES_DIR):
 # --------------------------------------------------------------------------- #
 ANTHROPIC_API_KEY: str = os.environ.get("ANTHROPIC_API_KEY", "")
 
-# Model tiers
-ANALYSIS_MODEL = "claude-opus-4-6"       # dramatic analysis pipeline
-GENERATION_MODEL = "claude-sonnet-4-6"   # improvisation generation
-CRITIC_MODEL = "claude-sonnet-4-6"       # improvisation scoring + feedback
-JUDGE_MODEL = "claude-opus-4-6"          # three-tier evaluation judge
+# --------------------------------------------------------------------------- #
+# Model configuration — per-step tiering (Phase B)
+#
+# Each step of the pipeline can use a different model. The provider field
+# enables future multi-provider support (Gemini, OpenAI) but currently
+# only "anthropic" is implemented.
+# --------------------------------------------------------------------------- #
+MODEL_CONFIGS = {
+    # Analysis pipeline (Pass 1)
+    "segmentation": {"provider": "anthropic", "model": "claude-sonnet-4-6"},
+    "extraction":   {"provider": "anthropic", "model": "claude-opus-4-6"},
+    "smoothing":    {"provider": "anthropic", "model": "claude-opus-4-6"},
+    "bible":        {"provider": "anthropic", "model": "claude-sonnet-4-6"},
+    "world_bible":  {"provider": "anthropic", "model": "claude-haiku-4-5-20251001"},
+    # Improvisation (Pass 2)
+    "generation":   {"provider": "anthropic", "model": "claude-sonnet-4-6"},
+    "critic":       {"provider": "anthropic", "model": "claude-sonnet-4-6"},
+    # Evaluation (Pass 3)
+    "judge":        {"provider": "anthropic", "model": "claude-opus-4-6"},
+}
+
+
+def get_model(step: str) -> str:
+    """Return the model ID for a given pipeline step."""
+    return MODEL_CONFIGS[step]["model"]
+
+
+# Legacy aliases (for backward compatibility during migration)
+ANALYSIS_MODEL = get_model("extraction")
+GENERATION_MODEL = get_model("generation")
+CRITIC_MODEL = get_model("critic")
+JUDGE_MODEL = get_model("judge")
 
 # --------------------------------------------------------------------------- #
 # Analysis pipeline settings
@@ -43,6 +70,7 @@ SMOOTH_PASSES = 2               # global arc smoothing iterations
 # Improvisation settings
 # --------------------------------------------------------------------------- #
 MAX_REVISION_ROUNDS = 3
+MIN_REVISION_ROUNDS = 1         # minimum revisions even when scores pass (Phase B)
 SCORE_THRESHOLD = 3.0           # axes below this trigger targeted feedback (scale 1-5)
 
 # --------------------------------------------------------------------------- #

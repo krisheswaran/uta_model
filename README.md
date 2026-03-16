@@ -38,7 +38,7 @@ Create a `.env` file in the project root with your Anthropic API key:
 echo "ANTHROPIC_API_KEY=sk-..." > .env
 ```
 
-Model selection and pipeline parameters can be adjusted in `config.py`.
+Model selection and pipeline parameters can be adjusted in `config.py`. Each pipeline step (segmentation, extraction, smoothing, bible building, generation, scoring, judging) has its own model configuration via `MODEL_CONFIGS`, allowing per-step cost/quality tradeoffs.
 
 ## Usage
 
@@ -64,11 +64,20 @@ python scripts/run_analysis.py cherry_orchard --characters LOPAKHIN RANYEVSKAYA
 
 # Skip beat segmentation if already cached
 python scripts/run_analysis.py cherry_orchard --skip-segmentation
+
+# Build only missing character bibles from an already-analyzed play (skips steps 1-4)
+python scripts/run_analysis.py cherry_orchard --bibles-only
+
+# Build bibles only for characters with at least 5 beat states
+python scripts/run_analysis.py hamlet --bibles-only --min-beat-states 5
+
+# Build bibles for specific characters in an already-analyzed play
+python scripts/run_analysis.py hamlet --bibles-only --characters CLAUDIUS GERTRUDE HORATIO
 ```
 
-Outputs are saved to `data/bibles/` and `data/beats/`.
+Outputs are saved to `data/parsed/`, `data/bibles/`, and `data/beats/`.
 
-> **Note on cost**: Running the full analysis with Claude Opus on Cherry Orchard cost ~$10, and Hamlet cost ~$15.
+> **Note on cost**: Running the full analysis on Cherry Orchard costs ~$10, and Hamlet ~$15. The `--bibles-only` mode costs ~$0.18 per character since it reuses existing beat extractions.
 
 ### 3. Improvise (Pass 2)
 
@@ -87,9 +96,35 @@ python scripts/run_improvisation.py crossplay \
   --character-b HAMLET   --play-b hamlet \
   --setting "A crumbling estate in an unnamed country, dusk" \
   --stakes "Both men have come to say goodbye to something they cannot name"
+
+# Force at least 2 revision rounds per turn (useful for studying feedback dynamics)
+python scripts/run_improvisation.py session \
+  --character LOPAKHIN --play cherry_orchard \
+  --setting "A bare office" --stakes "Everything is at risk" \
+  --min-revisions 2
 ```
 
-### 4. Evaluate
+### 4. Build canonical tactic vocabulary (Phase B)
+
+Cluster the free-text tactic strings extracted during analysis into a canonical vocabulary:
+
+```bash
+# Build the vocabulary from all parsed plays
+python analysis/vocabulary.py build
+
+# Display clusters for human review
+python analysis/vocabulary.py show
+
+# Assign canonical tactic IDs to all BeatStates in parsed plays
+python analysis/vocabulary.py normalize
+
+# Ingest new tactics from a freshly analyzed play into the existing vocabulary
+python analysis/vocabulary.py ingest cherry_orchard
+```
+
+The vocabulary is saved to `data/vocab/tactic_vocabulary.json`. The `build` command accepts `--threshold` (default 0.45) to control cluster granularity — lower values produce more clusters, higher values produce fewer.
+
+### 5. Evaluate
 
 Run the three-tier evaluation protocol (vanilla LLM vs. bible-augmented vs. full reflection loop):
 
@@ -103,14 +138,19 @@ python scripts/run_evaluation.py \
 
 ```
 uta_model/
-├── config.py              # Model selection, paths, pipeline parameters
+├── config.py              # Per-step model selection, paths, pipeline parameters
 ├── schemas.py             # Pydantic data models (Play, Beat, BeatState, CharacterBible, ...)
 ├── ingest/                # Script parsing (Gutenberg plain text, Folger TEI-XML)
-├── analysis/              # Pass 1: beat segmentation, state extraction, arc smoothing, bible building
+├── analysis/              # Pass 1: segmentation, extraction, smoothing, bible building, vocabulary
+│   └── vocabulary.py      # Canonical tactic vocabulary (Phase B)
 ├── improv/                # Pass 2: state initialization, generation, reflection loop
 ├── evaluation/            # Three-tier evaluation with LLM-as-judge
 ├── scripts/               # CLI entry points
 ├── data/                  # Downloaded texts, parsed plays, cached beats, built bibles
+│   └── vocab/             # Canonical tactic vocabulary JSON
+├── docs/                  # Architecture and design documents
+│   ├── LATENT_STATE_ARCHITECTURE.md
+│   └── STATISTICAL_LEARNING_PHASE_DESIGN.md
 ├── viewer/                # Web frontend for browsing pipeline outputs
 ├── PLAN.md                # Detailed system design and research notes
 └── proposal.md            # Original project proposal and design questions

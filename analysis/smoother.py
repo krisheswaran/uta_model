@@ -16,7 +16,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import ANALYSIS_MODEL, ANTHROPIC_API_KEY, SMOOTH_PASSES
+from config import ANTHROPIC_API_KEY, SMOOTH_PASSES, get_model
 from schemas import AffectState, BeatState, EpistemicState, Play, SocialState
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -109,7 +109,7 @@ def smooth_character_arc(
             arc_block=_format_arc(beat_states),
         )
         response = client.messages.create(
-            model=ANALYSIS_MODEL,
+            model=get_model("smoothing"),
             max_tokens=2048,
             system=_SYSTEM_PROMPT,
             messages=[{"role": "user", "content": prompt}],

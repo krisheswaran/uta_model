@@ -18,7 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import CRITIC_MODEL, ANTHROPIC_API_KEY
+from config import ANTHROPIC_API_KEY, get_model
 from schemas import AffectState, BeatState, SocialState
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -94,7 +94,7 @@ def update_beat_state(
     )
 
     response = client.messages.create(
-        model=CRITIC_MODEL,
+        model=get_model("critic"),
         max_tokens=768,
         system=_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],

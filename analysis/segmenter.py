@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import ANALYSIS_MODEL, BEATS_DIR, ANTHROPIC_API_KEY
+from config import BEATS_DIR, ANTHROPIC_API_KEY, get_model
 from schemas import Beat, Play, Scene, Utterance
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
@@ -62,7 +62,7 @@ def _format_utterances(utterances: list[Utterance]) -> str:
 
 def _call_llm(prompt: str) -> list[int]:
     response = client.messages.create(
-        model=ANALYSIS_MODEL,
+        model=get_model("segmentation"),
         max_tokens=512,
         system=_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],

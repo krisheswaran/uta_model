@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from config import PARSED_DIR, PLAYS, RAW_DIR
+from schemas import Play
 from ingest.gutenberg_parser import parse_gutenberg_play
 from ingest.tei_parser import parse_tei_play
 from analysis.segmenter import segment_play
@@ -68,10 +69,42 @@ def main():
     parser.add_argument("--skip-segmentation", action="store_true",
                         help="Skip beat segmentation (use cached beats or provisional single-beat per scene)")
     parser.add_argument("--skip-smoothing", action="store_true", help="Skip global arc smoothing pass")
+    parser.add_argument("--bibles-only", action="store_true",
+                        help="Skip steps 1-4; load existing parsed play and build only missing bibles")
+    parser.add_argument("--min-beat-states", type=int, default=0,
+                        help="Only build bibles for characters with >= N beat states (default: 0 = all)")
     args = parser.parse_args()
 
     print(f"\n=== Dramatic Analysis: {args.play_id} ===\n")
 
+    if args.bibles_only:
+        # Load existing parsed play and build only missing bibles
+        parsed_path = PARSED_DIR / f"{args.play_id}.json"
+        if not parsed_path.exists():
+            raise FileNotFoundError(
+                f"{parsed_path} not found. Run the full pipeline first before using --bibles-only.")
+        print("Loading existing parsed play (--bibles-only mode)...")
+        play = Play.model_validate_json(parsed_path.read_text())
+        total_chars = len(play.characters)
+        existing_bibles = len(play.character_bibles)
+        print(f"  {total_chars} characters, {existing_bibles} existing bibles")
+
+        print("\nBuilding missing bibles...")
+        play = build_all_bibles(
+            play,
+            characters=args.characters,
+            skip_scene_bibles=True,
+            skip_world_bible=True,
+            min_beat_states=args.min_beat_states,
+        )
+
+        # Save updated play
+        parsed_path.write_text(play.model_dump_json(indent=2))
+        print(f"\nUpdated play object saved to {parsed_path}")
+        print(f"\n=== Bible building complete for {play.title} ===")
+        return
+
+    # Full pipeline
     # Step 1: Parse
     print("Step 1: Parsing raw text...")
     play = load_play(args.play_id)

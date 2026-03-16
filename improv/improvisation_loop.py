@@ -25,10 +25,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import GENERATION_MODEL, ANTHROPIC_API_KEY, MAX_REVISION_ROUNDS, SCORE_THRESHOLD
+from config import ANTHROPIC_API_KEY, MAX_REVISION_ROUNDS, MIN_REVISION_ROUNDS, SCORE_THRESHOLD, get_model
 from schemas import (
     AffectState, BeatState, CandidateLine, CharacterBible, ImprovSession,
-    ImprovTurn, SceneContext, ScoredLine, SocialState, EpistemicState,
+    ImprovTurn, RevisionTrace, SceneContext, ScoredLine, SocialState, EpistemicState,
 )
 from improv.scorer import score_candidate
 from improv.state_updater import update_beat_state
@@ -108,7 +108,7 @@ def initialize_beat_state(
         character=character,
     )
     response = client.messages.create(
-        model=GENERATION_MODEL,
+        model=get_model("generation"),
         max_tokens=1024,
         system=_INIT_SYSTEM,
         messages=[{"role": "user", "content": prompt}],
@@ -258,7 +258,7 @@ def generate_candidate(
     )
 
     response = client.messages.create(
-        model=GENERATION_MODEL,
+        model=get_model("generation"),
         max_tokens=512,
         system=_GENERATION_SYSTEM,
         messages=[{"role": "user", "content": prompt}],
@@ -285,21 +285,45 @@ def run_turn(
     beat_state: BeatState,
     bible: CharacterBible,
     context: SceneContext,
+    min_revisions: int | None = None,
 ) -> tuple[ImprovTurn, BeatState]:
     """
     Run one improv turn: generate → score → (revise) → update state.
     Returns the completed ImprovTurn and the updated BeatState for the next turn.
+
+    Args:
+        min_revisions: Override MIN_REVISION_ROUNDS for this turn.
+                       None means use the config default.
     """
+    min_rev = min_revisions if min_revisions is not None else MIN_REVISION_ROUNDS
     initial_state = beat_state.model_copy(deep=True)
     feedback: list[str] = []
     scored: ScoredLine | None = None
     final_candidate = None
+    revision_trace: list[RevisionTrace] = []
 
     for revision_round in range(MAX_REVISION_ROUNDS + 1):
         candidate = generate_candidate(beat_state, bible, context, feedback or None)
         scored = score_candidate(candidate, beat_state, bible, context)
 
-        if scored.passed or revision_round == MAX_REVISION_ROUNDS:
+        # Record revision trace for every round
+        round_scores = {
+            "voice_fidelity": scored.voice_fidelity,
+            "tactic_fidelity": scored.tactic_fidelity,
+            "knowledge_fidelity": scored.knowledge_fidelity,
+            "relationship_fidelity": scored.relationship_fidelity,
+            "subtext_richness": scored.subtext_richness,
+            "emotional_transition_plausibility": scored.emotional_transition_plausibility,
+        }
+        revision_trace.append(RevisionTrace(
+            round=revision_round,
+            candidate_text=candidate.text,
+            scores=round_scores,
+            feedback=list(feedback),
+        ))
+
+        # Exit conditions: passed AND met minimum revisions, OR hit max
+        if (scored.passed and revision_round >= min_rev) or revision_round == MAX_REVISION_ROUNDS:
             final_candidate = candidate
             break
 
@@ -328,6 +352,7 @@ def run_turn(
         revisions=revision_round,
         scored_line=scored,
         updated_beat_state=updated_state,
+        revision_trace=revision_trace,
     )
     return turn, updated_state
 

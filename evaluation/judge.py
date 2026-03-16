@@ -22,7 +22,7 @@ from typing import Literal
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import anthropic
-from config import GENERATION_MODEL, JUDGE_MODEL, ANTHROPIC_API_KEY
+from config import ANTHROPIC_API_KEY, get_model
 from schemas import (
     BeatState, CharacterBible, ImprovTurn, JudgeRating, SceneContext,
 )
@@ -44,7 +44,7 @@ def generate_vanilla(character: str, context: SceneContext) -> str:
         "Say one line of dialogue as your character. Return only the dialogue, no attribution."
     )
     response = client.messages.create(
-        model=GENERATION_MODEL,
+        model=get_model("generation"),
         max_tokens=256,
         messages=[{"role": "user", "content": prompt}],
     )
@@ -70,7 +70,7 @@ def generate_with_bible(character: str, bible: CharacterBible, context: SceneCon
         + (f"Partner's line: {repr(context.partner_line)}" if context.partner_line else "You open the scene.")
     )
     response = client.messages.create(
-        model=GENERATION_MODEL,
+        model=get_model("generation"),
         max_tokens=256,
         system=system,
         messages=[{"role": "user", "content": prompt}],
@@ -163,7 +163,7 @@ def judge_line(
     raw_ratings: list[dict] = []
     for _ in range(num_runs):
         response = client.messages.create(
-            model=JUDGE_MODEL,
+            model=get_model("judge"),
             max_tokens=512,
             system=_JUDGE_SYSTEM,
             messages=[{"role": "user", "content": prompt}],

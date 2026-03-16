@@ -81,6 +81,7 @@ class BeatState(BaseModel):
     superobjective_reminder: str = Field("", description="How this want connects to their superobjective")
     obstacle: str = Field("", description="What is blocking them")
     tactic_state: str = Field("", description="Action verb: what they're doing TO the other person")
+    canonical_tactic: Optional[str] = Field(None, description="Canonical tactic ID from vocabulary (Phase B)")
     affect_state: AffectState = Field(default_factory=AffectState)
     social_state: SocialState = Field(default_factory=SocialState)
     epistemic_state: EpistemicState = Field(default_factory=EpistemicState)
@@ -282,6 +283,16 @@ class ScoredLine(BaseModel):
         return self.mean_score >= SCORE_THRESHOLD
 
 
+class RevisionTrace(BaseModel):
+    """One round of the revision loop: candidate, scores, and feedback given."""
+    round: int
+    candidate_text: str
+    scores: dict[str, float] = Field(default_factory=dict,
+                                     description="axis → score for this round")
+    feedback: list[str] = Field(default_factory=list,
+                                description="Feedback notes (including dramaturgical) for this round")
+
+
 class ImprovTurn(BaseModel):
     turn_index: int
     context: SceneContext
@@ -290,6 +301,8 @@ class ImprovTurn(BaseModel):
     revisions: int
     scored_line: ScoredLine
     updated_beat_state: BeatState
+    revision_trace: list[RevisionTrace] = Field(default_factory=list,
+                                                description="Full trace of all revision rounds")
 
 
 class ImprovSession(BaseModel):
@@ -297,6 +310,78 @@ class ImprovSession(BaseModel):
     character: str
     character_bible: CharacterBible
     turns: list[ImprovTurn] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------- #
+# Phase B — Statistical Learning schemas
+# --------------------------------------------------------------------------- #
+
+class CanonicalTactic(BaseModel):
+    """A canonical tactic in the vocabulary, grouping synonymous raw tactic strings."""
+    canonical_id: str                    # e.g. "DEFLECT"
+    canonical_verb: str                  # e.g. "deflect"
+    description: str                     # acting-theory definition sentence
+    members: list[str] = Field(default_factory=list,
+                               description="Raw tactic strings that map to this canonical")
+    category: str = ""                   # optional super-category (e.g. "avoidance")
+
+
+class TacticVocabulary(BaseModel):
+    """The canonical tactic vocabulary, built by clustering observed tactics."""
+    version: int = 1
+    tactics: list[CanonicalTactic] = Field(default_factory=list)
+    unmapped: list[str] = Field(default_factory=list,
+                                description="New tactic strings awaiting cluster assignment")
+
+    def lookup(self, raw_tactic: str) -> Optional[str]:
+        """Return canonical_id for a raw tactic string, or None if unmapped."""
+        raw_lower = raw_tactic.lower().strip()
+        for ct in self.tactics:
+            if raw_lower in [m.lower() for m in ct.members]:
+                return ct.canonical_id
+        return None
+
+
+class BeatStateEstimate(BaseModel):
+    """Multiple extraction estimates for a single character at a single beat (Phase B ensemble)."""
+    beat_id: str
+    character: str
+    estimates: list[BeatState] = Field(default_factory=list)
+    model_ids: list[str] = Field(default_factory=list)
+    temperatures: list[float] = Field(default_factory=list)
+    tactic_posterior: dict[str, float] = Field(default_factory=dict,
+                                               description="canonical_tactic → probability")
+    affect_mean: Optional[AffectState] = None
+    affect_std: dict[str, float] = Field(default_factory=dict,
+                                         description="Per affect dimension std dev")
+    consensus_confidence: float = Field(1.0, ge=0.0, le=1.0)
+
+
+class RelationalProfile(BaseModel):
+    """Character-level social tendencies aggregated across all interaction partners.
+
+    Directed: describes how THIS character relates to others, not how others relate to them.
+    """
+    character: str
+    play_id: str
+    default_status_claim: float = Field(0.0, description="Mean status across all interactions")
+    default_warmth: float = Field(0.0, description="Mean warmth across all interactions")
+    status_variance: float = Field(0.0, description="How much status varies by partner")
+    warmth_variance: float = Field(0.0, description="How much warmth varies by partner")
+    partner_deviations: dict[str, dict[str, float]] = Field(
+        default_factory=dict,
+        description="partner → {status_delta, warmth_delta} deviation from default"
+    )
+
+
+class StatisticalPrior(BaseModel):
+    """Learned priors from corpus analysis, loaded at improv time for one character."""
+    tactic_vocabulary: TacticVocabulary = Field(default_factory=TacticVocabulary)
+    character_tactic_prior: dict[str, float] = Field(
+        default_factory=dict, description="canonical_id → P(tactic | character)")
+    tactic_transition_matrix: dict[str, dict[str, float]] = Field(
+        default_factory=dict, description="P(next_tactic | current_tactic)")
+    relational_profile: Optional[RelationalProfile] = None
 
 
 # --------------------------------------------------------------------------- #
