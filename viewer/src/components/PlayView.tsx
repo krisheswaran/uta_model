@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Globe, Users, BookOpen, Link2 } from 'lucide-react';
+import { ArrowLeft, Globe, Users, BookOpen, Link2, Activity } from 'lucide-react';
 import NavRail from './NavRail';
+import BeatSegmentationChart from './charts/BeatSegmentationChart';
 import type { Play, CharacterBible, SceneBible, RelationshipEdge } from '@/lib/types';
 
 interface Props {
@@ -35,8 +36,8 @@ export default function PlayView({ playId }: Props) {
       <NavRail playId={playId} />
 
       <main
-        style={{ flex: 1, padding: '24px 16px', marginBottom: 72 }}
-        className="md:ml-[88px] md:mb-0"
+        style={{ flex: 1, padding: '24px 16px' }}
+        className="ml-0 mb-[72px] md:ml-[88px] md:mb-0"
       >
         {/* Back + Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
@@ -127,6 +128,14 @@ function PlayContent({ play, playId }: { play: Play; playId: string }) {
           </div>
         </section>
       )}
+
+      {/* Beat Segmentation */}
+      <section>
+        <SectionHeading icon={<Activity size={18} />} title="Beat Segmentation" />
+        <div className="m3-card" style={{ padding: '16px 20px' }}>
+          <BeatSegmentationChart playId={playId} play={play} />
+        </div>
+      </section>
 
       {/* Scenes */}
       {play.scene_bibles.length > 0 && (

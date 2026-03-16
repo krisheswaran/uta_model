@@ -42,8 +42,8 @@ export default function SceneView({ playId, act, scene }: Props) {
       <NavRail playId={playId} act={act} scene={scene} />
 
       <main
-        style={{ flex: 1, padding: '24px 16px', marginBottom: 72 }}
-        className="md:ml-[88px] md:mb-0"
+        style={{ flex: 1, padding: '24px 16px' }}
+        className="ml-0 mb-[72px] md:ml-[88px] md:mb-0"
       >
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
