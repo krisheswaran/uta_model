@@ -91,7 +91,9 @@ def parse_tei_play(
     all_characters: set[str] = set()
     utterance_index = 0
 
-    body = root.find(".//tei:body", _NS) or root.find(".//body")
+    body = root.find(".//tei:body", _NS)
+    if body is None:
+        body = root.find(".//body")
     if body is None:
         raise ValueError("Could not find <body> in TEI document")
 
@@ -138,7 +140,9 @@ def parse_tei_play(
             sp_elements = (scene_div.findall("tei:sp", _NS) or
                            scene_div.findall("sp"))
             for sp in sp_elements:
-                speaker_el = (sp.find("tei:speaker", _NS) or sp.find("speaker"))
+                speaker_el = sp.find("tei:speaker", _NS)
+                if speaker_el is None:
+                    speaker_el = sp.find("speaker")
                 speaker = ""
                 if speaker_el is not None:
                     speaker = " ".join("".join(speaker_el.itertext()).split()).upper()
@@ -172,7 +176,9 @@ def parse_tei_play(
                     continue
 
                 # Stage direction for this speech
-                stage_el = sp.find("tei:stage", _NS) or sp.find("stage")
+                stage_el = sp.find("tei:stage", _NS)
+                if stage_el is None:
+                    stage_el = sp.find("stage")
                 stage_text = " ".join("".join(stage_el.itertext()).split()) if stage_el is not None else None
 
                 uid = _make_id(play_id, act_num, scene_num, f"u{utterance_index}")
