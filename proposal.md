@@ -634,6 +634,10 @@ You might also do blind comparisons:
 
 * LLM \+ latent-state reflection system
 
+### Training data contamination caveat
+
+Well-known characters (Hamlet, major Chekhov roles) present a contamination problem: the LLM has likely seen extensive character analyses during pretraining, inflating baseline performance and making it hard to attribute improvements to the system rather than memorized knowledge. The evaluation must include **low-familiarity characters** (e.g., minor one-acts, obscure plays) and ideally a **synthetic character** (hand-authored bible, no canonical source) as controls. The strongest evidence for the system comes from the delta between evaluation tiers on characters the LLM cannot already "play" from pretraining alone.
+
 ---
 
 ## **Important modeling choice**
