@@ -21,6 +21,8 @@ const __dirname = dirname(__filename);
 const VIEWER_DIR = join(__dirname, "..");
 const SOURCE_DIR = join(VIEWER_DIR, "..", "data", "bibles");
 const DEST_DIR = join(VIEWER_DIR, "public", "data", "bibles");
+const BEATS_SOURCE_DIR = join(VIEWER_DIR, "..", "data", "beats");
+const BEATS_DEST_DIR = join(VIEWER_DIR, "public", "data", "beats");
 const INDEX_PATH = join(VIEWER_DIR, "public", "data", "index.json");
 const CONFIG_PY = join(VIEWER_DIR, "..", "config.py");
 
@@ -165,6 +167,18 @@ async function main() {
   await writeFile(INDEX_PATH, JSON.stringify(index, null, 2), "utf-8");
   console.log();
   ok(`Wrote public/data/index.json (${indexEntries.length} play${indexEntries.length !== 1 ? "s" : ""})`);
+
+  // ── Beats ──────────────────────────────────────────────────────────────────
+  if (existsSync(BEATS_SOURCE_DIR)) {
+    await mkdir(BEATS_DEST_DIR, { recursive: true });
+    const beatFiles = (await readdir(BEATS_SOURCE_DIR)).filter((f) => f.endsWith("_beats.json"));
+    for (const filename of beatFiles) {
+      await copyFile(join(BEATS_SOURCE_DIR, filename), join(BEATS_DEST_DIR, filename));
+      ok(`Copied beats/${filename}`);
+    }
+  } else {
+    warn(`No beats directory found at ${BEATS_SOURCE_DIR} — skipping`);
+  }
 
   console.log("\n── Done ──────────────────────────────────────────────────\n");
   console.log("  Start the viewer with: npm run dev\n");
