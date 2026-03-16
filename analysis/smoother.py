@@ -69,6 +69,13 @@ def _format_arc(beat_states: list[BeatState]) -> str:
     return "\n".join(lines)
 
 
+_NESTED_FIELDS = {
+    "affect_state": AffectState,
+    "social_state": SocialState,
+    "epistemic_state": EpistemicState,
+}
+
+
 def _apply_corrections(beat_states: list[BeatState], corrections: list[dict]) -> None:
     beat_map = {bs.beat_id: bs for bs in beat_states}
     for correction in corrections:
@@ -78,11 +85,17 @@ def _apply_corrections(beat_states: list[BeatState], corrections: list[dict]) ->
         if beat_id not in beat_map or not field:
             continue
         bs = beat_map[beat_id]
-        if hasattr(bs, field):
-            try:
-                setattr(bs, field, new_value)
-            except Exception:
-                pass
+        if not hasattr(bs, field):
+            continue
+        try:
+            if field in _NESTED_FIELDS and isinstance(new_value, dict):
+                new_value = _NESTED_FIELDS[field](**new_value)
+            elif field in _NESTED_FIELDS:
+                # LLM returned a non-dict for a nested field — skip
+                continue
+            setattr(bs, field, new_value)
+        except Exception:
+            pass
 
 
 def smooth_character_arc(
