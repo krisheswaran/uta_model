@@ -1,0 +1,13 @@
+{
+  // Schema reference for wrangler configuration
+  "$schema": "node_modules/wrangler/config-schema.json",
+  // Name of this worker
+  "name": "uta-viewer",
+  // Entry point
+  "main": "src/worker.tsx",
+  // Compatibility settings
+  "compatibility_date": "2026-01-12",
+  "compatibility_flags": ["nodejs_compat"],
+  // Observability
+  "observability": { "enabled": true }
+}
