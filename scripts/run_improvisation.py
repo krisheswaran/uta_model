@@ -71,7 +71,11 @@ def mode_session(args):
 
     turn_index = 0
     while True:
-        partner_line = input("Partner: ").strip()
+        try:
+            partner_line = input("Partner: ").strip()
+        except EOFError:
+            print("\n(stdin closed — ending session)")
+            break
         if partner_line.lower() in ("quit", "exit", "q"):
             break
         if not partner_line:
