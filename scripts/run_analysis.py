@@ -33,9 +33,9 @@ from analysis.bible_builder import build_all_bibles
 
 def load_play(play_id: str):
     config = PLAYS[play_id]
-    source = config["source"]
+    parser = config["parser"]
 
-    if source == "gutenberg":
+    if parser == "gutenberg":
         raw_path = RAW_DIR / f"{play_id}.txt"
         if not raw_path.exists():
             raise FileNotFoundError(f"{raw_path} not found. Run download_plays.py first.")
@@ -48,7 +48,7 @@ def load_play(play_id: str):
             primary_character=config.get("primary_character", ""),
             text_anchor=config.get("text_anchor", ""),
         )
-    elif source == "folger_tei":
+    elif parser == "tei":
         raw_path = RAW_DIR / f"{play_id}.xml"
         if not raw_path.exists():
             raise FileNotFoundError(f"{raw_path} not found. Run download_plays.py first.")
@@ -59,7 +59,7 @@ def load_play(play_id: str):
             author=config["author"],
         )
     else:
-        raise ValueError(f"Unknown source: {source!r}")
+        raise ValueError(f"Unknown parser: {parser!r}")
 
 
 def main():
