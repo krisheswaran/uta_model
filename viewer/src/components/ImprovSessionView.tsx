@@ -56,49 +56,64 @@ function MiniScoreRow({ scores, mean }: { scores: RevisionScores; mean?: number 
   );
 }
 
-// ─── Revision trace card ──────────────────────────────────────────────────────
+// ─── Director notes block ─────────────────────────────────────────────────────
 
-function RevisionCard({ trace, isFinal }: { trace: RevisionTrace; isFinal?: boolean }) {
+function DirectorNotes({ notes, label }: { notes: string[]; label?: string }) {
+  if (notes.length === 0) return null;
+  return (
+    <div style={{ marginBottom: 10 }}>
+      {label && (
+        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase',
+          color: 'var(--md-sys-color-tertiary)', marginBottom: 4 }}>
+          {label}
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {notes.map((fb, i) => (
+          <div key={i} style={{
+            fontSize: 12, color: 'var(--md-sys-color-on-surface)',
+            background: 'var(--md-sys-color-tertiary-container)',
+            borderRadius: 8, padding: '7px 11px',
+            lineHeight: 1.55,
+            borderLeft: '3px solid var(--md-sys-color-tertiary)',
+          }}>
+            {fb}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Candidate block ─────────────────────────────────────────────────────────
+
+function CandidateBlock({ label, text, scores, isFinal }: {
+  label: string; text: string; scores: RevisionScores; isFinal?: boolean;
+}) {
   return (
     <div style={{
       borderLeft: `3px solid ${isFinal ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-outline-variant)'}`,
-      paddingLeft: 12, marginBottom: 12,
+      paddingLeft: 12, marginBottom: 10,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
         <span style={{
           fontSize: 11, fontWeight: 600,
           color: isFinal ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface-variant)',
         }}>
-          {isFinal ? 'final' : `round ${trace.round}`}
+          {label}
         </span>
-        <MiniScoreRow scores={trace.scores} />
+        <MiniScoreRow scores={scores} />
       </div>
-
       <blockquote style={{
-        margin: 0, marginBottom: 8,
+        margin: 0,
         fontSize: 13, lineHeight: 1.65,
         color: 'var(--md-sys-color-on-surface)',
         fontStyle: 'italic',
         background: 'var(--md-sys-color-surface-container)',
         borderRadius: 8, padding: '8px 12px',
       }}>
-        {trace.candidate_text}
+        {text}
       </blockquote>
-
-      {trace.feedback.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          {trace.feedback.map((fb, i) => (
-            <div key={i} style={{
-              fontSize: 12, color: 'var(--md-sys-color-on-surface-variant)',
-              background: 'var(--md-sys-color-surface-container-low)',
-              borderRadius: 6, padding: '6px 10px',
-              lineHeight: 1.5,
-            }}>
-              {fb}
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
@@ -226,29 +241,9 @@ function TurnCard({ turn }: { turn: ImprovTurn }) {
 
       {/* Expanded content */}
       {expanded && (
-        <div ref={contentRef} style={{ padding: '0 16px 16px' }}>
-          {/* Director feedback on final line */}
-          {turn.scored_line.feedback.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 8, marginTop: 12 }}>
-                DIRECTOR'S NOTES (FINAL)
-              </div>
-              {turn.scored_line.feedback.map((fb, i) => (
-                <div key={i} style={{
-                  fontSize: 12, color: 'var(--md-sys-color-on-surface)',
-                  background: 'var(--md-sys-color-tertiary-container)',
-                  borderRadius: 8, padding: '8px 12px', marginBottom: 6,
-                  lineHeight: 1.6,
-                  borderLeft: '3px solid var(--md-sys-color-tertiary)',
-                }}>
-                  {fb}
-                </div>
-              ))}
-            </div>
-          )}
-
+        <div ref={contentRef} style={{ padding: '12px 16px 16px' }}>
           {/* Score evolution chart */}
-          {turn.revision_trace.length > 0 && (
+          {turn.revision_trace.length > 1 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 8 }}>
                 SCORE EVOLUTION
@@ -257,17 +252,30 @@ function TurnCard({ turn }: { turn: ImprovTurn }) {
             </div>
           )}
 
-          {/* Revision trace */}
-          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 8 }}>
+          {/* Interleaved revision trace:
+              trace[i].feedback was given to produce trace[i], so show it BEFORE trace[i].
+              trace[0].feedback is always empty (no prior feedback for the first draft). */}
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--md-sys-color-on-surface-variant)', marginBottom: 10 }}>
             REVISION TRACE
           </div>
-          {turn.revision_trace.map((trace) => (
-            <RevisionCard key={trace.round} trace={trace} />
+          {turn.revision_trace.map((trace, i) => (
+            <div key={trace.round}>
+              {/* Director's notes that produced this round */}
+              <DirectorNotes
+                notes={trace.feedback}
+                label={i === 0 ? undefined : `Director's notes → round ${trace.round}`}
+              />
+              <CandidateBlock
+                label={`round ${trace.round}`}
+                text={trace.candidate_text}
+                scores={trace.scores}
+                isFinal={i === turn.revision_trace.length - 1}
+              />
+            </div>
           ))}
-          <RevisionCard
-            trace={{ round: -1, candidate_text: turn.final_line, scores: finalScores, feedback: [] }}
-            isFinal
-          />
+
+          {/* Director's notes on the final accepted line */}
+          <DirectorNotes notes={turn.scored_line.feedback} label="Director's notes (on final)" />
         </div>
       )}
     </div>
