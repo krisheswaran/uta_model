@@ -1,12 +1,23 @@
 """
 Parser for plain-text Project Gutenberg play scripts.
 
-Handles the Constance Garnett formatting convention:
-  - Character names followed immediately by a period and dialogue on the same
-    line: ``LOPAKHIN. The train's arrived, thank God.``
-  - Stage directions in square brackets (inline or on their own line)
-  - Acts marked with "ACT I" (Roman) or "ACT ONE" (written-out)
-  - Scene headings marked with "SCENE I" / "SCENE ONE" etc. (optional)
+Supports multiple Gutenberg formatting conventions:
+
+  Chekhov / Garnett style:
+    - Inline speaker: ``LOPAKHIN. The train's arrived, thank God.``
+    - Stage directions in [square brackets]
+    - Acts: "ACT I" / "ACT ONE"
+
+  Wilde style (Importance of Being Earnest):
+    - Standalone speaker: ``ALGERNON.`` on its own line, dialogue below
+    - Acts: "FIRST ACT" / "SECOND ACT" (ordinal before ACT)
+    - Bare ``SCENE`` heading (no number)
+    - ``ACT DROP`` curtain markers
+
+  Ibsen / Sharp style (A Doll's House):
+    - Standalone speaker: ``NORA.`` on its own line, dialogue below
+    - Stage directions in _[italic brackets]_
+    - Inline stage directions: ``_[smiling]_. Yes, it is!``
 
 Multi-play files (e.g. Gutenberg #7986 — Chekhov Second Series) are handled
 via the optional ``text_anchor`` parameter, which tells the parser to skip
@@ -39,16 +50,33 @@ _WRITTEN_NUMS = {
     "ONE": 1, "TWO": 2, "THREE": 3, "FOUR": 4,
     "FIVE": 5, "SIX": 6, "SEVEN": 7, "EIGHT": 8,
 }
+_ORDINALS = {
+    "FIRST": 1, "SECOND": 2, "THIRD": 3, "FOURTH": 4,
+    "FIFTH": 5, "SIXTH": 6, "SEVENTH": 7, "EIGHTH": 8,
+}
 
+_NUM_WORD = r"[IVXivx\d]+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT"
+_ORD_WORD = r"FIRST|SECOND|THIRD|FOURTH|FIFTH|SIXTH|SEVENTH|EIGHTH"
+
+# "ACT I", "ACT ONE", or "FIRST ACT" / "SECOND ACT"
 _ACT_RE = re.compile(
-    r"^\s*ACT\s+([IVXivx\d]+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT)\.?\s*$",
+    rf"^\s*(?:ACT\s+({_NUM_WORD})|({_ORD_WORD})\s+ACT)\.?\s*$",
     re.IGNORECASE,
 )
+# "ACT DROP" — curtain marker between acts (Wilde); skip it
+_ACT_DROP_RE = re.compile(r"^\s*ACT\s+DROP\s*$", re.IGNORECASE)
+
+# "SCENE I" or bare "SCENE" (Wilde uses bare SCENE headings)
 _SCENE_RE = re.compile(
-    r"^\s*SCENE\s+([IVXivx\d]+|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT)\.?\s*$",
+    rf"^\s*SCENE\s*({_NUM_WORD})?\s*\.?\s*$",
     re.IGNORECASE,
 )
-_STAGE_RE = re.compile(r"^\s*[\[\(].+?[\]\)]\s*$")
+
+# Whole-line stage directions: [bracketed] or (parenthesised) or _[italic-bracketed]_
+_STAGE_RE = re.compile(r"^\s*_?[\[\(].+?[\]\)]_?\s*$")
+
+# Strip inline stage directions from dialogue text: [text] or _[text]_
+_INLINE_STAGE_RE = re.compile(r"_?\[.*?\]_?")
 
 # Primary format: "SPEAKER. rest of dialogue on same line"
 # Requires at least two all-caps words (or one word of ≥2 caps chars) before
@@ -62,6 +90,12 @@ _STANDALONE_SPEAKER_RE = re.compile(
     r"^([A-Z][A-Z\s\-\']{1,40}[A-Z])[\.\:]?\s*$"
 )
 
+# Structural headings that match speaker patterns but are not characters
+_NOT_SPEAKERS = {
+    "DRAMATIS PERSONAE", "PERSONS IN THE PLAY", "THE PERSONS IN THE PLAY",
+    "CONTENTS", "THE SCENES OF THE PLAY", "CHARACTERS",
+}
+
 _ROMAN = {
     "I": 1, "II": 2, "III": 3, "IV": 4, "V": 5,
     "VI": 6, "VII": 7, "VIII": 8, "IX": 9, "X": 10,
@@ -74,6 +108,8 @@ def _roman_to_int(s: str) -> int:
         return _ROMAN[s]
     if s in _WRITTEN_NUMS:
         return _WRITTEN_NUMS[s]
+    if s in _ORDINALS:
+        return _ORDINALS[s]
     try:
         return int(s)
     except ValueError:
@@ -141,6 +177,9 @@ def parse_gutenberg_play(
         if not (current_speaker and current_lines and seen_first_act):
             return
         text = " ".join(current_lines).strip()
+        # Strip inline stage directions: [text] and _[text]_
+        text = _INLINE_STAGE_RE.sub("", text)
+        text = re.sub(r"\s{2,}", " ", text).strip()
         if not text:
             return
         uid = _make_id(play_id, current_act_num, current_scene_num, f"u{utterance_index}")
@@ -163,13 +202,22 @@ def parse_gutenberg_play(
         if line.startswith("*** END OF"):
             break
 
+        # -- ACT DROP (curtain marker, skip) --------------------------------
+        if _ACT_DROP_RE.match(line):
+            flush_speaker()
+            current_speaker = None
+            current_lines = []
+            continue
+
         # -- Act heading ----------------------------------------------------
         act_m = _ACT_RE.match(line)
         if act_m:
             flush_speaker()
             current_speaker = None
             current_lines = []
-            current_act_num = _roman_to_int(act_m.group(1))
+            # group(1) is "ACT <num>" form, group(2) is "<ordinal> ACT" form
+            num_str = act_m.group(1) or act_m.group(2)
+            current_act_num = _roman_to_int(num_str)
             current_scene_num = 1
             seen_first_act = True
             continue
@@ -180,7 +228,8 @@ def parse_gutenberg_play(
             flush_speaker()
             current_speaker = None
             current_lines = []
-            current_scene_num = _roman_to_int(scene_m.group(1))
+            # Bare "SCENE" (no number) defaults to 1
+            current_scene_num = _roman_to_int(scene_m.group(1)) if scene_m.group(1) else 1
             continue
 
         # -- Stage direction (whole line) -----------------------------------
@@ -195,7 +244,7 @@ def parse_gutenberg_play(
 
         # -- Inline speaker: "SPEAKER. dialogue text" -----------------------
         inline_m = _INLINE_SPEAKER_RE.match(line)
-        if inline_m:
+        if inline_m and inline_m.group(1).strip() not in _NOT_SPEAKERS:
             flush_speaker()
             current_speaker = inline_m.group(1).strip()
             current_lines = [inline_m.group(2).strip()]
@@ -203,7 +252,7 @@ def parse_gutenberg_play(
 
         # -- Standalone speaker (fallback for other Gutenberg sources) ------
         standalone_m = _STANDALONE_SPEAKER_RE.match(line)
-        if standalone_m:
+        if standalone_m and standalone_m.group(1).strip() not in _NOT_SPEAKERS:
             flush_speaker()
             current_speaker = standalone_m.group(1).strip()
             current_lines = []
