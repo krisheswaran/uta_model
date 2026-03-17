@@ -28,7 +28,8 @@ import anthropic
 from config import ANTHROPIC_API_KEY, MAX_REVISION_ROUNDS, MIN_REVISION_ROUNDS, SCORE_THRESHOLD, get_model
 from schemas import (
     AffectState, BeatState, CandidateLine, CharacterBible, ImprovSession,
-    ImprovTurn, RevisionTrace, SceneContext, ScoredLine, SocialState, EpistemicState,
+    ImprovTurn, Play, RevisionTrace, SceneContext, ScoredLine, SocialState,
+    EpistemicState, StatisticalPrior,
 )
 from improv.scorer import score_candidate
 from improv.state_updater import update_beat_state
@@ -286,14 +287,22 @@ def run_turn(
     bible: CharacterBible,
     context: SceneContext,
     min_revisions: int | None = None,
+    prior: StatisticalPrior | None = None,
+    play: Play | None = None,
+    previous_tactic: str | None = None,
 ) -> tuple[ImprovTurn, BeatState]:
     """
-    Run one improv turn: generate → score → (revise) → update state.
+    Run one improv turn: generate → score → (revise with dramaturgical feedback) → update state.
     Returns the completed ImprovTurn and the updated BeatState for the next turn.
 
     Args:
         min_revisions: Override MIN_REVISION_ROUNDS for this turn.
                        None means use the config default.
+        prior: StatisticalPrior for the character (Phase B). If provided,
+               dramaturgical feedback is generated from deviation analysis
+               and appended to the scorer's feedback.
+        play: Play object needed for affect deviation analysis. Optional.
+        previous_tactic: The tactic from the previous turn (for transition analysis).
     """
     min_rev = min_revisions if min_revisions is not None else MIN_REVISION_ROUNDS
     initial_state = beat_state.model_copy(deep=True)
@@ -327,7 +336,7 @@ def run_turn(
             final_candidate = candidate
             break
 
-        # Collect feedback for next round
+        # Collect feedback for next round: scorer feedback + dramaturgical notes
         feedback = scored.feedback or [
             f"Axis scores: voice={scored.voice_fidelity:.1f} "
             f"tactic={scored.tactic_fidelity:.1f} "
@@ -337,6 +346,16 @@ def run_turn(
             f"affect={scored.emotional_transition_plausibility:.1f}. "
             "Revise to improve the lowest-scoring dimensions."
         ]
+
+        # Append dramaturgical feedback from statistical priors
+        if prior is not None:
+            from improv.priors import generate_dramaturgical_feedback
+            dramaturgy = generate_dramaturgical_feedback(
+                beat_state, bible, prior,
+                previous_tactic=previous_tactic,
+                play=play,
+            )
+            feedback.extend(dramaturgy)
 
     updated_state = update_beat_state(
         beat_state,
@@ -361,10 +380,17 @@ def run_session(
     bible: CharacterBible,
     scene_prompts: list[SceneContext],
     session_id: str | None = None,
+    prior: StatisticalPrior | None = None,
+    play: Play | None = None,
 ) -> ImprovSession:
     """
     Run a full improv session across a list of scene prompts.
     Each prompt is one turn; the state carries over between turns.
+
+    Args:
+        prior: StatisticalPrior for the character (Phase B). If provided,
+               dramaturgical feedback is added during revision rounds.
+        play: Play object for affect deviation analysis. Optional.
     """
     session_id = session_id or str(uuid.uuid4())[:8]
     session = ImprovSession(
@@ -377,10 +403,15 @@ def run_session(
         bible.character, bible, scene_prompts[0], beat_id=f"{session_id}_b1"
     )
 
+    previous_tactic = None
     for turn_index, context in enumerate(scene_prompts):
         print(f"  Turn {turn_index + 1}: {context.partner_line or '(opening)'}")
-        turn, beat_state = run_turn(turn_index + 1, beat_state, bible, context)
+        turn, beat_state = run_turn(
+            turn_index + 1, beat_state, bible, context,
+            prior=prior, play=play, previous_tactic=previous_tactic,
+        )
         session.turns.append(turn)
+        previous_tactic = beat_state.tactic_state
         print(f"    → {turn.final_line[:80]}... "
               f"(score={turn.scored_line.mean_score:.2f}, revisions={turn.revisions})")
         # Carry partner context forward

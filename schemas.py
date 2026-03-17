@@ -312,6 +312,42 @@ class ImprovSession(BaseModel):
     turns: list[ImprovTurn] = Field(default_factory=list)
 
 
+class SceneRecord(BaseModel):
+    """Complete record of an improvised scene, saved to data/improv/.
+
+    Captures everything needed to reproduce, analyze, or compare scenes:
+    the configuration, the priors state, the full turn-by-turn trace
+    (including all revision drafts and dramaturgical feedback), and
+    the final scene transcript.
+    """
+    # Identity
+    scene_id: str                        # unique ID for this scene
+    mode: str                            # "session" or "crossplay"
+    timestamp: str                       # ISO 8601
+
+    # Scene setup
+    setting: str
+    stakes: str
+    prior_events: str = ""
+    dramatic_register: str = "dramatic"
+    constraint: str = "alternate_universe_same_psyche"
+
+    # Characters
+    characters: list[dict] = Field(default_factory=list,
+        description="Per-character info: {character, play_id, has_prior, top_tactic, default_warmth}")
+
+    # Configuration snapshot
+    config: dict = Field(default_factory=dict,
+        description="CLI flags + model configs + pipeline params used for this scene")
+
+    # Full turn data (includes revision_trace with all drafts and feedback)
+    turns: list[ImprovTurn] = Field(default_factory=list)
+
+    # Convenience: the final script as a flat list of {speaker, line} dicts
+    transcript: list[dict] = Field(default_factory=list,
+        description="[{speaker, line, tactic, mean_score}, ...]")
+
+
 # --------------------------------------------------------------------------- #
 # Phase B — Statistical Learning schemas
 # --------------------------------------------------------------------------- #

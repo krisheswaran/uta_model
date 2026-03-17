@@ -6,7 +6,7 @@ This document describes the design of Phase B of the UTA Acting System: the intr
 
 ## 1. Motivation and Scope
 
-### What Phase A gives us
+### What Phase A gave us
 - Point-estimate BeatStates extracted by single LLM calls
 - Free-text tactic and defense labels (297 unique tactics, many synonyms)
 - CharacterBibles for 2 of 58 characters across 2 plays
@@ -14,18 +14,17 @@ This document describes the design of Phase B of the UTA Acting System: the intr
 - No learned priors, no transition models, no relationship tracking
 - Improvisation generates freely with no statistical grounding
 
-### What Phase B adds
-- **Canonical vocabulary**: clustered, deduplicated tactic/defense taxonomy with acting-theory definitions
-- **Model tiering**: per-step model selection (Opus only where needed, Sonnet/Haiku elsewhere)
-- **Ensemble extraction**: multiple model calls per beat → distributional estimates with calibrated uncertainty
-- **Relationship modeling**: pairwise edges populated from existing data + character-level relational profiles
-- **Dramaturgical feedback loop**: statistical priors used as a critic (not a constraint) — deviations from character patterns generate graduated director's-note feedback during improvisation
-- **Revision trace recording**: every revision round captured for analysis of feedback dynamics
+### What Phase B adds (implemented)
+- **Canonical vocabulary**: 66 canonical tactic clusters from 297 raw strings, with hand-crafted acting-theory definitions for the top 76. 79% of beat states normalized. (`analysis/vocabulary.py`)
+- **Model tiering**: per-step model selection via `MODEL_CONFIGS` — segmentation and bible building on Sonnet, WorldBible on Haiku, extraction and smoothing on Opus. ~40% cost reduction per play. (`config.py`)
+- **Incremental bible building**: `--bibles-only` mode builds CharacterBibles for remaining characters without re-running steps 1–4. All 25 significant characters now have bibles. (`scripts/run_analysis.py`, `analysis/bible_builder.py`)
+- **Relationship modeling**: 134 directed pairwise edges across both plays, 31 relational profiles with default warmth/status, variance, and per-partner deviations. Zero API cost. (`analysis/relationship_builder.py`)
+- **Dramaturgical feedback loop**: `StatisticalPrior` loaded per character at improv time. Deviations from tactic priors and affect baselines generate graduated director's-note feedback (3 tiers). (`improv/priors.py`)
+- **Revision traces**: `MIN_REVISION_ROUNDS=1` ensures every line gets feedback. Full `RevisionTrace` recorded per round. (`improv/improvisation_loop.py`)
+- **Test suite**: 108 tests across 7 test files. (`tests/`)
 
-### Prerequisites
-- 2 plays fully analyzed (Cherry Orchard, Hamlet) with BeatStates for all characters
-- Incremental bible building for remaining characters (~$4.50)
-- `sentence-transformers` for local embeddings
+### Not yet implemented (Phase B.2)
+- **Ensemble extraction**: multiple model calls per beat → distributional estimates with calibrated uncertainty. Schemas ready (`BeatStateEstimate`), implementation deferred to when new plays are analyzed.
 
 ---
 
@@ -47,12 +46,13 @@ Raw tactic strings are single words that risk polysemy when embedded. Before clu
 
 Expansion is done via a single batch Haiku call (~$0.01) for the long tail, with the top 50 tactics hand-reviewed for accuracy.
 
-### 2.3 Clustering methodology
+### 2.3 Clustering methodology (implemented)
 
-1. Embed all expanded tactic sentences with `all-MiniLM-L6-v2` (sentence-transformers, local, free)
-2. Agglomerative clustering with cosine distance, threshold-based (not fixed k)
-3. Starting granularity: ~30–40 canonical tactics
-4. Human-in-the-loop review: export clusters, allow manual splits/merges
+1. Two-pass approach: cluster well-defined "seed" tactics (hand-crafted definitions or count ≥ 3), then assign long-tail singletons to nearest seed cluster with a tighter threshold
+2. Embed all expanded tactic sentences with `all-MiniLM-L6-v2` (sentence-transformers, local, free)
+3. Agglomerative clustering with cosine distance, threshold=0.45 for seeds, 0.7× threshold for long-tail assignment
+4. Result: **66 canonical tactics**, 179 unmapped singletons. 881/1114 beat states (79%) normalized
+5. Human-in-the-loop review via `vocabulary.py show`
 
 ### 2.4 Incremental vocabulary growth
 
@@ -87,11 +87,11 @@ class TacticVocabulary(BaseModel):
 
 ---
 
-## 3. Incremental Bible Building
+## 3. Incremental Bible Building (implemented)
 
 ### 3.1 The `--bibles-only` pipeline mode
 
-BeatStates are already extracted for ALL characters in both plays. Only CharacterBible synthesis is missing for ~56 of 58 characters. A new `--bibles-only` flag on `run_analysis.py`:
+BeatStates are already extracted for ALL characters in both plays. A `--bibles-only` flag on `run_analysis.py` builds only missing CharacterBibles:
 
 1. Loads the Play object from `data/parsed/{play_id}.json`
 2. Skips steps 1–4 (parse, segment, extract, smooth)
@@ -102,17 +102,17 @@ BeatStates are already extracted for ALL characters in both plays. Only Characte
 
 ### 3.2 Character selection criteria
 
-Not all characters warrant bibles. Threshold: characters with ≥ 5 beat states. This yields ~12 for Cherry Orchard and ~15 for Hamlet.
+Not all characters warrant bibles. Threshold: characters with ≥ 5 beat states (`--min-beat-states 5`). This yields 12 for Cherry Orchard and 15 for Hamlet. All 25 are now built.
 
 ### 3.3 Cost
 
-~$0.18/character (one Sonnet call for bible synthesis). For ~25 characters: ~$4.50 total.
+~$0.04/character with Sonnet (per model tiering). For 25 characters: ~$1 total.
 
 ---
 
-## 4. Model Tiering Strategy
+## 4. Model Tiering Strategy (implemented)
 
-### 4.1 Per-step model recommendations
+### 4.1 Per-step model configuration
 
 | Step | Current | Recommended | Rationale |
 |---|---|---|---|
@@ -203,18 +203,18 @@ Ensemble estimates provide the observation likelihoods needed by the factor grap
 
 ## 6. Relationship Modeling
 
-### 6.1 Populating RelationshipEdges from existing BeatStates
+### 6.1 Populating RelationshipEdges from existing BeatStates (implemented)
 
-For each pair of characters co-occurring in beats, aggregate the `social_state` from each character's BeatState:
+For each pair of characters co-occurring in ≥3 beats, aggregate the `social_state` from each character's BeatState:
 - `temperature_by_beat`: character A's `warmth` toward B at each beat
 - `power_by_beat`: character A's `status` relative to B at each beat
-- `summary`: one Sonnet call reading the time series (~$0.02/pair)
+- `summary`: optional Sonnet call reading the time series (`--summaries` flag, ~$0.02/pair)
 
-Cost for numeric aggregation: $0. Cost for summaries: ~$1 for ~50 significant pairs.
+Result: **68 directed edges** for Cherry Orchard, **66 for Hamlet**. Cost for numeric aggregation: $0.
 
-### 6.2 RelationalProfile: character-level social tendencies
+### 6.2 RelationalProfile: character-level social tendencies (implemented)
 
-Per character, aggregate social_state across ALL partners:
+Per character, aggregate social_state across ALL partners. **31 profiles** built across both plays:
 
 ```python
 class RelationalProfile(BaseModel):
@@ -242,11 +242,13 @@ If B's superobjective/role resembles a known partner of A (by embedding similari
 
 ## 7. Integration with Improvisation
 
-### 7.1 Design principle: priors as dramaturgical critic, not generative constraint
+### 7.1 Design principle: priors as dramaturgical critic, not generative constraint (implemented)
 
 The statistical priors do NOT go into generation prompts. The LLM generates freely. The priors are used *after* generation to evaluate consistency with the character's established patterns and to produce **director's-note style feedback** when deviations occur. This mirrors how a real director works: the actor makes a choice, then the director responds.
 
-### 7.2 StatisticalPrior object
+Implementation: `improv/priors.py` provides `generate_dramaturgical_feedback()` which is called by the improvisation loop after each scoring round, appending feedback to the scorer's notes.
+
+### 7.2 StatisticalPrior object (implemented)
 
 ```python
 class StatisticalPrior(BaseModel):
@@ -256,47 +258,50 @@ class StatisticalPrior(BaseModel):
     relational_profile: RelationalProfile
 ```
 
-Loaded once per character at the start of an improv session.
+Loaded once per character at session start via `load_prior_for_character()`. Auto-loaded by `run_improvisation.py` when vocabulary and profiles exist on disk.
 
-### 7.3 Integration points
+### 7.3 Integration points (implemented)
 
 **State initialization**: The LLM infers the full BeatState freely. The relational profile provides the social baseline only (warmth/status for unknown partners).
 
 **Generation**: Unchanged from Phase A. No probability language in the prompt. The canonical vocabulary is used only for internal bookkeeping (mapping the generated tactic to a canonical ID).
 
-**Scoring + feedback**: After generation, the scorer maps the tactic to a canonical ID and checks:
-- Is this tactic significantly unlikely for this character?
-- Is this tactic transition improbable given the previous tactic?
-- Does the affect state deviate from the character's typical range?
+**Scoring + feedback** (`improv/priors.py`): After generation, two deviation analyses run:
+- **Tactic deviation**: maps generated tactic to canonical ID, computes P(tactic | character) and P(tactic | previous_tactic), assigns tier 1/2/3
+- **Affect deviation**: computes z-scores for valence, arousal, vulnerability against character's historical range
 
-**State update**: Transition priors inform beat-shift detection. A low-probability transition (bottom 10%) signals a beat boundary → flag `beat_shifted = True`. The state updater itself uses the LLM freely; the prior is diagnostic.
+**State update**: The previous tactic is tracked across turns for transition analysis. Beat-shift detection via low-probability transitions is supported in the deviation analysis.
 
-### 7.4 Graduated dramaturgical feedback
+### 7.4 Graduated dramaturgical feedback (implemented)
 
 Feedback is templated with graduated intensity based on deviation magnitude. Templates name the character's specific characteristic behavior and scale from encouragement to strong pushback.
 
-**Tier 1 — On target** (deviation within normal range, or MIN_REVISION_ROUNDS forcing a pass):
-> "Good instinct — the deflection feels characteristic of {character}. See if you can let the underlying vulnerability bleed through just slightly more in the rhythm of the line."
+**Tier 1 — On target** (P(tactic | character) ≥ 5%, or MIN_REVISION_ROUNDS forcing a pass):
+> "Good instinct — the deflection feels characteristic of {character}. See if you can let the subtext breathe a little more through the rhythm of the line."
 
-**Tier 2 — Mild deviation** (outside typical range but not extreme):
+**Tier 2 — Mild deviation** (2% ≤ P < 5%, or low transition probability):
 > "{character} typically operates through {top_tactic} in moments like this — the shift to {generated_tactic} is noticeable. If this is a genuine departure, let the audience feel the cost of that shift."
 
-**Tier 3 — Sharp deviation** (bottom 5% probability):
+**Tier 3 — Sharp deviation** (P < 2%):
 > "This is a significant break from {character}'s established pattern. {character} has used {top_tactic} in {pct}% of comparable moments — jumping to {generated_tactic} needs a very strong provocation. What in this specific moment forces {character} out of their comfort zone? If you can't point to it, return to {top_tactic}."
 
-Templates are populated from the `StatisticalPrior` and generated by `improv/priors.py`.
+**Affect deviation tiers** (based on z-scores against historical range):
+- Tier 2 (z > 1.5): names the deviant dimension and typical range
+- Tier 3 (z > 2.5): flags the shift as needing to be earned beat by beat
+
+Templates are populated from the `StatisticalPrior` and generated by `improv/priors.py:generate_dramaturgical_feedback()`.
 
 ---
 
-## 8. Revision Loop Enhancements
+## 8. Revision Loop Enhancements (implemented)
 
 ### 8.1 Minimum revision rounds
 
-`MIN_REVISION_ROUNDS = 1` (configurable). Every line gets at least one round of feedback, even when initial scores are above threshold. This ensures the dramaturgical feedback system always engages.
+`MIN_REVISION_ROUNDS = 1` (configurable via `config.py` or `--min-revisions` CLI flag). Every line gets at least one round of feedback, even when initial scores are above threshold. This ensures the dramaturgical feedback system always engages.
 
 ### 8.2 Revision trace recording
 
-Every revision round is captured:
+Every revision round is captured in `ImprovTurn.revision_trace`:
 
 ```python
 class RevisionTrace(BaseModel):
@@ -318,20 +323,22 @@ With MIN_REVISION_ROUNDS=1+, the revision traces reveal:
 
 ---
 
-## 9. Implementation Sequence
+## 9. Implementation Status
 
-### Phase B.1 — Immediate, low cost, high value
-1. Canonical tactic vocabulary (pure computation + local embeddings)
-2. Incremental bible building for remaining characters (~$4.50)
-3. MIN_REVISION_ROUNDS + RevisionTrace
+### Phase B.1 — Complete
+1. Canonical tactic vocabulary — `analysis/vocabulary.py`, 66 clusters, 79% coverage
+2. Incremental bible building — `--bibles-only` mode, 25 characters built
+3. MIN_REVISION_ROUNDS + RevisionTrace — default 1, full trace recording
+4. Model tiering — `MODEL_CONFIGS` with per-step `{provider, model}`, ~40% savings
 
-### Phase B.2 — Short-term, moderate effort
-4. Model tiering config refactor
-5. Ensemble extraction mode + calibration protocol
+### Phase B.3 — Complete
+5. Relationship modeling — `analysis/relationship_builder.py`, 134 directed edges, 31 profiles
+6. StatisticalPrior integration — `improv/priors.py`, graduated dramaturgical feedback in revision loop
+7. Test suite — 108 tests across `tests/`
 
-### Phase B.3 — Medium-term
-6. Relationship modeling (pairwise edges + relational profiles)
-7. Full StatisticalPrior integration with improvisation (graduated feedback)
+### Phase B.2 — Not yet implemented
+8. Ensemble extraction mode (`analysis/ensemble.py`) — deferred until new plays are analyzed
+9. Calibration protocol (`analysis/calibration.py`) — depends on ensemble extraction
 
 ---
 

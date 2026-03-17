@@ -17,8 +17,9 @@ RAW_DIR = DATA_DIR / "raw"
 PARSED_DIR = DATA_DIR / "parsed"
 BEATS_DIR = DATA_DIR / "beats"
 BIBLES_DIR = DATA_DIR / "bibles"
+IMPROV_DIR = DATA_DIR / "improv"
 
-for _d in (RAW_DIR, PARSED_DIR, BEATS_DIR, BIBLES_DIR):
+for _d in (RAW_DIR, PARSED_DIR, BEATS_DIR, BIBLES_DIR, IMPROV_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
 # --------------------------------------------------------------------------- #

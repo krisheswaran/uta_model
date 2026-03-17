@@ -5,7 +5,34 @@ UTA models theatrical characters as multi-scale latent dynamical systems and gen
 The system works in two passes:
 
 1. **Analysis (Pass 1)**: Parse a play, segment it into beats, extract per-character latent states (desire, affect, tactic, epistemic, social, defense), smooth arcs globally, and build structured character/scene/world bibles.
-2. **Improvisation (Pass 2)**: Given a character bible and a novel scene context, initialize a hidden state, generate candidate lines, score them on six axes (voice, tactic, knowledge, relationship, subtext, emotional plausibility), and revise via targeted feedback.
+2. **Improvisation (Pass 2)**: Given a character bible and a novel scene context, initialize a hidden state, generate candidate lines, score them on six axes (voice, tactic, knowledge, relationship, subtext, emotional plausibility), and revise via targeted feedback — now with statistical priors providing graduated dramaturgical feedback.
+
+---
+
+## Release Notes
+
+### Phase B — Statistical Learning (2026-03-16)
+
+Phase B introduces statistical learning infrastructure over the analyzed corpus, bridging the symbolic Phase A system and the future probabilistic Phase C. See [docs/STATISTICAL_LEARNING_PHASE_DESIGN.md](docs/STATISTICAL_LEARNING_PHASE_DESIGN.md) for the full design.
+
+**Canonical tactic vocabulary.** The 297 free-text tactic strings extracted during analysis are clustered into 66 canonical categories using sentence-transformer embeddings (local, free). Hand-crafted acting-theory definitions for the top 76 tactics ensure high-quality clusters. 881/1114 beat states (79%) are normalized to canonical IDs; the remaining 179 singleton tactics are flagged for future assignment as the corpus grows. The vocabulary grows incrementally — new plays' tactics are either assigned to existing clusters or flagged as unmapped.
+
+**Incremental bible building.** A `--bibles-only` mode on `run_analysis.py` builds CharacterBibles for remaining characters without re-running segmentation, extraction, or smoothing. CharacterBibles are now built for all 25 significant characters (≥5 beat states) across both plays, up from the original 2.
+
+**Model tiering.** Each pipeline step now has its own model configuration via `MODEL_CONFIGS` in `config.py`. Segmentation and bible building use Sonnet, WorldBible uses Haiku, while extraction and smoothing remain on Opus. The provider-agnostic config structure supports future benchmarking with Gemini or OpenAI models. Estimated cost reduction: ~40% per play.
+
+**Relationship modeling.** Directed pairwise `RelationshipEdge` objects are now populated from existing BeatState social_state data (68 edges for Cherry Orchard, 66 for Hamlet). Per-character `RelationalProfile` aggregates capture default warmth, status claim, variance across partners, and per-partner deviations. Profiles are directed — Hamlet's sardonic distance (warmth=-0.01, status=+0.51) is independent of how others relate to him. All numeric aggregation is zero API cost.
+
+**Statistical priors and dramaturgical feedback.** The improvisation loop now loads a `StatisticalPrior` per character (tactic prior, transition matrix, relational profile). Priors act as a **critic, not a constraint** — the LLM generates freely, and deviations from the character's statistical patterns produce graduated director's-note feedback:
+- *Tier 1 (on target)*: encouragement and polish notes
+- *Tier 2 (mild deviation)*: names the character's typical pattern and asks the actor to justify the shift
+- *Tier 3 (sharp deviation)*: demands strong dramatic justification for breaking established patterns
+
+**Revision traces.** `MIN_REVISION_ROUNDS=1` ensures every line gets at least one feedback round. Every revision round is recorded in a `RevisionTrace` (candidate text, per-axis scores, feedback given), enabling analysis of how feedback changes outputs.
+
+**Test suite.** 108 tests covering imports, schemas, config, vocabulary clustering, bible builder logic, data integrity, relationship modeling, statistical priors, and dramaturgical feedback. Run with `python -m pytest tests/ -v`.
+
+---
 
 ## Setup
 
@@ -81,7 +108,7 @@ Outputs are saved to `data/parsed/`, `data/bibles/`, and `data/beats/`.
 
 ### 3. Improvise (Pass 2)
 
-Run an interactive improvisation session with a character:
+Run an interactive improvisation session with a character. Statistical priors (tactic distributions, transition matrices, relational profiles) are automatically loaded when available and provide graduated dramaturgical feedback during revision rounds. All scenes are automatically saved to `data/improv/` as JSON.
 
 ```bash
 # Interactive session — you type partner lines, the character responds
@@ -104,6 +131,12 @@ python scripts/run_improvisation.py session \
   --min-revisions 2
 ```
 
+Each saved scene (`data/improv/{scene_id}.json`) includes:
+- **Full turn data** with all revision drafts, per-axis scores, and feedback (including dramaturgical notes from priors)
+- **Configuration snapshot**: CLI flags, model configs, pipeline parameters (min/max revisions, score threshold)
+- **Character info**: play, whether priors were loaded, top tactic, default warmth/status
+- **Transcript**: flat speaker/line list for easy reading
+
 ### 4. Build canonical tactic vocabulary (Phase B)
 
 Cluster the free-text tactic strings extracted during analysis into a canonical vocabulary:
@@ -124,7 +157,30 @@ python analysis/vocabulary.py ingest cherry_orchard
 
 The vocabulary is saved to `data/vocab/tactic_vocabulary.json`. The `build` command accepts `--threshold` (default 0.45) to control cluster granularity — lower values produce more clusters, higher values produce fewer.
 
-### 5. Evaluate
+### 5. Build relationship profiles (Phase B)
+
+Compute directed pairwise relationship edges and per-character relational profiles from existing BeatState data:
+
+```bash
+# Build relationship edges and profiles (no API calls for numerics)
+python analysis/relationship_builder.py cherry_orchard
+python analysis/relationship_builder.py hamlet
+
+# Include LLM-generated summaries for each relationship (~$0.02/pair)
+python analysis/relationship_builder.py cherry_orchard --summaries
+```
+
+Outputs: relationship edges are added to the parsed play JSON, and relational profiles are saved to `data/vocab/{play_id}_relational_profiles.json`.
+
+### 6. Run tests
+
+```bash
+python -m pytest tests/ -v
+```
+
+108 tests covering imports, schemas, config, vocabulary, bible builder, data integrity, relationships, and priors.
+
+### 7. Evaluate
 
 Run the three-tier evaluation protocol (vanilla LLM vs. bible-augmented vs. full reflection loop):
 
@@ -139,15 +195,19 @@ python scripts/run_evaluation.py \
 ```
 uta_model/
 ├── config.py              # Per-step model selection, paths, pipeline parameters
-├── schemas.py             # Pydantic data models (Play, Beat, BeatState, CharacterBible, ...)
+├── schemas.py             # Pydantic data models (Play, BeatState, CharacterBible, StatisticalPrior, ...)
 ├── ingest/                # Script parsing (Gutenberg plain text, Folger TEI-XML)
-├── analysis/              # Pass 1: segmentation, extraction, smoothing, bible building, vocabulary
-│   └── vocabulary.py      # Canonical tactic vocabulary (Phase B)
+├── analysis/              # Pass 1: segmentation, extraction, smoothing, bible building
+│   ├── vocabulary.py      # Canonical tactic vocabulary — clustering + normalization (Phase B)
+│   └── relationship_builder.py  # Pairwise edges + relational profiles (Phase B)
 ├── improv/                # Pass 2: state initialization, generation, reflection loop
+│   └── priors.py          # Statistical priors + graduated dramaturgical feedback (Phase B)
 ├── evaluation/            # Three-tier evaluation with LLM-as-judge
 ├── scripts/               # CLI entry points
+├── tests/                 # Test suite (108 tests)
 ├── data/                  # Downloaded texts, parsed plays, cached beats, built bibles
-│   └── vocab/             # Canonical tactic vocabulary JSON
+│   ├── improv/            # Saved improvisation scenes (JSON)
+│   └── vocab/             # Tactic vocabulary, relational profiles
 ├── docs/                  # Architecture and design documents
 │   ├── LATENT_STATE_ARCHITECTURE.md
 │   └── STATISTICAL_LEARNING_PHASE_DESIGN.md
