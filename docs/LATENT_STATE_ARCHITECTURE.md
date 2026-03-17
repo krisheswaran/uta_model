@@ -344,24 +344,46 @@ where:
 
 The factor graph connects these through several types of factors:
 
-```
-Factor graph (single character, two consecutive beats):
+```mermaid
+graph TD
+    subgraph "t-1"
+        D1["D(t-1)"] --- T1["T(t-1)"] --- A1["A(t-1)"] --- S1["S(t-1)"] --- K1["K(t-1)"] --- Delta1["Δ(t-1)"]
+        D1 --- emit1{{"ψ_emit(t-1)"}}
+        T1 --- emit1
+        A1 --- emit1
+        emit1 --- U1(["U(t-1) — observed utterance"])
+    end
 
-  D(t-1) ── T(t-1) ── A(t-1) ── S(t-1) ── K(t-1) ── Δ(t-1)
-    │    ╲     │    ╱     │         │         │         │
-    │   ψ_emit(t-1)      │         │         │         │
-    │      │              │         │         │         │
-    │    U(t-1)           │         │         │         │      ← observed utterance
-    │                     │         │         │         │
-  ψ_D   ψ_T   ψ_A       ψ_S      ψ_K      ψ_Δ              ← transition factors
-    │      │     │         │         │         │
-    │      │     │         │         │         │
-  D(t) ── T(t) ── A(t) ── S(t) ── K(t) ── Δ(t)
-    │    ╲     │    ╱     │         │         │
-    │   ψ_emit(t)         │         │         │
-    │      │              │         │         │
-    │    U(t)             │         │         │
-         ...
+    subgraph "Transition factors"
+        pD{{"ψ_D"}}
+        pT{{"ψ_T"}}
+        pA{{"ψ_A"}}
+        pS{{"ψ_S"}}
+        pK{{"ψ_K"}}
+        pDelta{{"ψ_Δ"}}
+    end
+
+    D1 --- pD
+    T1 --- pT
+    A1 --- pA
+    S1 --- pS
+    K1 --- pK
+    Delta1 --- pDelta
+
+    subgraph "t"
+        D2["D(t)"] --- T2["T(t)"] --- A2["A(t)"] --- S2["S(t)"] --- K2["K(t)"] --- Delta2["Δ(t)"]
+        D2 --- emit2{{"ψ_emit(t)"}}
+        T2 --- emit2
+        A2 --- emit2
+        emit2 --- U2(["U(t) — observed utterance"])
+    end
+
+    pD --- D2
+    pT --- T2
+    pA --- A2
+    pS --- S2
+    pK --- K2
+    pDelta --- Delta2
 ```
 
 **Factor types:**
