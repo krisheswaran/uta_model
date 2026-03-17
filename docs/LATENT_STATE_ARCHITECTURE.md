@@ -311,18 +311,83 @@ CharacterBible + SceneContext
 
 The current system (Phase A) uses Option A: every BeatState is a point estimate — one tactic, one desire, one affect vector — produced by a single LLM call. This section describes how the existing data structures map onto probabilistic representations that become viable as the corpus grows.
 
-### 9.1 The current state as degenerate distributions
+### 9.1 Current implementation: what is actually wired up
 
-Every field in the current BeatState can be read as a degenerate (delta) distribution:
+The current system does not use a factor graph. State transitions are LLM-generated point estimates, and the statistical components operate as standalone modules rather than as factors in a joint model. The diagram below shows the actual dependencies between components.
 
-| Current field | Probabilistic equivalent |
-|---|---|
-| `tactic_state = "deflect"` | P(tactic) = {deflect: 1.0, all others: 0.0} |
-| `affect_state.valence = 0.3` | P(valence) = δ(0.3) — a point mass |
-| `confidence = 0.7` | Already a scalar uncertainty estimate, but not integrated into inference |
-| `alternative_hypothesis = "..."` | A second mode, but with no weight assigned |
+```mermaid
+graph TD
+    subgraph "t-1"
+        D1["D(t-1)"]
+        T1["T(t-1)"]
+        A1["A(t-1)"]
+        S1["S(t-1)"]
+        K1["K(t-1)"]
+        Delta1["Δ(t-1)"]
+        U1(["U(t-1) — observed utterance"])
+    end
 
-The migration to Option B means replacing these point estimates with proper distributions and connecting them through a graphical model that enforces temporal and structural consistency.
+    subgraph "Scorer — emission proxy"
+        score{{"6-axis scorer"}}
+    end
+
+    D1 -. "voice fidelity" .-> score
+    T1 -. "tactic fidelity" .-> score
+    A1 -. "emotional transition" .-> score
+    S1 -. "relationship fidelity" .-> score
+    K1 -. "knowledge fidelity" .-> score
+    U1 --> score
+
+    subgraph "Statistical priors (standalone)"
+        tp{{"P(T|character)"}}
+        tm{{"P(T(t)|T(t-1))"}}
+        az{{"affect z-score"}}
+    end
+
+    T1 --> tm
+    T1 --> tp
+    A1 --> az
+
+    subgraph "LLM state updater"
+        upd["LLM call"]
+    end
+
+    D1 --> upd
+    T1 --> upd
+    A1 --> upd
+    S1 --> upd
+    Delta1 --> upd
+    U1 --> upd
+
+    subgraph "t"
+        D2["D(t)"]
+        T2["T(t)"]
+        A2["A(t)"]
+        S2["S(t)"]
+        K2["K(t) ⚠ not updated"]
+        Delta2["Δ(t)"]
+    end
+
+    upd --> D2
+    upd --> T2
+    upd --> A2
+    upd --> S2
+    upd --> Delta2
+    K1 -. "copied unchanged" .-> K2
+```
+
+**Key gaps relative to the target factor graph (§9.2):**
+
+| Component | Target | Current |
+|---|---|---|
+| Transition model | Per-variable factors (ψ_D, ψ_T, ...) with explicit dependencies | Single LLM call updates D, T, A, S, Δ jointly; no factored structure |
+| ψ_T dependencies | ψ_T(T(t-1), T(t), D(t)) — conditions on desire | P(T(t)\|T(t-1)) bigram only; no conditioning on D(t) |
+| Epistemic transitions | ψ_K(K(t-1), K(t), U(t-1)) — updates from utterance | K(t) is never updated; carried forward unchanged |
+| Emission model | ψ_emit as explicit likelihood P(U\|state) | 6-axis scorer evaluates all state dimensions but returns ordinal scores (1–5), not likelihoods |
+| Cross-character coupling | ψ_social, ψ_epistemic link characters in shared beats | No cross-character factors; characters updated independently |
+| Inference | Belief propagation over factor graph | Point estimates from LLM; statistical priors feed dramaturgical feedback but not inference |
+
+The migration to Option B means replacing the monolithic LLM state updater with factored transition kernels and connecting the scorer/priors into a joint graphical model.
 
 ### 9.2 Factor graph over the factored state
 
