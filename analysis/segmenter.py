@@ -48,8 +48,9 @@ ACT {act}, SCENE {scene}
 UTTERANCES (0-indexed):
 {utterance_block}
 
-Identify the beat boundaries. Return only a JSON array of 0-based indices \
-where new beats begin (always include 0).
+Identify the beat boundaries. Return ONLY a raw JSON array of 0-based indices \
+where new beats begin (always include 0). No explanation, no markdown, no labels — \
+just the JSON array. Example: [0, 5, 11, 18, 25, 33]
 """
 
 
@@ -63,7 +64,7 @@ def _format_utterances(utterances: list[Utterance]) -> str:
 def _call_llm(prompt: str) -> list[int]:
     response = client.messages.create(
         model=get_model("segmentation"),
-        max_tokens=512,
+        max_tokens=2048,
         system=_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],
     )
