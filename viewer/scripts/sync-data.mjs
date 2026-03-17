@@ -23,6 +23,11 @@ const SOURCE_DIR = join(VIEWER_DIR, "..", "data", "bibles");
 const DEST_DIR = join(VIEWER_DIR, "public", "data", "bibles");
 const BEATS_SOURCE_DIR = join(VIEWER_DIR, "..", "data", "beats");
 const BEATS_DEST_DIR = join(VIEWER_DIR, "public", "data", "beats");
+const VOCAB_SOURCE_DIR = join(VIEWER_DIR, "..", "data", "vocab");
+const VOCAB_DEST_DIR = join(VIEWER_DIR, "public", "data", "vocab");
+const IMPROV_SOURCE_DIR = join(VIEWER_DIR, "..", "data", "improv");
+const IMPROV_DEST_DIR = join(VIEWER_DIR, "public", "data", "improv");
+const IMPROV_INDEX_PATH = join(VIEWER_DIR, "public", "data", "improv-index.json");
 const INDEX_PATH = join(VIEWER_DIR, "public", "data", "index.json");
 const CONFIG_PY = join(VIEWER_DIR, "..", "config.py");
 
@@ -178,6 +183,57 @@ async function main() {
     }
   } else {
     warn(`No beats directory found at ${BEATS_SOURCE_DIR} — skipping`);
+  }
+
+  // ── Vocab ───────────────────────────────────────────────────────────────────
+  if (existsSync(VOCAB_SOURCE_DIR)) {
+    await mkdir(VOCAB_DEST_DIR, { recursive: true });
+    const vocabFiles = (await readdir(VOCAB_SOURCE_DIR)).filter((f) => f.endsWith(".json"));
+    for (const filename of vocabFiles) {
+      await copyFile(join(VOCAB_SOURCE_DIR, filename), join(VOCAB_DEST_DIR, filename));
+      ok(`Copied vocab/${filename}`);
+    }
+  } else {
+    warn(`No vocab directory found at ${VOCAB_SOURCE_DIR} — skipping`);
+  }
+
+  // ── Improv sessions ─────────────────────────────────────────────────────────
+  if (existsSync(IMPROV_SOURCE_DIR)) {
+    await mkdir(IMPROV_DEST_DIR, { recursive: true });
+    const improvFiles = (await readdir(IMPROV_SOURCE_DIR)).filter((f) => f.endsWith(".json"));
+    const sessionMetas = [];
+    for (const filename of improvFiles) {
+      await copyFile(join(IMPROV_SOURCE_DIR, filename), join(IMPROV_DEST_DIR, filename));
+      ok(`Copied improv/${filename}`);
+      try {
+        const raw = await readFile(join(IMPROV_SOURCE_DIR, filename), "utf-8");
+        const session = JSON.parse(raw);
+        const primaryChar = session.characters?.[0];
+        const scores = (session.transcript ?? [])
+          .filter((t) => t.mean_score != null)
+          .map((t) => t.mean_score);
+        const mean_score = scores.length
+          ? scores.reduce((a, b) => a + b, 0) / scores.length
+          : 0;
+        sessionMetas.push({
+          scene_id: session.scene_id,
+          mode: session.mode ?? "session",
+          timestamp: session.timestamp,
+          character: primaryChar?.character ?? "Unknown",
+          play_id: primaryChar?.play_id ?? "unknown",
+          setting: session.setting ?? "",
+          turn_count: (session.turns ?? []).length,
+          mean_score: Math.round(mean_score * 100) / 100,
+        });
+      } catch (e) {
+        warn(`  Could not parse improv/${filename}: ${e.message}`);
+      }
+    }
+    sessionMetas.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    await writeFile(IMPROV_INDEX_PATH, JSON.stringify({ sessions: sessionMetas }, null, 2), "utf-8");
+    ok(`Wrote improv-index.json (${sessionMetas.length} session${sessionMetas.length !== 1 ? "s" : ""})`);
+  } else {
+    warn(`No improv directory found at ${IMPROV_SOURCE_DIR} — skipping`);
   }
 
   console.log("\n── Done ──────────────────────────────────────────────────\n");

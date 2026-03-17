@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Home, BookOpen, User, LayoutList, Globe, ChevronDown, ChevronUp } from 'lucide-react';
+import { Home, BookOpen, User, LayoutList, Globe, ChevronDown, ChevronUp, Library, Drama } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -38,6 +38,11 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
     items.push({ label: 'World', href: `/plays/${playId}#world`, icon: <Globe size={22} /> });
   }
 
+  const globalItems: NavItem[] = [
+    { label: 'Vocab', href: '/vocab', icon: <Library size={22} /> },
+    { label: 'Improv', href: '/improv', icon: <Drama size={22} /> },
+  ];
+
   function isActive(item: NavItem): boolean {
     if (item.exact) return path === item.href;
     return path.startsWith(item.href);
@@ -71,6 +76,35 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
 
         {items.map((item) => {
           const active = isActive(item);
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 4,
+                width: 72,
+                padding: '12px 8px',
+                borderRadius: 16,
+                textDecoration: 'none',
+                background: active ? 'var(--md-sys-color-secondary-container)' : 'transparent',
+                color: active ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)',
+                transition: 'background 0.2s, color 0.2s',
+              }}
+            >
+              {item.icon}
+              <span style={{ fontSize: 11, fontWeight: 500 }}>{item.label}</span>
+            </a>
+          );
+        })}
+
+        <div style={{ flex: 1 }} />
+        <div style={{ width: 40, height: 1, background: 'var(--md-sys-color-outline-variant)', margin: '4px 0' }} />
+
+        {globalItems.map((item) => {
+          const active = path.startsWith(item.href);
           return (
             <a
               key={item.href}
@@ -143,7 +177,7 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
             paddingBottom: 'env(safe-area-inset-bottom)',
           }}
         >
-          {items.map((item) => {
+          {[...items, ...globalItems].map((item) => {
             const active = isActive(item);
             return (
               <a
