@@ -73,6 +73,8 @@ def main():
     parser.add_argument("--skip-smoothing", action="store_true", help="Skip global arc smoothing pass")
     parser.add_argument("--bibles-only", action="store_true",
                         help="Skip steps 1-4; load existing parsed play and build only missing bibles")
+    parser.add_argument("--rebuild-world-bible", action="store_true",
+                        help="Rebuild WorldBible even in --bibles-only mode")
     parser.add_argument("--min-beat-states", type=int, default=0,
                         help="Only build bibles for characters with >= N beat states (default: 0 = all)")
     args = parser.parse_args()
@@ -99,12 +101,13 @@ def main():
         else:
             print(f"\n  {len(play.relationship_edges)} existing relationship edges")
 
-        print("\nBuilding missing bibles...")
+        skip_world = not args.rebuild_world_bible and play.world_bible is not None and play.world_bible.era != ""
+        print("\nBuilding bibles...")
         play = build_all_bibles(
             play,
             characters=args.characters,
             skip_scene_bibles=True,
-            skip_world_bible=True,
+            skip_world_bible=skip_world,
             min_beat_states=args.min_beat_states,
         )
 

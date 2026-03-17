@@ -19176,114 +19176,6 @@
   "character_bibles": [
     {
       "play_id": "importance_of_being_earnest",
-      "character": "ALGERNON",
-      "superobjective": "",
-      "wounds_fears_needs": "",
-      "recurring_tactics": [],
-      "preferred_defense_mechanisms": [],
-      "psychological_contradictions": [],
-      "speech_style": "",
-      "lexical_signature": [],
-      "rhetorical_patterns": [],
-      "few_shot_lines": [
-        "Did you hear what I was playing, Lane?",
-        "To-morrow, Lane, I’m going Bunburying.",
-        "Well, what shall we do?",
-        "I would rather like to see Cecily.",
-        "The fools? Oh! about the clever people, of course.",
-        "I’ll speak to Bunbury, Aunt Augusta, if he is still conscious, and I think I can promise you he’ll be all right by Saturday. Of course the music is a great difficulty. You see, if one plays good music, people don’t listen, and if one plays bad music people don’t talk. But I’ll run over the programme I’ve drawn out, if you will kindly come into the next room for a moment.",
-        "That will do, Lane, thank you.",
-        "My dear fellow, it isn’t easy to be anything nowadays. There’s such a lot of beastly competition about. Ah! that must be Aunt Augusta. Only relatives, or creditors, ever ring in that Wagnerian manner. Now, if I get her out of the way for ten minutes, so that you can have an opportunity for proposing to Gwendolen, may I dine with you to-night at Willis’s?",
-        "You have invented a very useful younger brother called Ernest, in order that you may be able to come up to town as often as you like. I have invented an invaluable permanent invalid called Bunbury, in order that I may be able to go down into the country whenever I choose. Bunbury is perfectly invaluable. If it wasn’t for Bunbury’s extraordinary bad health, for instance, I wouldn’t be able to dine with you at Willis’s to-night, for I have been really engaged to Aunt Augusta for more than a week.",
-        "I’ll reveal to you the meaning of that incomparable expression as soon as you are kind enough to inform me why you are Ernest in town and Jack in the country."
-      ],
-      "known_facts": [],
-      "secrets": [],
-      "arc_by_scene": {},
-      "tactic_distribution": {
-        "provoke": 6,
-        "test": 2,
-        "mock": 1,
-        "interrogate": 2,
-        "expose": 4,
-        "deflate": 1,
-        "dominate": 2,
-        "trap": 2,
-        "bargain": 2,
-        "appease": 1,
-        "blame": 1,
-        "deflect": 7,
-        "probe": 1,
-        "cajole": 1,
-        "protest": 1,
-        "command": 1,
-        "seduce": 3,
-        "flatter": 3,
-        "charm": 1,
-        "overwhelm": 1,
-        "surrender": 1,
-        "reassure": 1,
-        "mirror": 1,
-        "declare": 1,
-        "disarm": 1,
-        "claim": 1
-      }
-    },
-    {
-      "play_id": "importance_of_being_earnest",
-      "character": "CECILY",
-      "superobjective": "",
-      "wounds_fears_needs": "",
-      "recurring_tactics": [],
-      "preferred_defense_mechanisms": [],
-      "psychological_contradictions": [],
-      "speech_style": "",
-      "lexical_signature": [],
-      "rhetorical_patterns": [],
-      "few_shot_lines": [
-        "But I don’t like German. It isn’t at all a becoming language. I know perfectly well that I look quite plain after my German lesson.",
-        "Well, I know, of course, how important it is not to keep a business engagement, if one wants to retain any sense of the beauty of life, but still I think you had better wait till Uncle Jack arrives. I know he wants to speak to you about your emigrating.",
-        "Oh, is he going to take you for a nice drive?",
-        "I might respect you, Ernest, I might admire your character, but I fear that I should not be able to give you my undivided attention.",
-        "Do you suggest, Miss Fairfax, that I entrapped Ernest into an engagement? How dare you? This is no time for wearing the shallow mask of manners. When I see a spade I call it a spade.",
-        "I suppose that is why he often looks a little bored when we three are together.",
-        "I don’t think you will require neckties. Uncle Jack is sending you to Australia.",
-        "It is always painful to part from people whom one has known for a very brief space of time. The absence of old friends one can endure with equanimity. But even a momentary separation from anyone to whom one has just been introduced is almost unbearable.",
-        "Considering that we have been engaged since February the 14th, and that I only met you to-day for the first time, I think it is rather hard that you should leave me for so long a period as half an hour. Couldn’t you make it twenty minutes?",
-        "I suppose that is why you live in town?"
-      ],
-      "known_facts": [],
-      "secrets": [],
-      "arc_by_scene": {},
-      "tactic_distribution": {
-        "deflect": 2,
-        "flatter": 3,
-        "outwit": 1,
-        "redirect": 1,
-        "manipulate": 1,
-        "celebrate": 1,
-        "command": 1,
-        "provoke": 3,
-        "test": 3,
-        "coax": 1,
-        "entice": 1,
-        "direct": 1,
-        "correct": 1,
-        "instruct": 1,
-        "dictate": 1,
-        "charm": 1,
-        "dismiss": 1,
-        "disarm": 2,
-        "challenge": 1,
-        "parry": 1,
-        "bond": 1,
-        "interpret": 1,
-        "mirror": 1,
-        "affirm": 1
-      }
-    },
-    {
-      "play_id": "importance_of_being_earnest",
       "character": "CHASUBLE",
       "superobjective": "To win Miss Prism's affection and companionship while never compromising — or appearing to compromise — his clerical dignity and professional respectability",
       "wounds_fears_needs": "Chasuble is a man of genuine but narrow learning who has sublimated romantic longing into ecclesiastical routine for so long that he barely recognises desire when it stirs in him. His deepest fear is exposure — of his feelings, of his intellectual shallowness, of the gap between his performed authority and his actual emotional life. He needs to be seen as indispensable, learned, and morally elevated, because without that armour he is simply a lonely middle-aged man in love with his parishioner's governess. His wound is a life lived entirely at the surface of human experience, buffered by doctrine and pedantry from any genuine intimacy.",
@@ -19357,116 +19249,6 @@
         "accommodate": 2,
         "reproach": 1,
         "defend": 1
-      }
-    },
-    {
-      "play_id": "importance_of_being_earnest",
-      "character": "GWENDOLEN",
-      "superobjective": "",
-      "wounds_fears_needs": "",
-      "recurring_tactics": [],
-      "preferred_defense_mechanisms": [],
-      "psychological_contradictions": [],
-      "speech_style": "",
-      "lexical_signature": [],
-      "rhetorical_patterns": [],
-      "few_shot_lines": [
-        "I am always smart! Am I not, Mr. Worthing?",
-        "Yes, but you don’t say it.",
-        "Thanks, mamma, I’m quite comfortable where I am.",
-        "Yes, but men often propose for practice. I know my brother Gerald does. All my girl-friends tell me so. What wonderfully blue eyes you have, Ernest! They are quite, quite, blue. I hope you will always look at me just like that, especially when there are other people present.",
-        "I thought so. In fact, I am never wrong.",
-        "I am engaged to Mr. Worthing, mamma.",
-        "Yes, I am quite well aware of the fact. And I often wish that in public, at any rate, you had been more demonstrative. For me you have always had an irresistible fascination. Even before I met you I was far from indifferent to you. We live, as I hope you know, Mr. Worthing, in an age of ideals. The fact is constantly mentioned in the more expensive monthly magazines, and has reached the provincial pulpits, I am told; and my ideal has always been to love some one of the name of Ernest. There is something in that name that inspires absolute confidence. The moment Algernon first mentioned to me that he had a friend called Ernest, I knew I was destined to love you.",
-        "Algy, you always adopt a strictly immoral attitude towards life. You are not quite old enough to do that.",
-        "Five counties! I don’t think I should like that; I hate crowds.",
-        "You have filled my tea with lumps of sugar, and though I asked most distinctly for bread and butter, you have given me cake. I am known for the gentleness of my disposition, and the extraordinary sweetness of my nature, but I warn you, Miss Cardew, you may go too far."
-      ],
-      "known_facts": [],
-      "secrets": [],
-      "arc_by_scene": {},
-      "tactic_distribution": {
-        "deflect": 1,
-        "appease": 1,
-        "embolden": 1,
-        "dominate": 2,
-        "dismiss": 2,
-        "direct": 2,
-        "challenge": 1,
-        "commandeer": 1,
-        "command": 1,
-        "interrogate": 1,
-        "intimidate": 2,
-        "diminish": 1,
-        "rally": 1,
-        "orchestrate": 3,
-        "test": 1,
-        "embrace": 1
-      }
-    },
-    {
-      "play_id": "importance_of_being_earnest",
-      "character": "JACK",
-      "superobjective": "",
-      "wounds_fears_needs": "",
-      "recurring_tactics": [],
-      "preferred_defense_mechanisms": [],
-      "psychological_contradictions": [],
-      "speech_style": "",
-      "lexical_signature": [],
-      "rhetorical_patterns": [],
-      "few_shot_lines": [
-        "Oh, pleasure, pleasure! What else should bring one anywhere? Eating as usual, I see, Algy!",
-        "Darling! You don’t know how happy you’ve made me.",
-        "Oh! It always is nearly seven.",
-        "I’m not a Bunburyist at all. If Gwendolen accepts me, I am going to kill my brother, indeed I think I’ll kill him in any case. Cecily is a little too much interested in him. It is rather a bore. So I am going to get rid of Ernest. And I strongly advise you to do the same with Mr. . . . with your invalid friend who has the absurd name.",
-        "Upon my word, if I thought that, I’d shoot myself . . . You don’t think there is any chance of Gwendolen becoming like her mother in about a hundred and fifty years, do you, Algy?",
-        "Well, my name is Ernest in town and Jack in the country, and the cigarette case was given to me in the country.",
-        "I am afraid I really don’t know. The fact is, Lady Bracknell, I said I had lost my parents. It would be nearer the truth to say that my parents seem to have lost me . . . I don’t actually know who I am by birth. I was . . . well, I was found.",
-        "Why on earth do you say that?",
-        "Thank you, Lady Bracknell, I prefer standing.",
-        "Oh, pleasure, pleasure! What else should bring one anywhere? Eating as usual, I see, Algy!"
-      ],
-      "known_facts": [],
-      "secrets": [],
-      "arc_by_scene": {},
-      "tactic_distribution": {
-        "deflect": 9,
-        "probe": 1,
-        "rebuke": 1,
-        "challenge": 1,
-        "stall": 1,
-        "justify": 1,
-        "dismiss": 3,
-        "concede": 2,
-        "court": 1,
-        "plead": 4,
-        "test": 1,
-        "pledge": 1,
-        "appease": 2,
-        "disarm": 1,
-        "refuse": 1,
-        "surrender": 1,
-        "claim": 1,
-        "bait": 1,
-        "deceive": 1,
-        "maneuver": 1,
-        "reject": 1,
-        "command": 1,
-        "expel": 2,
-        "confess": 1,
-        "accuse": 1,
-        "shame": 1,
-        "recoil": 1,
-        "clarify": 1,
-        "prosecute": 1,
-        "checkmate": 1,
-        "inform": 1,
-        "press": 1,
-        "embrace": 1,
-        "interrogate": 1,
-        "charm": 1,
-        "proclaim": 1
       }
     },
     {
@@ -19699,15 +19481,498 @@
     },
     {
       "play_id": "importance_of_being_earnest",
-      "character": "MISS PRISM",
-      "superobjective": "",
-      "wounds_fears_needs": "",
-      "recurring_tactics": [],
-      "preferred_defense_mechanisms": [],
-      "psychological_contradictions": [],
-      "speech_style": "",
+      "character": "ALGERNON",
+      "superobjective": "To remain perpetually free — free from obligation, sincerity, consequence, and the suffocating weight of other people's expectations — while still being the most admired, most entertaining, and most desired person in every room",
+      "wounds_fears_needs": "Algernon's deepest wound is a terror of being ordinary, unnoticed, or emotionally exposed. Beneath the armour of wit lies a profound avoidance of genuine intimacy and vulnerability — commitment threatens to reveal that there may be nothing of substance beneath the performance. He fears being cornered: by duty (Aunt Augusta), by feeling (love), by consequence (debt, accountability). His unmet need is to be truly known and still accepted — which is precisely why he invented Bunbury, a system that allows him to flee before that knowing can occur. There is also a class wound: he is dependent on Lady Bracknell's world while secretly contemptuous of it, and dependent on credit and charm while unable to sustain either honestly.",
+      "recurring_tactics": [
+        "provoke — needling companions into revealing themselves while he remains safely superior",
+        "expose — unmasking others' hypocrisies to deflect scrutiny from his own",
+        "trap — using accumulated evidence (the cigarette case, the country address) to corner adversaries",
+        "interrogate — extracting confessions under the guise of casual, witty conversation",
+        "bargain — converting social leverage into concrete personal reward (dinner at Willis's)",
+        "deflect — pivoting from dangerous sincerity to epigram or triviality at every emotional threshold",
+        "appease — performing dutiful compliance to buy time and avoid scrutiny",
+        "blame — projecting his own failings onto servants or circumstance",
+        "cajole — using charm and warmth to smooth over resistance and get what he wants",
+        "claim — when all defences drop, asserting romantic possession with sudden, disarming directness"
+      ],
+      "preferred_defense_mechanisms": [
+        "intellectualization — converting every emotional or moral situation into a witty aphorism or philosophical system, neutralising its threat",
+        "projection — attributing his own moral failings (gluttony, deception, self-interest) to the lower classes, to Jack, or to society at large",
+        "deflection through wit — using the epigram as a trapdoor, dropping through it whenever genuine feeling threatens to surface",
+        "elaborate fabrication — constructing the entire Bunbury mythology as a structural defence against obligation",
+        "performative sincerity — deploying feigned emotions (outrage at missing sandwiches, regret at missing dinners) as camouflage for genuine motives",
+        "preemptive superiority — naming and categorising others' behaviour before they can act, thereby controlling the narrative"
+      ],
+      "psychological_contradictions": [
+        "He champions freedom and anti-sentimentality yet pursues Cecily with an urgent, almost desperate romanticism once she captures his imagination",
+        "He condemns Jack's double life as requiring management and rules while maintaining an identical system (Bunbury) with equal rigour",
+        "He professes aristocratic indifference to material things yet bargains explicitly for dinners, covets cucumber sandwiches obsessively, and notices missing champagne at once",
+        "He performs social nonchalance and ease while constantly working — interrogating, trapping, positioning — beneath the surface",
+        "He claims sentiment is his forte yet deploys intellectualization to annihilate every sincere emotional moment",
+        "He celebrates doing nothing as a philosophical ideal yet is the most relentlessly active schemer in the play",
+        "He mocks institutions (marriage, family, propriety) yet his entire identity is sustained by those very institutions and his place within them",
+        "He avoids commitment as a life-philosophy yet surrenders to it completely and joyfully the instant Cecily is genuinely at stake",
+        "He asserts authority over others' romantic lives (gatekeeping Gwendolen) while having no legitimate power to do so",
+        "The perpetual Bunburyist — architect of escape — becomes, by the final act, the one character most wholeheartedly willing to abandon all his exits"
+      ],
+      "speech_style": "Algernon speaks in a rhythm of elegant acceleration: he builds toward the epigram the way a musician builds toward resolution, and the epigram is always the point. His vocabulary is upper-class late-Victorian but laced with studied casualness ('beastly,' 'rather,' 'I daresay') that signals he is too refined to appear to be trying. He habitually inverts conventional wisdom — the paradox is his native mode — and has a weakness for categorical statements delivered as if they are scientific laws ('The very essence of romance is uncertainty'). He asks questions he already knows the answers to, deflects direct questions with tangential observations, and pivots from philosophy to appetite (food, entertainment, company) with suspicious speed whenever a conversation becomes emotionally serious. His speech has a musical quality — he himself draws the analogy — and he treats conversation as performance, audience always implied.",
       "lexical_signature": [],
-      "rhetorical_patterns": [],
+      "rhetorical_patterns": [
+        "The inversion epigram: taking a received social truth and reversing it as though the reversal were obvious ('The truth is rarely pure and never simple')",
+        "The false concession: appearing to agree before introducing a devastating qualification",
+        "The appetite pivot: redirecting from dangerous emotional or moral territory to food, drink, or entertainment",
+        "The taxonomic assertion: inventing elaborate categories or rules (Bunburyism, the science of Life) to systematise behaviour and claim intellectual authority over it",
+        "The rhetorical question as trap: asking questions to which he already holds the incriminating evidence",
+        "The mock-serious aside: treating trivial matters (muffins, cucumber sandwiches) with mock solemnity to deflate others' genuine earnestness",
+        "The performative complaint: expressing outrage or disappointment at situations he has himself engineered",
+        "Comfortable commands disguised as suggestions: issuing directives ('That will do, Lane') with the breezy confidence of someone who has never doubted his right to be obeyed"
+      ],
+      "few_shot_lines": [
+        "Did you hear what I was playing, Lane?",
+        "To-morrow, Lane, I’m going Bunburying.",
+        "Well, what shall we do?",
+        "I would rather like to see Cecily.",
+        "The fools? Oh! about the clever people, of course.",
+        "I’ll speak to Bunbury, Aunt Augusta, if he is still conscious, and I think I can promise you he’ll be all right by Saturday. Of course the music is a great difficulty. You see, if one plays good music, people don’t listen, and if one plays bad music people don’t talk. But I’ll run over the programme I’ve drawn out, if you will kindly come into the next room for a moment.",
+        "That will do, Lane, thank you.",
+        "My dear fellow, it isn’t easy to be anything nowadays. There’s such a lot of beastly competition about. Ah! that must be Aunt Augusta. Only relatives, or creditors, ever ring in that Wagnerian manner. Now, if I get her out of the way for ten minutes, so that you can have an opportunity for proposing to Gwendolen, may I dine with you to-night at Willis’s?",
+        "You have invented a very useful younger brother called Ernest, in order that you may be able to come up to town as often as you like. I have invented an invaluable permanent invalid called Bunbury, in order that I may be able to go down into the country whenever I choose. Bunbury is perfectly invaluable. If it wasn’t for Bunbury’s extraordinary bad health, for instance, I wouldn’t be able to dine with you at Willis’s to-night, for I have been really engaged to Aunt Augusta for more than a week.",
+        "I’ll reveal to you the meaning of that incomparable expression as soon as you are kind enough to inform me why you are Ernest in town and Jack in the country."
+      ],
+      "known_facts": [
+        "He maintains an elaborate fictitious invalid, Bunbury, to escape social and familial obligations at will",
+        "He is Lady Bracknell's nephew and considers Gwendolen his first cousin, giving him a proprietary interest in her romantic affairs",
+        "He is a gifted pianist who uses music, like everything else, as a vehicle for self-display rather than sincere expression",
+        "He is chronically in debt and dependent on the social world he professes to disdain",
+        "He ate all the cucumber sandwiches prepared for Lady Bracknell and successfully blamed their absence on Lane",
+        "He travels to Woolton Manor under the false identity of 'Ernest' after copying the address from Jack's cigarette case"
+      ],
+      "secrets": [
+        "He is not merely an idle aesthete — beneath the pose of pure frivolity is a quick, scheming, strategically intelligent mind that plans several moves ahead",
+        "His cynicism about love and marriage is a defensive posture masking a genuine capacity for ardent romantic feeling, which Cecily alone successfully provokes",
+        "His appetite for food is psychologically continuous with his appetite for control, entertainment, and admiration — all are forms of consumption that keep genuine vulnerability at bay",
+        "He is more emotionally dependent on Jack's company and approval than his posture of superior detachment would ever admit",
+        "The Bunbury system, presented as philosophy, is at its root a mechanism for avoiding the terror of being truly known — and he knows this, which is why he defends it with such intellectual ferocity",
+        "His delight in exposing Jack's double life is partly a displacement of his own guilt about identical behaviour — he needs Jack to be as dishonest as he is, to validate the entire system"
+      ],
+      "arc_by_scene": {
+        "1_1_opening": "Algernon is in full performance mode — master of his flat, his wit, and his audience (Lane). He establishes his philosophy of style-over-substance and his use of the epigram as social armour. He is comfortable, dominant, and entirely self-satisfied.",
+        "1_1_Jack_arrives": "The arrival of Jack activates Algernon's detective instinct. He shifts from performer to interrogator, using the cigarette case as his instrument. He extracts Jack's double life, names it Bunburyism, claims intellectual authority over it, and leverages it for a dinner invitation. His curiosity about Cecily is planted here — practical intelligence beneath the pose of pure aestheticism.",
+        "1_1_Lady_Bracknell_arrives": "Algernon becomes the dutiful, charming nephew — a performance as calculated as any other. He deflects blame for the sandwiches onto Lane, deploys Bunbury to escape the dinner engagement, and manoeuvres to give Jack time alone with Gwendolen. His social duplicity is now operating on multiple fronts simultaneously.",
+        "1_1_after_proposal": "Sidelined during the romantic scene, Algernon experiences a rare moment of being peripheral. He bristles subtly, reasserts wit, and — crucially — resolves to visit Cecily. The final beats of Act One show him executing a deliberate scheme with the ease of someone ordering tea. His interest in Cecily has crystallised into appetite and plan.",
+        "2_1_Algernon_at_the_Manor": "Algernon arrives in the country as 'Ernest,' enacting his own Bunburying. He is charmed by Cecily in a way that surprises him — her directness and imagination meet him somewhere his epigrams cannot easily reach. He begins performing romantic sincerity rather than ironic detachment, and the performance starts to feel genuine.",
+        "2_1_Cecily_confrontations": "Algernon is repeatedly wrong-footed by Cecily: she has already imagined their entire romance, including their engagement, in her diary. He is for the first time in a position of playing catch-up rather than leading. His usual tactic of preemptive superiority fails — she has already outpaced him. He must navigate a fiction he did not originate.",
+        "2_1_muffin_scene": "Under pressure from Jack's demands that he leave, Algernon eats muffins with ostentatious calm — appetite as existential statement, gluttony as resistance. This is his most purely himself moment: he transforms being under siege into an opportunity for comfort and display. He refuses to be hurried.",
+        "3_1_resolution": "The Bunburyist who built his entire life around escape surrenders it completely. When Cecily is genuinely at stake, all the architecture of avoidance collapses. His commitment is wholehearted and immediate, the contradiction of his entire arc made flesh — the man who fled everything finally, joyfully, claims."
+      },
+      "tactic_distribution": {
+        "provoke": 6,
+        "test": 2,
+        "mock": 1,
+        "interrogate": 2,
+        "expose": 4,
+        "deflate": 1,
+        "dominate": 2,
+        "trap": 2,
+        "bargain": 2,
+        "appease": 1,
+        "blame": 1,
+        "deflect": 7,
+        "probe": 1,
+        "cajole": 1,
+        "protest": 1,
+        "command": 1,
+        "seduce": 3,
+        "flatter": 3,
+        "charm": 1,
+        "overwhelm": 1,
+        "surrender": 1,
+        "reassure": 1,
+        "mirror": 1,
+        "declare": 1,
+        "disarm": 1,
+        "claim": 1
+      }
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character": "CECILY",
+      "superobjective": "To make her romantic fantasies real — to live inside the story she has authored, where she is the heroine of a thrilling love affair with a fascinatingly wicked man named Ernest, and to have the world confirm and inhabit that fiction alongside her",
+      "wounds_fears_needs": "Cecily's underlying wound is the tedium and confinement of her sheltered, orphaned existence at the Manor House, governed by guardians and governesses who mistake dutiful learning for living. Her deepest fear is that life will prove as dull and platitudinous as a German lesson — that reality will never match the romantic intensity of her imagination. She needs excitement, authorial control, and romantic validation, while also craving the security of being genuinely chosen rather than merely imagined. An orphan in another's household, she compensates for powerlessness by constructing a rich interior world she controls absolutely.",
+      "recurring_tactics": [
+        "Deflection through charm and apparently innocent observation to avoid unwanted demands",
+        "Flattery deployed strategically to manipulate authority figures into compliance",
+        "Testing interlocutors with pointed moral or personal questions disguised as naïve curiosity",
+        "Provoking romantic pursuit while maintaining a surface of propriety and indifference",
+        "Dictating and instructing — imposing her authored narrative on others as fait accompli",
+        "Dismissing or pre-emptively diminishing rivals and threats through casual, gracious condescension",
+        "Disarming with sudden directness or bombshell revelations timed for maximum comic effect",
+        "Bonding through solidarity to redirect humiliation outward rather than inward",
+        "Mirroring authority figures while quietly subverting their directives"
+      ],
+      "preferred_defense_mechanisms": [
+        "Ironic innocence — deploying performed naïveté as cover for subversive wit and strategic intent",
+        "Intellectualization — reframing fantasy and play as philosophically superior to practical duty",
+        "Romantic idealization as a rigid boundary — treating invented narratives as objective, non-negotiable fact",
+        "Weaponized hospitality — using the social role of gracious hostess to execute cruelty or control while maintaining deniability",
+        "Deflection through external distraction — using arrivals, interruptions, and domestic business to escape uncomfortable situations",
+        "Preemptive diminishment of threats — neutralizing rivals by imagining them as unthreatening before they can assert themselves",
+        "Theatrical relish of victimhood — performing wounds with such enjoyment that the drama itself becomes the consolation"
+      ],
+      "psychological_contradictions": [
+        "She performs naive innocence as her primary social mask while possessing devastatingly sharp social intelligence and perceptual acuity",
+        "She presents herself as passive and acted-upon ('worn out by your entire ignorance of my existence') while being the sole architect and controlling author of every relationship she enters",
+        "She craves wickedness and romantic danger in a suitor but simultaneously applies firm moral judgment — she wants the thrill and the high ground simultaneously",
+        "Her engagement to 'Ernest' is an entirely self-authored fiction, yet she defends it with genuine, ferocious emotional investment as though it were historical reality",
+        "She claims to love Algernon as a person, yet her love is entirely conditional on his bearing the name Ernest — she loves an idea more than the man",
+        "She simultaneously inhabits the fiction of a months-long engagement and coolly acknowledges they met only today, holding both as equally valid",
+        "She is deeply romantic and impetuous herself, yet judges Gwendolen as 'forward' for being active in the world",
+        "She keeps a diary 'to remember secrets' but freely admits she may fabricate or embellish them — her inner life is both confessional and fictional at once",
+        "She maintains the surface of a gracious, welcoming hostess while executing calculated social sabotage (the tea service) with malicious precision",
+        "She is genuinely wounded by deception but performs the wound with theatrical relish, enjoying the drama of being wronged as much as she suffers it"
+      ],
+      "speech_style": "Cecily speaks with a deceptively simple, limpid clarity — short declarative sentences that land with unexpected weight. Her rhythm is light and conversational on the surface, punctuated by sudden, perfectly placed observations that reframe everything. She favors the vocabulary of innocence (flowers, lessons, diaries, kindness) but deploys it with surgical precision. Her rhetorical habit is to state the outrageous as though it were perfectly self-evident, requiring no defense. She uses domestic and natural imagery to ground devastating social commentary. Her wit is dryer and more English than Gwendolen's — less overtly epigram-hunting, more quietly lethal. She speaks in the present tense even about invented history, collapsing the distinction between fact and fantasy with serene confidence.",
+      "lexical_signature": [],
+      "rhetorical_patterns": [
+        "Stating the outrageous as self-evident fact, delivered without ironic inflection, forcing the listener to absorb the absurdity alone",
+        "The innocent question that conceals a pointed moral challenge ('Yes, but are you good enough for it?')",
+        "Announcing decisions already made as though they are still under discussion, forestalling negotiation ('Certainly. It's the only thing to do now.')",
+        "Citing authority figures (Miss Prism, propriety, the diary) as moral cover while actually pursuing her own agenda",
+        "Precision of number and date used to give invented facts the weight of documentary evidence ('engaged since February the 14th')",
+        "The apparently sympathetic observation that subtly undermines its subject ('I suppose that is why he often looks a little bored')",
+        "Inversion of expected emotional logic — finding parting from recent acquaintances more unbearable than absence of old friends",
+        "Framing her own willfulness as charitable concern for others' moral welfare",
+        "The gracious offer that is actually an insult ('Oh, flowers are as common here as people are in London')",
+        "Using domestic and tutorial metaphors (dictation, diary entries, lessons) to assert authorial control over romantic encounters"
+      ],
+      "few_shot_lines": [
+        "But I don’t like German. It isn’t at all a becoming language. I know perfectly well that I look quite plain after my German lesson.",
+        "Well, I know, of course, how important it is not to keep a business engagement, if one wants to retain any sense of the beauty of life, but still I think you had better wait till Uncle Jack arrives. I know he wants to speak to you about your emigrating.",
+        "Oh, is he going to take you for a nice drive?",
+        "I might respect you, Ernest, I might admire your character, but I fear that I should not be able to give you my undivided attention.",
+        "Do you suggest, Miss Fairfax, that I entrapped Ernest into an engagement? How dare you? This is no time for wearing the shallow mask of manners. When I see a spade I call it a spade.",
+        "I suppose that is why he often looks a little bored when we three are together.",
+        "I don’t think you will require neckties. Uncle Jack is sending you to Australia.",
+        "It is always painful to part from people whom one has known for a very brief space of time. The absence of old friends one can endure with equanimity. But even a momentary separation from anyone to whom one has just been introduced is almost unbearable.",
+        "Considering that we have been engaged since February the 14th, and that I only met you to-day for the first time, I think it is rather hard that you should leave me for so long a period as half an hour. Couldn’t you make it twenty minutes?",
+        "I suppose that is why you live in town?"
+      ],
+      "known_facts": [
+        "She is Jack Worthing's ward, living at the Manor House in Hertfordshire under the guardianship of Jack and the tutelage of Miss Prism",
+        "She is eighteen years old, orphaned, and has been kept deliberately sheltered from the world by Jack",
+        "She keeps a diary in which she records and embellishes her inner life, treating invented events as historical record",
+        "She has fabricated an entire romantic relationship with the fictional 'Ernest' in her diary, including a proposal, a quarrel, and a reconciliation, all set on specific calendar dates",
+        "She dismisses the dog-cart and controls her own domestic environment with quiet but absolute authority",
+        "She has a deep aversion to German and to any form of improving study she finds aesthetically or romantically uninspiring",
+        "She ultimately becomes engaged to Algernon Moncrieff, whose real name proves acceptable once the name Ernest is secured through christening"
+      ],
+      "secrets": [
+        "Her performed innocence and naïveté are largely strategic — she is far more perceptive, witty, and socially intelligent than she allows herself to appear",
+        "The romantic engagement she defends with genuine ferocity is entirely a fiction she wrote herself, with no participation from any other party before Algernon's arrival",
+        "Her diary entries, presented as factual record and offered as documentary evidence in disputes, are acknowledged (to herself and the audience) to be fabricated or heavily embellished",
+        "She deliberately engineered Miss Prism's departure with Dr. Chasuble to secure her own freedom, performing innocent concern to conceal calculated manipulation",
+        "The sugar placed in Gwendolen's tea is an act of deliberate malice executed behind the shield of impeccable hostess behaviour and performed guilelessness",
+        "Her insistence on the name 'Ernest' as a condition of love reveals that her romantic attachment is primarily to her own authored story rather than to any real person — a vanity she would never consciously admit"
+      ],
+      "arc_by_scene": {
+        "2_1_early": "Cecily begins in a position of playful, low-stakes resistance — evading her German lesson through charm, flattery, and strategic deployment of external interruptions. She is fully in control of her small domestic world and openly delights in intellectual and imaginative superiority over Miss Prism's platitudes. Her desire for Ernest is romantic fantasy, safely contained in her diary.",
+        "2_1_meeting_algernon": "The arrival of Algernon as 'Ernest' transforms fantasy into thrilling, destabilizing reality. Cecily moves from composed domestic authority to barely-concealed excitement, testing, provoking, and enticing simultaneously. She struggles to maintain her performed composure as the ingenue while exercising total authorial control over the courtship. The diary becomes not just a record but a script she forces him to inhabit.",
+        "2_1_engagement_scene": "Cecily reaches her peak of romantic confidence and authorial dominance — she presents their entire relationship as established history, complete with documented quarrels and reconciliations. She is simultaneously most vulnerable (genuinely thrilled and emotionally exposed) and most powerful (controlling every beat). The name 'Ernest' crystallizes as a non-negotiable condition, revealing that her love is as much for her own story as for the man.",
+        "2_1_gwendolen_arrives": "The arrival of Gwendolen fractures Cecily's authored reality. She must defend a fiction against an equally determined rival. She transitions from romantic heroine to territorial combatant, weaponizing hospitality and performing guileless sincerity while executing calculated social warfare. Her contradictions sharpen: the diary-writer becomes the sugar-in-the-tea saboteur.",
+        "2_1_alliance": "Confronted with male deception, Cecily pivots to sisterly solidarity with Gwendolen. Her wound is genuine but performed with theatrical relish — she enjoys the drama of being wronged and redirects humiliation outward onto the men rather than internalizing it. She discovers a new co-author for her romantic narrative.",
+        "3_1_moral_performance": "In Act Three, Cecily follows Gwendolen's lead in performing righteous indignation, but her commitment to the principle is shallow compared to her desire for resolution. She reads hopeful signs (muffins as repentance) that betray her eagerness to forgive. She mirrors Gwendolen's authority while quietly willing the drama toward its happy ending — the romantic heroine reasserting herself beneath the aggrieved fiancée.",
+        "3_1_resolution": "By the resolution, Cecily has fully embraced her role as admiring audience to others' revelations while her own position is quietly secured. Her praise of Gwendolen's 'noble nature' carries Wildean irony — she sincerely admires the theatrical grandeur of an absurd position. She ends where she began: a sharp intelligence wrapped in gracious performance, having successfully collapsed the boundary between her diary fiction and lived reality."
+      },
+      "tactic_distribution": {
+        "deflect": 2,
+        "flatter": 3,
+        "outwit": 1,
+        "redirect": 1,
+        "manipulate": 1,
+        "celebrate": 1,
+        "command": 1,
+        "provoke": 3,
+        "test": 3,
+        "coax": 1,
+        "entice": 1,
+        "direct": 1,
+        "correct": 1,
+        "instruct": 1,
+        "dictate": 1,
+        "charm": 1,
+        "dismiss": 1,
+        "disarm": 2,
+        "challenge": 1,
+        "parry": 1,
+        "bond": 1,
+        "interpret": 1,
+        "mirror": 1,
+        "affirm": 1
+      }
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character": "GWENDOLEN",
+      "superobjective": "To author her own romantic destiny — to live inside a perfectly constructed ideal of love, identity, and social superiority, where she is always the protagonist of an exquisite story she has already written",
+      "wounds_fears_needs": "Gwendolen's deepest wound is the terror of being ordinary — of being merely her mother's appendage, a woman without authorship over her own life. She fears loss of control above all else: that love might make her vulnerable, that reality might contradict her ideals, that she might be wrong. Her unmet need is genuine intimacy and spontaneous feeling, which she can only approach through the protective layer of aesthetic performance and intellectual ritual. She needs to be chosen — but on her terms, by criteria she has set — so that even surrender is a form of sovereignty.",
+      "recurring_tactics": [
+        "Stage-managing romantic and social encounters so that outcomes conform to her preconceived ideals",
+        "Deflecting authority figures (especially Lady Bracknell) through surface compliance masking internal resistance",
+        "Using wit and intellectual framing to convert emotional vulnerability into controlled performance",
+        "Interrogating rivals through performances of exaggerated warmth and condescension",
+        "Orchestrating retreats and silences as theatrical weapons, engineering the responses she pretends not to want",
+        "Issuing commands and directives disguised as observations or pleasantries",
+        "Dismissing inconvenient truths by reframing them as abstract or metaphysical irrelevancies",
+        "Deploying class distinction and London social superiority as instruments of domination"
+      ],
+      "preferred_defense_mechanisms": [
+        "Intellectualization — transforming raw feeling into theoretical frameworks, aesthetic categories, or pseudo-scholarly rhetoric",
+        "Ritualization — converting genuine emotional encounters into managed ceremonies where she controls the script",
+        "Projection of indifference — performing disdain or composure to mask eagerness, jealousy, or hurt",
+        "Polite resistance — using the decorous language of compliance to refuse or subvert authority without overt confrontation",
+        "Aestheticization — treating life's pivotal moments as performances to be critiqued, refined, and savored rather than simply experienced"
+      ],
+      "psychological_contradictions": [
+        "She claims passionate, spontaneous love but it is entirely predetermined by an abstract fixation on a name — the passion is real but the object is a signifier, not a person",
+        "She insists she is never wrong and never changes, yet her 'principles' are entirely strategic and her affections are explicitly exempt from her own rules of constancy",
+        "She performs filial obedience while enacting quiet, persistent rebellion against her mother's authority",
+        "She desires both the spontaneity of genuine romance and total managerial control over every aspect of its execution",
+        "She claims deep and sincere love for Ernest while her love is fully contingent on a superficial attribute — revealing romantic feeling as aesthetic performance as much as genuine connection",
+        "She frames her social aggression toward Cecily as moral duty and gentleness while taking visible, barely concealed pleasure in cruelty",
+        "She engineers reconciliation with Jack while verbally insisting on the impossibility of surrender, constructing forgiveness through the rhetoric of principled indignation",
+        "She demands propriety through improper acts — visiting a bachelor's home unannounced in search of decorum",
+        "She celebrates that Jack is truly Ernest and thus honest, while simultaneously valuing the very capacity for deception his baptismal name now confirms he possesses"
+      ],
+      "speech_style": "Gwendolen speaks in long, architecturally balanced sentences that build to aphoristic climaxes, mimicking the cadence of philosophical authority. Her vocabulary is drawn from the discourses of idealism, modern culture, and moral philosophy — she invokes History, ideals, principles, and destiny as casually as others mention the weather. She has a habit of announcing her own impressions as facts ('I am never wrong,' 'My first impressions of people are never wrong'), and of converting personal preference into universal law. Her rhythm is unhurried and deliberate even under emotional pressure, which creates a constant ironic gap between her composed delivery and the intensity of her inner state. She is fond of the rhetorical pause, the performative afterthought, and the devastating non-sequitur that reframes everything preceding it. She uses the first-person declarative as her signature mode: she does not ask, she announces.",
+      "lexical_signature": [],
+      "rhetorical_patterns": [
+        "The aphoristic pronouncement delivered as settled truth: 'I am never wrong'; 'There is something in that name that inspires absolute confidence'",
+        "The pseudo-scholarly appeal to History, ideals, or modern thought to lend authority to personal obsessions",
+        "The extravagant compliment that conceals a pointed interrogation or territorial claim",
+        "The devastating non-sequitur that reframes an emotionally charged moment as trivial or aesthetic: dismissing Jack's anxiety as 'metaphysical speculation'",
+        "The performative declaration of principle followed immediately by its quiet violation in action",
+        "The polite imperative — commands delivered in the syntactic form of courteous observation",
+        "Strategic self-reference and self-citation: announcing her own qualities as established facts others ought to confirm",
+        "The conditional threat wrapped in the language of sweetness: 'I am known for the gentleness of my disposition… but I warn you'"
+      ],
+      "few_shot_lines": [
+        "I am always smart! Am I not, Mr. Worthing?",
+        "Yes, but you don’t say it.",
+        "Thanks, mamma, I’m quite comfortable where I am.",
+        "Yes, but men often propose for practice. I know my brother Gerald does. All my girl-friends tell me so. What wonderfully blue eyes you have, Ernest! They are quite, quite, blue. I hope you will always look at me just like that, especially when there are other people present.",
+        "I thought so. In fact, I am never wrong.",
+        "I am engaged to Mr. Worthing, mamma.",
+        "Yes, I am quite well aware of the fact. And I often wish that in public, at any rate, you had been more demonstrative. For me you have always had an irresistible fascination. Even before I met you I was far from indifferent to you. We live, as I hope you know, Mr. Worthing, in an age of ideals. The fact is constantly mentioned in the more expensive monthly magazines, and has reached the provincial pulpits, I am told; and my ideal has always been to love some one of the name of Ernest. There is something in that name that inspires absolute confidence. The moment Algernon first mentioned to me that he had a friend called Ernest, I knew I was destined to love you.",
+        "Algy, you always adopt a strictly immoral attitude towards life. You are not quite old enough to do that.",
+        "Five counties! I don’t think I should like that; I hate crowds.",
+        "You have filled my tea with lumps of sugar, and though I asked most distinctly for bread and butter, you have given me cake. I am known for the gentleness of my disposition, and the extraordinary sweetness of my nature, but I warn you, Miss Cardew, you may go too far."
+      ],
+      "known_facts": [
+        "She is the daughter of Lady Bracknell and has been formed entirely by — and in quiet resistance to — that formidable influence",
+        "She met Jack/Ernest through Algernon and formed a romantic attachment predicated on the name Ernest before meeting Jack in person",
+        "She keeps a diary as a record of her inner life, treating it as an archive of psychological truth: 'One should always have something sensational to read in the train'",
+        "She is a product of London society and regards metropolitan life as self-evidently superior to country existence",
+        "She and Cecily are briefly and genuinely united by the shared injury of the men's deception, suggesting a capacity for real solidarity beneath the competitive surface"
+      ],
+      "secrets": [
+        "Her love for Ernest is primarily a love for an idea — for the romance of her own ideal — and she is at some level aware that the person of Jack is secondary to the signifier of his name",
+        "She actively engineers outcomes she publicly attributes to fate, spontaneity, or the man's initiative — she knows she is the author of her own romantic narrative and conceals this authorship behind performed passivity",
+        "Her 'principles' and 'constancy' are strategic performances rather than genuine moral commitments — she will bend or abandon them the moment they serve her desires to do so",
+        "She is far more emotionally invested in, and frightened by, the situation with Cecily than her tone of exquisite composure ever admits — her hostility toward Cecily is the direct measure of her genuine feeling for Jack",
+        "Her rebellion against Lady Bracknell is structurally incomplete: she capitulates when her mother's authority is brought to bear directly, and her independence exists only in the spaces her mother does not yet occupy"
+      ],
+      "arc_by_scene": {
+        "1_1_b18-b21": "Gwendolen establishes her fundamental mode: performing filial deference while enacting strategic independence. She positions herself near Jack through decorous refusals, discovering the pleasure of rebellion dressed as compliance.",
+        "1_1_b22-b26": "Gwendolen reaches her first peak of self-determined power — she stage-manages the proposal entirely, intellectualizing love into a theory of names and ideals to protect herself from raw vulnerability. She is at once most romantically alive and most defended against genuine feeling.",
+        "1_1_b27": "Her first structural defeat: she boldly claims independence ('I am engaged, mamma') but ultimately capitulates to Lady Bracknell, revealing that her rebellion is performative rather than structural. She discovers the limits of her authority.",
+        "1_1_b37-b39": "Operating outside her mother's direct supervision, Gwendolen acts with maximum social authority — commandeering the scene, securing practical information from Jack, departing on her own terms. Her romantic investment deepens even as she performs aristocratic cool.",
+        "2_1_b30-b35": "Gwendolen enters a new arena of rivalry. Performing extravagant warmth as a weapon, she interrogates Cecily, discovers a rival claim, and escalates through condescension, class warfare, and barely veiled threats. She is most nakedly contradictory here — her 'gentleness' is a blade.",
+        "2_1_b36": "The revelation that both men are liars collapses Gwendolen's constructed world. She processes the devastation through procedural formality and intellectual composure, pivoting rapidly to an alliance with Cecily. The name-obsession must now be subordinated to the injury of deception — a painful inversion of her hierarchy of values.",
+        "3_1_b1-b4": "Gwendolen orchestrates her wounded dignity as a theatrical performance, engineering the reconciliation she publicly refuses to want. She monitors, coughs, philosophizes, and constructs the precise mechanism of forgiveness while insisting on the impossibility of surrender. She is most self-aware here — and most willing to be seen through.",
+        "3_1_b21-b23": "Resolution: Gwendolen tests and then claims Jack the moment his name is confirmed as Ernest. Her principles are revealed as always having been strategic performances — she celebrates his capacity for deception as a form of charm. She ends the play as she began: authoring her own story, fully in command of its final line."
+      },
+      "tactic_distribution": {
+        "deflect": 1,
+        "appease": 1,
+        "embolden": 1,
+        "dominate": 2,
+        "dismiss": 2,
+        "direct": 2,
+        "challenge": 1,
+        "commandeer": 1,
+        "command": 1,
+        "interrogate": 1,
+        "intimidate": 2,
+        "diminish": 1,
+        "rally": 1,
+        "orchestrate": 3,
+        "test": 1,
+        "embrace": 1
+      }
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character": "JACK",
+      "superobjective": "To be loved and accepted for who he truly is — to achieve a stable, legitimate identity that earns him the love of Gwendolen, the respect of society, and his own self-respect, without having to choose between freedom and responsibility",
+      "wounds_fears_needs": "Jack is a foundling — a man with no verifiable origins, no family name, and no confirmed place in the social order he has nonetheless successfully inhabited. His deepest wound is ontological: he does not know who he is by birth, and Victorian society equates identity with lineage. This produces a chronic fear of exposure and illegitimacy that manifests as compulsive identity-splitting (Ernest/Jack), a terror of being rejected as 'nobody,' and an urgent need for external validation of his worth — most acutely through Gwendolen's love and Lady Bracknell's approval. He needs to be seen as respectable and serious even while enacting systematic deception, and he craves genuine intimacy while being structurally incapable of achieving it so long as he hides his true name and origins. Underneath the wit and bluster is a man who genuinely fears he may not deserve the life he has constructed.",
+      "recurring_tactics": [
+        "Deflection — steering conversations away from dangerous truths through subject changes, tangential wit, or feigned incomprehension",
+        "Justification — wrapping selfish or deceptive behavior in the language of duty, morality, or guardianship responsibility",
+        "Appeasement — performing compliance and charm to placate powerful figures (Lady Bracknell, Algernon) while conceding as little as possible",
+        "Pleading — dropping his ironic armor in moments of genuine emotional stakes to make direct, earnest appeals",
+        "Dismissal — using brusque negation or contempt to shut down inquiries he cannot answer or emotions he cannot process",
+        "Testing — approaching dangerous revelations obliquely through hypotheticals to gauge the response before risking full disclosure",
+        "Compartmentalization — treating urgent moral or emotional problems as logistical ones to be efficiently managed rather than confronted"
+      ],
+      "preferred_defense_mechanisms": [
+        "Rationalization — constructing post-hoc moral or logical justifications for behavior he knows is indefensible (e.g., lying to Gwendolen is 'gentlemanly')",
+        "Indignation as smokescreen — performing outrage at others' behavior to redirect attention from his own culpability",
+        "Wit as armor — deploying epigrams and paradoxes to maintain emotional distance and social control",
+        "Over-specification of trivial detail — burying existential embarrassments under a flood of mundane particulars (the hand-bag's color, the Brighton line) to normalize the absurd",
+        "Moral compartmentalization — maintaining a sincere self-image as a responsible guardian and devoted lover while simultaneously sustaining elaborate deceptions",
+        "Minimization — understating crises ('it is rather a bore') to preserve the illusion of control",
+        "Displacement through wit — redirecting emotional discomfort onto abstract targets or third parties rather than engaging with the source"
+      ],
+      "psychological_contradictions": [
+        "Genuinely earnest about love while constructing the entire romantic relationship on a foundational lie about his name and identity",
+        "Claims the country is dull and burdensome yet voluntarily maintains an elaborate, responsible life there that clearly gives him meaning",
+        "Announces his intention to 'kill Ernest' and renounce Bunburyism while being incapable of taking any step toward honest self-disclosure",
+        "Wants to appear confident and socially assured yet is consistently destabilized by Algernon's teasing, revealing deep dependence on others' good opinion",
+        "Presents himself as morally superior to Algernon's cynicism while practicing a deeper and more consequential form of deception",
+        "Performs indifference to Algernon's help ('I suppose so') while being entirely dependent on it — resentment of the very assistance he desperately requires",
+        "Demands to be taken seriously as a suitor of dignity and substance while the foundling truth of his origins makes him structurally unserious by Victorian social standards",
+        "His 'trivial' fiction of being Ernest was literally the truth all along — the lie was the reality, and his sincere self is the invented persona"
+      ],
+      "speech_style": "Jack speaks with the polished, epigrammatic cadence of the Wildean dandy, but beneath the surface elegance there is always a note of genuine urgency — his wit is more often reactive and defensive than Algernon's playfully offensive variety. His sentences tend toward blunt declarative assertions when cornered ('My name certainly is John. It has been John for years') and swell into romantic effusion when emotionally liberated ('Darling! You don't know how happy you've made me'). He favors ironic understatement, rhetorical questions used as deflections rather than genuine inquiries, and the sudden sharp monosyllable as a conversational full stop. Under pressure his grammar becomes slightly more fragmentary and his responses shorter. He is capable of long, morally earnest speeches when justifying himself but they always contain the tell of over-elaboration — the more he explains, the more he is hiding.",
+      "lexical_signature": [],
+      "rhetorical_patterns": [
+        "The defensive epigram — responding to uncomfortable truths with a polished paradox that sounds like wit but functions as a subject change",
+        "Moral inversion — accusing his interlocutor of the very fault he is committing ('It's perfectly absurd your saying that. I do not know anything about his affairs')",
+        "Pragmatic literalism as absurdist escape — offering concrete practical solutions (producing the actual hand-bag) to problems that are metaphysical, thereby short-circuiting emotional confrontation",
+        "The rhetorical question as shutdown — 'Why on earth do you say that?' used not to invite explanation but to express dismissive incredulity",
+        "Escalating specification — piling on mundane detail to bury the scandalous core of an admission beneath a sediment of ordinary fact",
+        "The sudden romantic register shift — abruptly dropping irony for direct, unguarded declaration ('Darling!'), signaling that the emotional stakes have overridden his social performance",
+        "Self-deprecating deflection before authority — deploying mild self-mockery to charm powerful figures before they can deliver their verdict"
+      ],
+      "few_shot_lines": [
+        "Oh, pleasure, pleasure! What else should bring one anywhere? Eating as usual, I see, Algy!",
+        "Darling! You don’t know how happy you’ve made me.",
+        "Oh! It always is nearly seven.",
+        "I’m not a Bunburyist at all. If Gwendolen accepts me, I am going to kill my brother, indeed I think I’ll kill him in any case. Cecily is a little too much interested in him. It is rather a bore. So I am going to get rid of Ernest. And I strongly advise you to do the same with Mr. . . . with your invalid friend who has the absurd name.",
+        "Upon my word, if I thought that, I’d shoot myself . . . You don’t think there is any chance of Gwendolen becoming like her mother in about a hundred and fifty years, do you, Algy?",
+        "Well, my name is Ernest in town and Jack in the country, and the cigarette case was given to me in the country.",
+        "I am afraid I really don’t know. The fact is, Lady Bracknell, I said I had lost my parents. It would be nearer the truth to say that my parents seem to have lost me . . . I don’t actually know who I am by birth. I was . . . well, I was found.",
+        "Why on earth do you say that?",
+        "Thank you, Lady Bracknell, I prefer standing.",
+        "Oh, pleasure, pleasure! What else should bring one anywhere? Eating as usual, I see, Algy!"
+      ],
+      "known_facts": [
+        "He is the ward of the late Thomas Cardew and the guardian of Cecily Cardew, whom he manages from his country estate in Hertfordshire",
+        "He maintains a double identity: 'Ernest' in London (used to pursue pleasure and romance) and 'Jack' in the country (used to fulfill responsibilities), a system he invented and has sustained for years",
+        "He is sincerely and deeply in love with Gwendolen Fairfax and has proposed to her under the name Ernest",
+        "Lady Bracknell has refused her consent to the marriage on the grounds of his unknown parentage",
+        "He was found as an infant in a hand-bag at Victoria Station, left side, Brighton line, by Thomas Cardew",
+        "His ward Cecily has developed a romantic attachment to the fictional 'Ernest' based entirely on Jack's invented accounts of his wicked brother",
+        "He is in possession of a substantial country estate and is a Justice of the Peace, indicating genuine wealth and social standing despite uncertain origins",
+        "He is ultimately revealed to be Ernest John Moncrieff, the elder son of Lady Bracknell's late sister, and Algernon's older brother — his 'Ernest' fiction was his actual christened name all along"
+      ],
+      "secrets": [
+        "His true name is not Jack but Ernest — he has been living under his actual christened name in town without knowing it",
+        "He is a foundling with no verified parentage, a fact that disqualifies him by Lady Bracknell's standards and which he has concealed from everyone in London society including Gwendolen",
+        "He has systematically concealed Cecily's existence from Gwendolen, suggesting he is aware their relationship is compromised by this omission",
+        "He invented the fictional wicked brother Ernest as a mechanism for personal freedom, giving Cecily a romantic fantasy figure she has developed genuine feelings for — a deception with real emotional consequences he has not fully reckoned with",
+        "His moral posturing as a responsible guardian is partially a performance: he uses the country life as earnestly as he uses the town life, but his presentation of himself as burdened by duty conceals how much he enjoys both existences",
+        "He was placed in the hand-bag by his governess Miss Prism, who confused him with a manuscript — his origins are not merely humble but the result of a farcical accident, a fact that would reduce his entire identity crisis to comic absurdity"
+      ],
+      "arc_by_scene": {
+        "1_1_early": "Jack enters in the comfortable position of a man who believes his double life is safely compartmentalized; he is exposed beat by beat as Algernon extracts the truth via the cigarette case. He moves from breezy deflection through mounting panic to reluctant partial confession, ending with a moralizing justification that papers over the exposure. His superobjective crystallizes: he wants to propose to Gwendolen and needs Algernon's cooperation, which requires a humiliating concession.",
+        "1_1_proposal": "In the romantic interlude with Gwendolen, Jack experiences his most unguarded joy of the play, but it is immediately shadowed by the discovery that she loves the name Ernest rather than him. He makes tentative, failed attempts to test whether she could love a 'Jack,' then abandons the effort and surrenders to the engagement, choosing the elation of the moment over the danger of the truth. The contradiction between genuine feeling and false identity reaches its sharpest point.",
+        "1_1_bracknell": "Subjected to Lady Bracknell's examination, Jack is forced into the most humiliating position of the play: a man of genuine substance and feeling reduced to a 'parcel' found in a hand-bag. He handles the interrogation with admirable composure and even flashes of wit ('I prefer standing'), but the foundling revelation destroys his candidacy. His desperate literal-mindedness — offering to produce the hand-bag — reveals the depth of his distress beneath the comic surface.",
+        "1_1_aftermath": "Post-rejection, Jack is irritable and uncharacteristically world-weary — the anxiety of sustaining his deception while managing Lady Bracknell's refusal collapses his social performance. He announces his plan to 'kill' Ernest with businesslike efficiency, revealing his preference for compartmentalized problem-solving over emotional reckoning. He conceals his alarm about Cecily and Gwendolen's potential meeting through breezy rationalization.",
+        "2_scenes": "In the country, Jack's two worlds collide catastrophically. His attempt to introduce the fiction of Ernest's death is undermined by Algernon's Bunburying invasion and Cecily's prior romantic attachment to the fictional Ernest. Jack is now reactive rather than controlling — managing crises rather than directing events. His moral authority as guardian is repeatedly punctured.",
+        "3_1_resolution": "The final scene begins in maximum crisis — both women have broken their engagements, Lady Bracknell arrives to further complicate matters, and all of Jack's deceptions are simultaneously exposed. Yet the resolution vindicates him paradoxically and absolutely: he discovers he was always Ernest Moncrieff, that his fiction was biographical truth, and that the name Gwendolen loves is legitimately his. He arrives at his superobjective — authentic identity, social legitimacy, and the love of Gwendolen — not through confession and earned forgiveness but through the revelation that the lie was never a lie. His final epigram ('I've now realised for the first time in my life the vital Importance of Being Earnest') is simultaneously triumphant, ironic, and genuinely felt."
+      },
+      "tactic_distribution": {
+        "deflect": 9,
+        "probe": 1,
+        "rebuke": 1,
+        "challenge": 1,
+        "stall": 1,
+        "justify": 1,
+        "dismiss": 3,
+        "concede": 2,
+        "court": 1,
+        "plead": 4,
+        "test": 1,
+        "pledge": 1,
+        "appease": 2,
+        "disarm": 1,
+        "refuse": 1,
+        "surrender": 1,
+        "claim": 1,
+        "bait": 1,
+        "deceive": 1,
+        "maneuver": 1,
+        "reject": 1,
+        "command": 1,
+        "expel": 2,
+        "confess": 1,
+        "accuse": 1,
+        "shame": 1,
+        "recoil": 1,
+        "clarify": 1,
+        "prosecute": 1,
+        "checkmate": 1,
+        "inform": 1,
+        "press": 1,
+        "embrace": 1,
+        "interrogate": 1,
+        "charm": 1,
+        "proclaim": 1
+      }
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character": "MISS PRISM",
+      "superobjective": "To be seen and respected as a woman of unimpeachable moral and intellectual distinction — while secretly securing the romantic companionship and domestic legitimacy she has been denied",
+      "wounds_fears_needs": "Miss Prism carries the wound of a catastrophic dereliction of duty — she lost an infant through an act of 'mental abstraction' and has spent decades constructing a fortress of moral authority to bury that shame. Her deepest fear is exposure: that the respectable, censorious governess will be unmasked as the woman who abandoned a baby in a handbag. She needs both social vindication (to be seen as virtuous) and romantic fulfillment (to be desired and chosen by a man of standing), two needs she cannot openly reconcile with her public persona.",
+      "recurring_tactics": [
+        "Moralizing — issuing aphorisms and ethical pronouncements to assert dominance and deflect scrutiny",
+        "Instructing — redirecting others to tasks, lessons, or duties to reestablish hierarchical control",
+        "Maneuvering — engineering social situations (feigned headaches, invented errands) to achieve private romantic ends",
+        "Censuring — expressing principled disapproval as a cover for personal irritation or competitive feeling",
+        "Deflecting — pivoting rapidly away from dangerous topics through crisp categorical statements",
+        "Welcoming with exaggerated warmth — performing delight at Dr. Chasuble's arrivals to signal availability without impropriety"
+      ],
+      "preferred_defense_mechanisms": [
+        "Deflection through aphorism — encasing uncomfortable truths in tidy moral epigrams to foreclose further inquiry",
+        "Rationalization — framing self-serving acts (abandoning Cecily, seeking Chasuble's company) as reasonable or medically necessary",
+        "Projection — condemning moral laxity in others (pleasure-seekers, the poor, Ernest) to distance herself from her own hidden transgressions",
+        "Sublimation — channeling romantic excitement into the formal vocabulary of polite pleasure and intellectual discourse",
+        "Moral displacement — redirecting personal irritation or desire into the posture of principled, disinterested judgment",
+        "Indignant correction — using categorical assertions of status (her unmarried name, her professional role) as a refutation of accusations she cannot otherwise answer"
+      ],
+      "psychological_contradictions": [
+        "She positions herself as the supreme arbiter of moral conduct while being the author of the play's central moral catastrophe — the misplaced baby",
+        "She lectures on memory as reliable and morally instructive while burying a memory so shameful she cannot speak of it plainly",
+        "She enforces strict propriety in Cecily while brazenly scheming to abandon her pupil for a romantic assignation with a clergyman",
+        "She invented a headache as pretext for private time with Chasuble moments after having denied having one",
+        "She publicly condemns those who live for pleasure while privately craving the pleasures of romance, companionship, and being desired",
+        "She professes Christian charity and resignation regarding Ernest's supposed death, yet her relief at his 'loss' reveals a punitive relish that contradicts that charity",
+        "She is the play's most ostentatious moralist and its most consequential transgressor"
+      ],
+      "speech_style": "Miss Prism speaks in the clipped, authoritative cadences of the Victorian schoolroom — declarative, aphoristic, and relentlessly corrective. Her sentences tend toward the epigrammatic: short, balanced, and designed to close rather than open discussion. She favors abstract nouns (duty, memory, maturity, fiction, improvement) and horticultural or botanical metaphors that allow her to discuss human nature from a safe taxonomic distance. When flustered or exposed, her syntax tightens further into categorical assertion. With Chasuble, her register warms and her sentences lengthen slightly, admitting subordinate clauses of longing. She occasionally displays a dry, involuntary wit that punctures her own solemnity — 'a blessing of an extremely obvious kind' — suggesting an intelligence sharper than her moralism allows her to use honestly.",
+      "lexical_signature": [],
+      "rhetorical_patterns": [
+        "The definitive aphorism: a neat, symmetrical statement presented as self-evident truth ('The good ended happily, and the bad unhappily. That is what Fiction means')",
+        "The horticultural or botanical metaphor used to discuss human character at a clinical remove ('Ripeness can be trusted. Young women are green')",
+        "The false clarification — offering an explanation that is actually a further evasion ('I use the word in the sense of lost or mislaid')",
+        "The pointed redirect — responding to an uncomfortable question by assigning her interlocutor a task or lesson",
+        "The diagnostic pronouncement — rendering verdict on another's moral or social condition with the confidence of a magistrate",
+        "Conspicuous name correction — insisting on 'Lætitia' to assert individuality and intimacy with Chasuble while maintaining decorum",
+        "The loaded compliment — praising Jack's gravity and sense of duty in terms that simultaneously flatter Chasuble and signal her own values"
+      ],
       "few_shot_lines": [
         "Cecily, Cecily! Surely such a utilitarian occupation as the watering of flowers is rather Moulton’s duty than yours? Especially at a moment when intellectual pleasures await you. Your German grammar is on the table. Pray open it at page fifteen. We will repeat yesterday’s lesson.",
         "Do not speak slightingly of the three-volume novel, Cecily. I wrote one myself in earlier days.",
@@ -19720,9 +19985,28 @@
         "This is indeed a surprise. We did not look for you till Monday afternoon.",
         "This seems to me a blessing of an extremely obvious kind."
       ],
-      "known_facts": [],
-      "secrets": [],
-      "arc_by_scene": {},
+      "known_facts": [
+        "She is the governess and moral guardian of Cecily Cardew at the Manor House, Woolton",
+        "She wrote a three-volume novel in her earlier days, though the manuscript was 'lost or mislaid'",
+        "She was employed as a nursemaid or governess in the Moncrieff household twenty-eight years prior to the events of the play",
+        "She has been cultivating a romantic attachment to Dr. Chasuble, the local rector",
+        "Her first name is Lætitia",
+        "She waited an hour and three-quarters for Chasuble in the vestry, demonstrating the depth and persistence of her attachment"
+      ],
+      "secrets": [
+        "On a day 'for ever branded on her memory,' she accidentally placed the Moncrieff infant (the future Jack Worthing) in a handbag and left it at Victoria Station, depositing her novel manuscript in the perambulator instead — an act of catastrophic negligence she has never publicly confessed",
+        "The abandoned three-volume novel manuscript is not merely 'lost' in the casual sense — it went to the cloakroom of a railway terminus along with the baby she was meant to protect, making her literary and maternal failures one and the same act",
+        "Her pose of resigned, charitable acceptance of Ernest's death masked genuine satisfaction at his removal — a punitive emotional response she cannot acknowledge without destroying her moral authority",
+        "Her romantic pursuit of Chasuble, conducted through propriety's loopholes, represents a suppressed life of desire that has run parallel to her public identity as a celibate moral guardian for years"
+      ],
+      "arc_by_scene": {
+        "2_1_b3": "Establishes her governing mode: the aphorism as armor. She meets Cecily's wit with a moral maxim, unaware that Cecily's jab about memory and fiction is more accurate than either of them knows. She is in full pedagogical authority but already slightly undermined.",
+        "2_1_b5": "Her public mask cracks pleasurably: Chasuble's arrival triggers transparent romantic excitement she cannot suppress, sublimated into the language of polite welcome. The contradiction between her censorious authority and her giddy desire is introduced.",
+        "2_1_b7": "She takes active, scheming steps toward what she wants — engineering a private walk with Chasuble by fabricating a headache she has just denied having. The gap between her stated values and her actual behavior widens into open hypocrisy.",
+        "2_1_b18": "She performs her most ostentatious moralizing — condemning the pleasure-seeking classes, approving of Ernest's apparent death as a moral lesson — while standing next to the man she desires. Her wit briefly betrays her genuine relish for Ernest's downfall, undercutting her pose of Christian resignation.",
+        "2_1_b19": "She reveals that she preferred Ernest dead: his return is 'peculiarly distressing.' Her moralism is shown to be inseparable from a punitive streak. The mask of principled authority is slipping toward something more personal and less flattering.",
+        "3_1_b19": "The moment of maximum exposure: the handbag returns and so does the buried past. She is simultaneously delighted to recover the bag and horrified at its implication. Her defense — rapid categorical assertion of her unmarried status — is her most desperate deflection yet. The fortress of moral authority she has spent the play constructing is breached from within by her own history."
+      },
       "tactic_distribution": {
         "instruct": 1,
         "welcome": 1,
@@ -19793,5 +20077,730 @@
       "All conflicts resolve happily and instantaneously in the final act"
     ]
   },
-  "relationship_edges": []
+  "relationship_edges": [
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "ALGERNON",
+      "character_b": "LANE",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b1": 0.3,
+        "importance_of_being_earnest_1_1_b2": 0.3,
+        "importance_of_being_earnest_1_1_b3": -0.2,
+        "importance_of_being_earnest_1_1_b8": 0.2,
+        "importance_of_being_earnest_1_1_b19": -0.3,
+        "importance_of_being_earnest_1_1_b37": 0.4,
+        "importance_of_being_earnest_1_1_b39": 0.3,
+        "importance_of_being_earnest_1_1_b40": 0.35
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b1": 0.85,
+        "importance_of_being_earnest_1_1_b2": 0.8,
+        "importance_of_being_earnest_1_1_b3": 0.85,
+        "importance_of_being_earnest_1_1_b8": 0.8,
+        "importance_of_being_earnest_1_1_b19": 0.8,
+        "importance_of_being_earnest_1_1_b37": 0.3,
+        "importance_of_being_earnest_1_1_b39": 0.3,
+        "importance_of_being_earnest_1_1_b40": 0.85
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "LANE",
+      "character_b": "ALGERNON",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b1": 0.15,
+        "importance_of_being_earnest_1_1_b2": 0.2,
+        "importance_of_being_earnest_1_1_b3": 0.0,
+        "importance_of_being_earnest_1_1_b8": 0.1,
+        "importance_of_being_earnest_1_1_b19": 0.1,
+        "importance_of_being_earnest_1_1_b37": 0.1,
+        "importance_of_being_earnest_1_1_b39": 0.1,
+        "importance_of_being_earnest_1_1_b40": 0.2
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b1": -0.6,
+        "importance_of_being_earnest_1_1_b2": -0.5,
+        "importance_of_being_earnest_1_1_b3": -0.6,
+        "importance_of_being_earnest_1_1_b8": -0.8,
+        "importance_of_being_earnest_1_1_b19": -0.6,
+        "importance_of_being_earnest_1_1_b37": -0.6,
+        "importance_of_being_earnest_1_1_b39": -0.8,
+        "importance_of_being_earnest_1_1_b40": -0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "ALGERNON",
+      "character_b": "JACK",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b4": 0.4,
+        "importance_of_being_earnest_1_1_b5": 0.4,
+        "importance_of_being_earnest_1_1_b6": 0.3,
+        "importance_of_being_earnest_1_1_b7": 0.2,
+        "importance_of_being_earnest_1_1_b8": 0.2,
+        "importance_of_being_earnest_1_1_b9": 0.1,
+        "importance_of_being_earnest_1_1_b10": 0.2,
+        "importance_of_being_earnest_1_1_b11": 0.3,
+        "importance_of_being_earnest_1_1_b12": 0.4,
+        "importance_of_being_earnest_1_1_b13": 0.4,
+        "importance_of_being_earnest_1_1_b14": 0.4,
+        "importance_of_being_earnest_1_1_b15": 0.2,
+        "importance_of_being_earnest_1_1_b16": 0.4,
+        "importance_of_being_earnest_1_1_b32": 0.4,
+        "importance_of_being_earnest_1_1_b33": 0.3,
+        "importance_of_being_earnest_1_1_b34": 0.4,
+        "importance_of_being_earnest_1_1_b35": 0.2,
+        "importance_of_being_earnest_1_1_b36": 0.5,
+        "importance_of_being_earnest_1_1_b39": 0.3,
+        "importance_of_being_earnest_1_1_b41": 0.2,
+        "importance_of_being_earnest_2_1_b21": -0.2,
+        "importance_of_being_earnest_2_1_b22": 0.2,
+        "importance_of_being_earnest_2_1_b37": -0.15,
+        "importance_of_being_earnest_2_1_b38": 0.1,
+        "importance_of_being_earnest_2_1_b39": -0.1,
+        "importance_of_being_earnest_3_1_b9": 0.5,
+        "importance_of_being_earnest_3_1_b22": 0.3,
+        "importance_of_being_earnest_3_1_b24": 0.9
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b4": 0.6,
+        "importance_of_being_earnest_1_1_b5": 0.7,
+        "importance_of_being_earnest_1_1_b6": 0.6,
+        "importance_of_being_earnest_1_1_b7": 0.75,
+        "importance_of_being_earnest_1_1_b8": 0.8,
+        "importance_of_being_earnest_1_1_b9": 0.6,
+        "importance_of_being_earnest_1_1_b10": 0.6,
+        "importance_of_being_earnest_1_1_b11": 0.8,
+        "importance_of_being_earnest_1_1_b12": 0.7,
+        "importance_of_being_earnest_1_1_b13": 0.4,
+        "importance_of_being_earnest_1_1_b14": 0.85,
+        "importance_of_being_earnest_1_1_b15": 0.5,
+        "importance_of_being_earnest_1_1_b16": 0.7,
+        "importance_of_being_earnest_1_1_b32": 0.5,
+        "importance_of_being_earnest_1_1_b33": 0.7,
+        "importance_of_being_earnest_1_1_b34": 0.5,
+        "importance_of_being_earnest_1_1_b35": 0.7,
+        "importance_of_being_earnest_1_1_b36": 0.6,
+        "importance_of_being_earnest_1_1_b39": 0.3,
+        "importance_of_being_earnest_1_1_b41": 0.6,
+        "importance_of_being_earnest_2_1_b21": 0.3,
+        "importance_of_being_earnest_2_1_b22": 0.6,
+        "importance_of_being_earnest_2_1_b37": 0.15,
+        "importance_of_being_earnest_2_1_b38": 0.5,
+        "importance_of_being_earnest_2_1_b39": 0.3,
+        "importance_of_being_earnest_3_1_b9": 0.2,
+        "importance_of_being_earnest_3_1_b22": 0.4,
+        "importance_of_being_earnest_3_1_b24": 0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "JACK",
+      "character_b": "ALGERNON",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b4": 0.5,
+        "importance_of_being_earnest_1_1_b5": 0.6,
+        "importance_of_being_earnest_1_1_b6": 0.4,
+        "importance_of_being_earnest_1_1_b7": 0.3,
+        "importance_of_being_earnest_1_1_b8": -0.1,
+        "importance_of_being_earnest_1_1_b9": -0.3,
+        "importance_of_being_earnest_1_1_b10": -0.2,
+        "importance_of_being_earnest_1_1_b11": 0.2,
+        "importance_of_being_earnest_1_1_b12": 0.1,
+        "importance_of_being_earnest_1_1_b13": 0.3,
+        "importance_of_being_earnest_1_1_b14": -0.1,
+        "importance_of_being_earnest_1_1_b15": -0.1,
+        "importance_of_being_earnest_1_1_b16": 0.25,
+        "importance_of_being_earnest_1_1_b32": 0.3,
+        "importance_of_being_earnest_1_1_b33": 0.2,
+        "importance_of_being_earnest_1_1_b34": 0.2,
+        "importance_of_being_earnest_1_1_b35": -0.2,
+        "importance_of_being_earnest_1_1_b36": 0.2,
+        "importance_of_being_earnest_1_1_b39": 0.85,
+        "importance_of_being_earnest_1_1_b41": -0.1,
+        "importance_of_being_earnest_2_1_b21": -0.8,
+        "importance_of_being_earnest_2_1_b22": -0.5,
+        "importance_of_being_earnest_2_1_b37": -0.3,
+        "importance_of_being_earnest_2_1_b38": -0.3,
+        "importance_of_being_earnest_2_1_b39": -0.6,
+        "importance_of_being_earnest_3_1_b9": 0.1,
+        "importance_of_being_earnest_3_1_b22": 0.5,
+        "importance_of_being_earnest_3_1_b24": 0.85
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b4": 0.4,
+        "importance_of_being_earnest_1_1_b5": 0.3,
+        "importance_of_being_earnest_1_1_b6": 0.3,
+        "importance_of_being_earnest_1_1_b7": -0.3,
+        "importance_of_being_earnest_1_1_b8": -0.3,
+        "importance_of_being_earnest_1_1_b9": -0.3,
+        "importance_of_being_earnest_1_1_b10": -0.3,
+        "importance_of_being_earnest_1_1_b11": -0.3,
+        "importance_of_being_earnest_1_1_b12": -0.3,
+        "importance_of_being_earnest_1_1_b13": -0.2,
+        "importance_of_being_earnest_1_1_b14": -0.3,
+        "importance_of_being_earnest_1_1_b15": -0.2,
+        "importance_of_being_earnest_1_1_b16": 0.3,
+        "importance_of_being_earnest_1_1_b32": -0.2,
+        "importance_of_being_earnest_1_1_b33": 0.3,
+        "importance_of_being_earnest_1_1_b34": 0.3,
+        "importance_of_being_earnest_1_1_b35": -0.3,
+        "importance_of_being_earnest_1_1_b36": 0.3,
+        "importance_of_being_earnest_1_1_b39": 0.7,
+        "importance_of_being_earnest_1_1_b41": 0.3,
+        "importance_of_being_earnest_2_1_b21": 0.4,
+        "importance_of_being_earnest_2_1_b22": -0.2,
+        "importance_of_being_earnest_2_1_b37": 0.1,
+        "importance_of_being_earnest_2_1_b38": 0.3,
+        "importance_of_being_earnest_2_1_b39": -0.2,
+        "importance_of_being_earnest_3_1_b9": 0.4,
+        "importance_of_being_earnest_3_1_b22": 0.8,
+        "importance_of_being_earnest_3_1_b24": 0.8
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "ALGERNON",
+      "character_b": "GWENDOLEN",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b18": 0.6,
+        "importance_of_being_earnest_1_1_b21": 0.4,
+        "importance_of_being_earnest_1_1_b37": 0.4,
+        "importance_of_being_earnest_1_1_b39": 0.3
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b18": 0.4,
+        "importance_of_being_earnest_1_1_b21": 0.3,
+        "importance_of_being_earnest_1_1_b37": 0.3,
+        "importance_of_being_earnest_1_1_b39": 0.3
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "GWENDOLEN",
+      "character_b": "ALGERNON",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b18": 0.4,
+        "importance_of_being_earnest_1_1_b21": 0.2,
+        "importance_of_being_earnest_1_1_b37": 0.2,
+        "importance_of_being_earnest_1_1_b39": 0.4
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b18": 0.5,
+        "importance_of_being_earnest_1_1_b21": -0.4,
+        "importance_of_being_earnest_1_1_b37": 0.7,
+        "importance_of_being_earnest_1_1_b39": 0.85
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "GWENDOLEN",
+      "character_b": "JACK",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b22": 0.6,
+        "importance_of_being_earnest_1_1_b23": 0.7,
+        "importance_of_being_earnest_1_1_b24": 0.4,
+        "importance_of_being_earnest_1_1_b25": 0.5,
+        "importance_of_being_earnest_1_1_b26": 0.65,
+        "importance_of_being_earnest_1_1_b38": 0.6,
+        "importance_of_being_earnest_1_1_b39": 0.4,
+        "importance_of_being_earnest_2_1_b36": 0.6,
+        "importance_of_being_earnest_3_1_b21": 0.5,
+        "importance_of_being_earnest_3_1_b23": 0.85
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b22": 0.5,
+        "importance_of_being_earnest_1_1_b23": 0.6,
+        "importance_of_being_earnest_1_1_b24": 0.5,
+        "importance_of_being_earnest_1_1_b25": 0.7,
+        "importance_of_being_earnest_1_1_b26": 0.8,
+        "importance_of_being_earnest_1_1_b38": 0.7,
+        "importance_of_being_earnest_1_1_b39": 0.85,
+        "importance_of_being_earnest_2_1_b36": 0.7,
+        "importance_of_being_earnest_3_1_b21": 0.8,
+        "importance_of_being_earnest_3_1_b23": 0.7
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "JACK",
+      "character_b": "GWENDOLEN",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b22": 0.7,
+        "importance_of_being_earnest_1_1_b23": 0.9,
+        "importance_of_being_earnest_1_1_b24": 0.6,
+        "importance_of_being_earnest_1_1_b25": 0.7,
+        "importance_of_being_earnest_1_1_b26": 0.9,
+        "importance_of_being_earnest_1_1_b38": 0.85,
+        "importance_of_being_earnest_1_1_b39": 0.85,
+        "importance_of_being_earnest_2_1_b36": 0.2,
+        "importance_of_being_earnest_3_1_b21": 0.7,
+        "importance_of_being_earnest_3_1_b23": 0.9
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b22": -0.3,
+        "importance_of_being_earnest_1_1_b23": -0.2,
+        "importance_of_being_earnest_1_1_b24": -0.2,
+        "importance_of_being_earnest_1_1_b25": -0.4,
+        "importance_of_being_earnest_1_1_b26": 0.3,
+        "importance_of_being_earnest_1_1_b38": 0.25,
+        "importance_of_being_earnest_1_1_b39": 0.7,
+        "importance_of_being_earnest_2_1_b36": -0.6,
+        "importance_of_being_earnest_3_1_b21": 0.3,
+        "importance_of_being_earnest_3_1_b23": 0.8
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "JACK",
+      "character_b": "LADY BRACKNELL",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b30": 0.2,
+        "importance_of_being_earnest_3_1_b11": -0.4,
+        "importance_of_being_earnest_3_1_b22": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b30": -0.7,
+        "importance_of_being_earnest_3_1_b11": 0.6,
+        "importance_of_being_earnest_3_1_b22": 0.8
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "LADY BRACKNELL",
+      "character_b": "JACK",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_1_1_b30": -0.7,
+        "importance_of_being_earnest_3_1_b11": -0.3,
+        "importance_of_being_earnest_3_1_b22": -0.1
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_1_1_b30": 0.9,
+        "importance_of_being_earnest_3_1_b11": 0.7,
+        "importance_of_being_earnest_3_1_b22": 0.85
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CECILY",
+      "character_b": "MISS PRISM",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b3": 0.5,
+        "importance_of_being_earnest_2_1_b5": 0.5,
+        "importance_of_being_earnest_2_1_b19": 0.9
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b3": 0.4,
+        "importance_of_being_earnest_2_1_b5": 0.3,
+        "importance_of_being_earnest_2_1_b19": 0.3
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "MISS PRISM",
+      "character_b": "CECILY",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b3": 0.4,
+        "importance_of_being_earnest_2_1_b5": 0.8,
+        "importance_of_being_earnest_2_1_b19": -0.3
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b3": 0.3,
+        "importance_of_being_earnest_2_1_b5": 0.4,
+        "importance_of_being_earnest_2_1_b19": 0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CECILY",
+      "character_b": "CHASUBLE",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.5,
+        "importance_of_being_earnest_2_1_b6": 0.7,
+        "importance_of_being_earnest_2_1_b19": 0.9
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.3,
+        "importance_of_being_earnest_2_1_b6": 0.3,
+        "importance_of_being_earnest_2_1_b19": 0.3
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CHASUBLE",
+      "character_b": "CECILY",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.6,
+        "importance_of_being_earnest_2_1_b6": 0.5,
+        "importance_of_being_earnest_2_1_b19": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.6,
+        "importance_of_being_earnest_2_1_b6": 0.6,
+        "importance_of_being_earnest_2_1_b19": 0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CHASUBLE",
+      "character_b": "MISS PRISM",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.6,
+        "importance_of_being_earnest_2_1_b7": 0.7,
+        "importance_of_being_earnest_2_1_b18": 0.6,
+        "importance_of_being_earnest_2_1_b19": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.6,
+        "importance_of_being_earnest_2_1_b7": 0.5,
+        "importance_of_being_earnest_2_1_b18": 0.4,
+        "importance_of_being_earnest_2_1_b19": 0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "MISS PRISM",
+      "character_b": "CHASUBLE",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.8,
+        "importance_of_being_earnest_2_1_b7": 0.65,
+        "importance_of_being_earnest_2_1_b18": 0.2,
+        "importance_of_being_earnest_2_1_b19": -0.3
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b5": 0.4,
+        "importance_of_being_earnest_2_1_b7": 0.45,
+        "importance_of_being_earnest_2_1_b18": 0.3,
+        "importance_of_being_earnest_2_1_b19": 0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CECILY",
+      "character_b": "MERRIMAN",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b9": 0.5,
+        "importance_of_being_earnest_2_1_b23": 0.75,
+        "importance_of_being_earnest_2_1_b25": 0.65,
+        "importance_of_being_earnest_2_1_b29": 0.3,
+        "importance_of_being_earnest_2_1_b33": -0.3
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b9": 0.7,
+        "importance_of_being_earnest_2_1_b23": 0.6,
+        "importance_of_being_earnest_2_1_b25": 0.6,
+        "importance_of_being_earnest_2_1_b29": 0.7,
+        "importance_of_being_earnest_2_1_b33": 0.3
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "MERRIMAN",
+      "character_b": "CECILY",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b9": 0.2,
+        "importance_of_being_earnest_2_1_b23": 0.1,
+        "importance_of_being_earnest_2_1_b25": 0.1,
+        "importance_of_being_earnest_2_1_b29": 0.1,
+        "importance_of_being_earnest_2_1_b33": 0.1
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b9": -0.5,
+        "importance_of_being_earnest_2_1_b23": -0.7,
+        "importance_of_being_earnest_2_1_b25": -0.7,
+        "importance_of_being_earnest_2_1_b29": -0.4,
+        "importance_of_being_earnest_2_1_b33": -0.6
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "ALGERNON",
+      "character_b": "CECILY",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b10": 0.7,
+        "importance_of_being_earnest_2_1_b11": 0.7,
+        "importance_of_being_earnest_2_1_b12": 0.75,
+        "importance_of_being_earnest_2_1_b13": 0.7,
+        "importance_of_being_earnest_2_1_b14": 0.8,
+        "importance_of_being_earnest_2_1_b23": 0.8,
+        "importance_of_being_earnest_2_1_b24": 0.7,
+        "importance_of_being_earnest_2_1_b25": 0.8,
+        "importance_of_being_earnest_2_1_b26": 0.85,
+        "importance_of_being_earnest_2_1_b27": 0.8,
+        "importance_of_being_earnest_2_1_b28": 0.7,
+        "importance_of_being_earnest_3_1_b9": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b10": 0.2,
+        "importance_of_being_earnest_2_1_b11": 0.4,
+        "importance_of_being_earnest_2_1_b12": 0.3,
+        "importance_of_being_earnest_2_1_b13": 0.6,
+        "importance_of_being_earnest_2_1_b14": 0.6,
+        "importance_of_being_earnest_2_1_b23": 0.3,
+        "importance_of_being_earnest_2_1_b24": -0.2,
+        "importance_of_being_earnest_2_1_b25": 0.5,
+        "importance_of_being_earnest_2_1_b26": -0.2,
+        "importance_of_being_earnest_2_1_b27": -0.2,
+        "importance_of_being_earnest_2_1_b28": 0.5,
+        "importance_of_being_earnest_3_1_b9": 0.2
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CECILY",
+      "character_b": "ALGERNON",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b10": 0.6,
+        "importance_of_being_earnest_2_1_b11": 0.55,
+        "importance_of_being_earnest_2_1_b12": 0.6,
+        "importance_of_being_earnest_2_1_b13": 0.7,
+        "importance_of_being_earnest_2_1_b14": 0.75,
+        "importance_of_being_earnest_2_1_b23": 0.75,
+        "importance_of_being_earnest_2_1_b24": 0.6,
+        "importance_of_being_earnest_2_1_b25": 0.65,
+        "importance_of_being_earnest_2_1_b26": 0.8,
+        "importance_of_being_earnest_2_1_b27": 0.6,
+        "importance_of_being_earnest_2_1_b28": 0.8,
+        "importance_of_being_earnest_3_1_b9": 0.4
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b10": 0.3,
+        "importance_of_being_earnest_2_1_b11": 0.5,
+        "importance_of_being_earnest_2_1_b12": 0.5,
+        "importance_of_being_earnest_2_1_b13": 0.35,
+        "importance_of_being_earnest_2_1_b14": 0.4,
+        "importance_of_being_earnest_2_1_b23": 0.6,
+        "importance_of_being_earnest_2_1_b24": 0.5,
+        "importance_of_being_earnest_2_1_b25": 0.6,
+        "importance_of_being_earnest_2_1_b26": 0.5,
+        "importance_of_being_earnest_2_1_b27": 0.5,
+        "importance_of_being_earnest_2_1_b28": 0.55,
+        "importance_of_being_earnest_3_1_b9": 0.1
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CHASUBLE",
+      "character_b": "JACK",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b16": 0.5,
+        "importance_of_being_earnest_2_1_b17": 0.6,
+        "importance_of_being_earnest_2_1_b18": 0.6,
+        "importance_of_being_earnest_2_1_b19": 0.5,
+        "importance_of_being_earnest_3_1_b14": 0.3,
+        "importance_of_being_earnest_3_1_b15": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b16": 0.5,
+        "importance_of_being_earnest_2_1_b17": 0.5,
+        "importance_of_being_earnest_2_1_b18": 0.4,
+        "importance_of_being_earnest_2_1_b19": 0.5,
+        "importance_of_being_earnest_3_1_b14": 0.3,
+        "importance_of_being_earnest_3_1_b15": 0.25
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "JACK",
+      "character_b": "CHASUBLE",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b16": 0.3,
+        "importance_of_being_earnest_2_1_b17": 0.3,
+        "importance_of_being_earnest_2_1_b18": 0.3,
+        "importance_of_being_earnest_2_1_b19": -0.2,
+        "importance_of_being_earnest_3_1_b14": 0.1,
+        "importance_of_being_earnest_3_1_b15": 0.2
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b16": 0.7,
+        "importance_of_being_earnest_2_1_b17": 0.6,
+        "importance_of_being_earnest_2_1_b18": 0.7,
+        "importance_of_being_earnest_2_1_b19": 0.4,
+        "importance_of_being_earnest_3_1_b14": 0.3,
+        "importance_of_being_earnest_3_1_b15": 0.45
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "JACK",
+      "character_b": "MISS PRISM",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b18": 0.3,
+        "importance_of_being_earnest_2_1_b19": -0.2,
+        "importance_of_being_earnest_3_1_b19": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b18": 0.7,
+        "importance_of_being_earnest_2_1_b19": 0.4,
+        "importance_of_being_earnest_3_1_b19": 0.7
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "MISS PRISM",
+      "character_b": "JACK",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b18": 0.2,
+        "importance_of_being_earnest_2_1_b19": -0.3,
+        "importance_of_being_earnest_3_1_b19": -0.1
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b18": 0.3,
+        "importance_of_being_earnest_2_1_b19": 0.5,
+        "importance_of_being_earnest_3_1_b19": -0.3
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CECILY",
+      "character_b": "JACK",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b19": 0.9,
+        "importance_of_being_earnest_2_1_b36": 0.7,
+        "importance_of_being_earnest_3_1_b9": 0.4,
+        "importance_of_being_earnest_3_1_b21": 0.8
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b19": 0.3,
+        "importance_of_being_earnest_2_1_b36": 0.4,
+        "importance_of_being_earnest_3_1_b9": 0.1,
+        "importance_of_being_earnest_3_1_b21": 0.4
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "JACK",
+      "character_b": "CECILY",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b19": -0.2,
+        "importance_of_being_earnest_2_1_b36": 0.2,
+        "importance_of_being_earnest_3_1_b9": 0.1,
+        "importance_of_being_earnest_3_1_b21": 0.7
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b19": 0.4,
+        "importance_of_being_earnest_2_1_b36": -0.6,
+        "importance_of_being_earnest_3_1_b9": 0.4,
+        "importance_of_being_earnest_3_1_b21": 0.3
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "ALGERNON",
+      "character_b": "MERRIMAN",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b21": -0.2,
+        "importance_of_being_earnest_2_1_b23": 0.8,
+        "importance_of_being_earnest_2_1_b25": 0.8
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b21": 0.3,
+        "importance_of_being_earnest_2_1_b23": 0.3,
+        "importance_of_being_earnest_2_1_b25": 0.5
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "MERRIMAN",
+      "character_b": "ALGERNON",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b21": 0.1,
+        "importance_of_being_earnest_2_1_b23": 0.1,
+        "importance_of_being_earnest_2_1_b25": 0.1
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b21": -0.7,
+        "importance_of_being_earnest_2_1_b23": -0.7,
+        "importance_of_being_earnest_2_1_b25": -0.7
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "CECILY",
+      "character_b": "GWENDOLEN",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b30": 0.7,
+        "importance_of_being_earnest_2_1_b31": 0.5,
+        "importance_of_being_earnest_2_1_b32": -0.6,
+        "importance_of_being_earnest_2_1_b33": -0.3,
+        "importance_of_being_earnest_2_1_b34": -0.85,
+        "importance_of_being_earnest_2_1_b36": 0.7,
+        "importance_of_being_earnest_3_1_b1": 0.5,
+        "importance_of_being_earnest_3_1_b2": 0.4,
+        "importance_of_being_earnest_3_1_b4": 0.6,
+        "importance_of_being_earnest_3_1_b21": 0.8
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b30": 0.3,
+        "importance_of_being_earnest_2_1_b31": 0.4,
+        "importance_of_being_earnest_2_1_b32": -0.3,
+        "importance_of_being_earnest_2_1_b33": 0.3,
+        "importance_of_being_earnest_2_1_b34": 0.5,
+        "importance_of_being_earnest_2_1_b36": 0.4,
+        "importance_of_being_earnest_3_1_b1": 0.4,
+        "importance_of_being_earnest_3_1_b2": 0.4,
+        "importance_of_being_earnest_3_1_b4": 0.3,
+        "importance_of_being_earnest_3_1_b21": 0.4
+      },
+      "summary": ""
+    },
+    {
+      "play_id": "importance_of_being_earnest",
+      "character_a": "GWENDOLEN",
+      "character_b": "CECILY",
+      "temperature_by_beat": {
+        "importance_of_being_earnest_2_1_b30": 0.6,
+        "importance_of_being_earnest_2_1_b31": 0.3,
+        "importance_of_being_earnest_2_1_b32": -0.7,
+        "importance_of_being_earnest_2_1_b33": -0.5,
+        "importance_of_being_earnest_2_1_b34": -0.9,
+        "importance_of_being_earnest_2_1_b36": 0.6,
+        "importance_of_being_earnest_3_1_b1": 0.3,
+        "importance_of_being_earnest_3_1_b2": 0.3,
+        "importance_of_being_earnest_3_1_b4": 0.5,
+        "importance_of_being_earnest_3_1_b21": 0.5
+      },
+      "power_by_beat": {
+        "importance_of_being_earnest_2_1_b30": 0.7,
+        "importance_of_being_earnest_2_1_b31": 0.7,
+        "importance_of_being_earnest_2_1_b32": 0.4,
+        "importance_of_being_earnest_2_1_b33": 0.5,
+        "importance_of_being_earnest_2_1_b34": 0.4,
+        "importance_of_being_earnest_2_1_b36": 0.7,
+        "importance_of_being_earnest_3_1_b1": 0.7,
+        "importance_of_being_earnest_3_1_b2": 0.7,
+        "importance_of_being_earnest_3_1_b4": 0.7,
+        "importance_of_being_earnest_3_1_b21": 0.8
+      },
+      "summary": ""
+    }
+  ]
 }
