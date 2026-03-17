@@ -347,11 +347,18 @@ The factor graph connects these through several types of factors:
 ```mermaid
 graph TD
     subgraph "t-1"
-        D1["D(t-1)"] --- T1["T(t-1)"] --- A1["A(t-1)"] --- S1["S(t-1)"] --- K1["K(t-1)"] --- Delta1["Δ(t-1)"]
-        D1 --- emit1{{"ψ_emit(t-1)"}}
+        D1["D(t-1)"]
+        T1["T(t-1)"]
+        A1["A(t-1)"]
+        S1["S(t-1)"]
+        K1["K(t-1)"]
+        Delta1["Δ(t-1)"]
+        emit1{{"ψ_emit(t-1)"}}
+        U1(["U(t-1) — observed utterance"])
+        D1 --- emit1
         T1 --- emit1
         A1 --- emit1
-        emit1 --- U1(["U(t-1) — observed utterance"])
+        emit1 --- U1
     end
 
     subgraph "Transition factors"
@@ -369,17 +376,26 @@ graph TD
     S1 --- pS
     K1 --- pK
     Delta1 --- pDelta
+    U1 --- pK
 
     subgraph "t"
-        D2["D(t)"] --- T2["T(t)"] --- A2["A(t)"] --- S2["S(t)"] --- K2["K(t)"] --- Delta2["Δ(t)"]
-        D2 --- emit2{{"ψ_emit(t)"}}
+        D2["D(t)"]
+        T2["T(t)"]
+        A2["A(t)"]
+        S2["S(t)"]
+        K2["K(t)"]
+        Delta2["Δ(t)"]
+        emit2{{"ψ_emit(t)"}}
+        U2(["U(t) — observed utterance"])
+        D2 --- emit2
         T2 --- emit2
         A2 --- emit2
-        emit2 --- U2(["U(t) — observed utterance"])
+        emit2 --- U2
     end
 
     pD --- D2
     pT --- T2
+    D2 --- pT
     pA --- A2
     pS --- S2
     pK --- K2
