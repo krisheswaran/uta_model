@@ -323,9 +323,9 @@ Organized into testable hypotheses (cheap, local) and deferred experiments (requ
 - Run both extraction modes on all three plays; measure what text-only analysis misses
 - Depends on populating WorldBibles for Cherry Orchard and Hamlet first
 
-**E3: Gestalt extraction for factor graph input** (~$5–8)
+**E3: Gestalt extraction for factor graph input** (~$5–8) — **OUT OF SCOPE for v1**
 - Full dramaturgical gestalt for all three plays; compare to bottom-up pipeline
-- Deferred until Tier 1 insights clarify whether top-down signal is architecturally needed
+- Decision: deferred indefinitely. The first version of the factor graph should be bottom-up only, with as few parameters as possible. Top-down priors (ψ_arc, ψ_genre from gestalt) can be added in a later version if the bottom-up model proves insufficient. Adding them prematurely risks overfitting with our small corpus.
 
 ---
 
