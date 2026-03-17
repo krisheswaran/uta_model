@@ -6,6 +6,7 @@ Steps:
   2. Segment scenes into beats (LLM annotation, cached)
   3. Extract BeatState per beat per character
   4. Smooth character arcs globally
+  4b. Build relationship edges and relational profiles
   5. Build CharacterBible, SceneBible, WorldBible
 
 Usage:
@@ -29,6 +30,7 @@ from analysis.segmenter import segment_play
 from analysis.extractor import extract_all_beats
 from analysis.smoother import smooth_play
 from analysis.bible_builder import build_all_bibles
+from analysis.relationship_builder import build_all_relationships, save_profiles
 
 
 def load_play(play_id: str):
@@ -89,6 +91,14 @@ def main():
         existing_bibles = len(play.character_bibles)
         print(f"  {total_chars} characters, {existing_bibles} existing bibles")
 
+        # Build relationship edges if missing
+        if not play.relationship_edges:
+            print("\nBuilding relationship edges...")
+            play, profiles = build_all_relationships(play)
+            save_profiles(profiles, args.play_id)
+        else:
+            print(f"\n  {len(play.relationship_edges)} existing relationship edges")
+
         print("\nBuilding missing bibles...")
         play = build_all_bibles(
             play,
@@ -131,6 +141,11 @@ def main():
         play = smooth_play(play)
     else:
         print("\nStep 4: Skipping arc smoothing")
+
+    # Step 4b: Build relationship edges
+    print("\nStep 4b: Building relationship edges...")
+    play, profiles = build_all_relationships(play)
+    save_profiles(profiles, args.play_id)
 
     # Step 5: Build bibles
     print("\nStep 5: Building bibles...")

@@ -14,6 +14,7 @@ sampled from canonical utterances.
 from __future__ import annotations
 
 import json
+import logging
 import sys
 from collections import Counter
 from pathlib import Path
@@ -27,6 +28,7 @@ from schemas import (
 )
 
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+logger = logging.getLogger(__name__)
 
 # ────────────────────────────────────────────────────────────────────────────
 # Character Bible
@@ -97,6 +99,32 @@ def _arc_to_str(beat_states: list[BeatState]) -> str:
     return "\n".join(lines)
 
 
+_MAX_ARC_ENTRIES = 30
+
+
+def _sample_beat_states(beat_states: list[BeatState], max_entries: int = _MAX_ARC_ENTRIES) -> tuple[list[BeatState], bool]:
+    """Return (sampled_beat_states, was_sampled).
+
+    Always preserves the first and last entries so arc endpoints are intact.
+    Samples evenly across the middle when len > max_entries.
+    """
+    if len(beat_states) <= max_entries:
+        return beat_states, False
+    # Always keep first and last; sample the middle
+    middle = beat_states[1:-1]
+    step = max(1, len(middle) // (max_entries - 2))
+    sampled_middle = middle[::step][: max_entries - 2]
+    return [beat_states[0]] + sampled_middle + [beat_states[-1]], True
+
+
+def _parse_json_response(raw: str) -> dict:
+    """Strip markdown fences and parse JSON from LLM response."""
+    text = raw.strip()
+    if text.startswith("```"):
+        text = text.split("```")[1].lstrip("json").strip().rstrip("```").strip()
+    return json.loads(text)
+
+
 def build_character_bible(character: str, play: Play) -> CharacterBible:
     """Build a CharacterBible for one character using LLM synthesis."""
     beat_states, sample_lines = _collect_character_arc(character, play)
@@ -105,26 +133,23 @@ def build_character_bible(character: str, play: Play) -> CharacterBible:
 
     tactic_counts = Counter(bs.tactic_state for bs in beat_states if bs.tactic_state)
 
+    # Sample arc for large characters to avoid overwhelming the LLM
+    arc_for_prompt, was_sampled = _sample_beat_states(beat_states)
+    arc_block = _arc_to_str(arc_for_prompt)
+    if was_sampled:
+        arc_block = (
+            f"[Note: {len(arc_for_prompt)} of {len(beat_states)} beat_states shown, "
+            f"sampled evenly across the arc. First and last are included.]\n" + arc_block
+        )
+
     prompt = _CHARACTER_BIBLE_USER.format(
         play_title=play.title,
         character=character,
-        arc_block=_arc_to_str(beat_states),
+        arc_block=arc_block,
         sample_lines="\n".join(f"  - {l}" for l in sample_lines),
     )
-    response = client.messages.create(
-        model=get_model("bible"),
-        max_tokens=2048,
-        system=_CHARACTER_BIBLE_SYSTEM,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    raw = response.content[0].text.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1].lstrip("json").strip().rstrip("```").strip()
 
-    try:
-        data = json.loads(raw)
-    except json.JSONDecodeError:
-        data = {}
+    data = _call_and_parse_character_bible(character, prompt, len(beat_states))
 
     bible = CharacterBible(
         play_id=play.id,
@@ -143,6 +168,51 @@ def build_character_bible(character: str, play: Play) -> CharacterBible:
         tactic_distribution=dict(tactic_counts),
     )
     return bible
+
+
+def _call_and_parse_character_bible(character: str, prompt: str, beat_state_count: int) -> dict:
+    """Call the LLM and parse JSON, with one retry on failure."""
+    response = client.messages.create(
+        model=get_model("bible"),
+        max_tokens=4096,
+        system=_CHARACTER_BIBLE_SYSTEM,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    raw = response.content[0].text
+
+    try:
+        return _parse_json_response(raw)
+    except json.JSONDecodeError:
+        logger.warning(
+            "JSON parse failed for character %s (%d beat_states). "
+            "Raw response starts with: %.200s",
+            character, beat_state_count, raw,
+        )
+
+    # Retry once with an explicit JSON-only reminder
+    logger.info("Retrying character bible for %s with JSON reminder...", character)
+    retry_prompt = (
+        prompt + "\n\nIMPORTANT: Your previous response was not valid JSON. "
+        "Return ONLY a single JSON object with no commentary, no markdown fences, "
+        "and no text before or after the JSON."
+    )
+    response = client.messages.create(
+        model=get_model("bible"),
+        max_tokens=4096,
+        system=_CHARACTER_BIBLE_SYSTEM,
+        messages=[{"role": "user", "content": retry_prompt}],
+    )
+    raw = response.content[0].text
+
+    try:
+        return _parse_json_response(raw)
+    except json.JSONDecodeError:
+        logger.error(
+            "JSON parse failed AGAIN for character %s on retry. "
+            "Raw response starts with: %.200s",
+            character, raw,
+        )
+        return {}
 
 
 # ────────────────────────────────────────────────────────────────────────────

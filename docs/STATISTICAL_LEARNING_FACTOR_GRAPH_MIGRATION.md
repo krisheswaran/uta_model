@@ -346,6 +346,8 @@ Rather than searching for obscure published scripts, generate a series of short 
 
 This can run in parallel with Tier 1 experiments — no need to wait for full pipeline calibration.
 
+**Ground-truth advantage**: Because generation is hierarchical (outline → scenes), the outline itself serves as ground truth for gestalt, WorldBible, character arcs, and superobjectives — something we lack entirely for the canonical plays. This enables direct evaluation of how well the bottom-up pipeline recovers top-down structure, without the contamination problem that plagues our three known plays.
+
 ### Experiment log format
 
 Experiment results will be recorded in a structured Markdown file (`docs/EXPERIMENT_LOG.md`) with entries following this format:
