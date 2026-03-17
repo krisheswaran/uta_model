@@ -49,9 +49,6 @@
   --md-sys-typescale-display-font: 'Roboto Serif', serif;
 }
 
-/* ─── Fonts ──────────────────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Serif:wght@400;500;700&display=swap');
-
 /* ─── Base ───────────────────────────────────────────────────────────────── */
 *,
 *::before,
