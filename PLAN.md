@@ -1,4 +1,4 @@
-# UTA Acting System — Design Plan
+# Uta Acting System — Design Plan
 
 ## Code Style
 

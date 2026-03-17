@@ -1,5 +1,5 @@
 """
-Central configuration for the UTA Acting System.
+Central configuration for the Uta Acting System.
 Loads settings from environment variables / .env file.
 """
 import os

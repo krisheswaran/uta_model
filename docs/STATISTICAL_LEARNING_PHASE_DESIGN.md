@@ -1,6 +1,6 @@
 # Statistical Learning Phase (Phase B) — Design Document
 
-This document describes the design of Phase B of the UTA Acting System: the introduction of statistical learning over a growing corpus of analyzed plays. Phase B bridges the current symbolic-only system (Phase A) and the future factor-graph / learned-embedding system (Phase C) described in [LATENT_STATE_ARCHITECTURE.md](LATENT_STATE_ARCHITECTURE.md).
+This document describes the design of Phase B of the Uta Acting System: the introduction of statistical learning over a growing corpus of analyzed plays. Phase B bridges the current symbolic-only system (Phase A) and the future factor-graph / learned-embedding system (Phase C) described in [LATENT_STATE_ARCHITECTURE.md](LATENT_STATE_ARCHITECTURE.md).
 
 ---
 

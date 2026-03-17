@@ -1,6 +1,6 @@
-# UTA: A Latent-State Acting System
+# Uta: A Latent-State Acting System
 
-UTA models theatrical characters as multi-scale latent dynamical systems and generates character-faithful improvised dialogue. It treats dialogue not as text generation, but as the surface emission of hidden dramatic states — objectives, tactics, emotions, knowledge, and relationships — grounded in Stanislavsky-tradition acting theory.
+Uta models theatrical characters as multi-scale latent dynamical systems and generates character-faithful improvised dialogue. It treats dialogue not as text generation, but as the surface emission of hidden dramatic states — objectives, tactics, emotions, knowledge, and relationships — grounded in Stanislavsky-tradition acting theory.
 
 The system works in two passes:
 

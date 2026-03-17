@@ -1,6 +1,6 @@
 # Latent State Architecture
 
-This document describes the current implementation of the UTA Acting System's latent state representation: how dramatic psychology is modeled in code, how the pipeline populates it, and where the current design has limitations.
+This document describes the current implementation of the Uta Acting System's latent state representation: how dramatic psychology is modeled in code, how the pipeline populates it, and where the current design has limitations.
 
 ---
 

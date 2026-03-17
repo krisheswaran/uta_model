@@ -1,5 +1,5 @@
 """
-Core Pydantic schemas for the UTA Acting System.
+Core Pydantic schemas for the Uta Acting System.
 
 Hierarchy:
   Play → Act → Scene → Beat → Utterance

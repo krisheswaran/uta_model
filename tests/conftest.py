@@ -1,4 +1,4 @@
-"""Shared fixtures for UTA test suite."""
+"""Shared fixtures for Uta test suite."""
 import sys
 from pathlib import Path
 
