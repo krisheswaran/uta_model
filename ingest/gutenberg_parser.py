@@ -30,6 +30,12 @@ Usage:
         title="The Cherry Orchard", author="Anton Chekhov",
         text_anchor="THE CHERRY ORCHARD",
     )
+
+Testing:
+    After modifying this parser, run the regression test to verify all plays
+    still parse correctly:
+
+        conda run -n uta_model python scripts/regression_test_parsing.py
 """
 from __future__ import annotations
 
@@ -81,6 +87,12 @@ _INLINE_STAGE_RE = re.compile(r"_?\[.*?\]_?")
 # Primary format: "SPEAKER. rest of dialogue on same line"
 # Requires at least two all-caps words (or one word of ≥2 caps chars) before
 # the period so we don't match single-letter abbreviations.
+# The optional honorific prefix (MME., MRS., MR., DR., REV.) is consumed
+# as part of the speaker name so "MME. VOITSKAYA. text" parses correctly.
+_HONORIFIC_RE = re.compile(
+    r"^((?:MME|MRS|MR|MS|DR|REV|HON|SGT|CPT|GEN|COL|PROF)\.\s*)"
+    r"([A-Z][A-Z\s\-\']{0,40}[A-Z])\.\s+(.+)$"
+)
 _INLINE_SPEAKER_RE = re.compile(
     r"^([A-Z][A-Z\s\-\']{0,40}[A-Z])\.\s+(.+)$"
 )
@@ -240,6 +252,14 @@ def parse_gutenberg_play(
             continue
 
         if not seen_first_act:
+            continue
+
+        # -- Inline speaker with honorific: "MME. VOITSKAYA. dialogue" -----
+        hon_m = _HONORIFIC_RE.match(line)
+        if hon_m:
+            flush_speaker()
+            current_speaker = (hon_m.group(1) + hon_m.group(2)).strip()
+            current_lines = [hon_m.group(3).strip()]
             continue
 
         # -- Inline speaker: "SPEAKER. dialogue text" -----------------------

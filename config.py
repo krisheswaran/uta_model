@@ -115,6 +115,15 @@ PLAYS = {
         "gutenberg_id": 844,
         "primary_character": "JACK",
     },
+    "uncle_vanya": {
+        "title": "Uncle Vanya",
+        "author": "Anton Chekhov",
+        "translator": "Marian Fell",
+        "source": "gutenberg",
+        "parser": "gutenberg",
+        "gutenberg_id": 1756,
+        "primary_character": "VOITSKI",
+    },
     "macbeth": {
         "title": "Macbeth",
         "author": "William Shakespeare",

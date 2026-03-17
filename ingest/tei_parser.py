@@ -21,6 +21,12 @@ Folger TEI structure:
 Usage:
     from ingest.tei import parse_tei_play
     play = parse_tei_play("hamlet", xml_bytes)
+
+Testing:
+    After modifying this parser, run the regression test to verify all plays
+    still parse correctly:
+
+        conda run -n uta_model python scripts/regression_test_parsing.py
 """
 from __future__ import annotations
 
