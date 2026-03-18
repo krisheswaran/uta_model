@@ -10,20 +10,20 @@ This document assesses the gap between the current system (Phase A + partial Pha
 |---|---|---|---|---|
 | Characters with bibles | 12 | 15 | 9 | 36 |
 | Beats | 469 | 645 | 191 | 1,305 |
-| Superobjectives populated | 0/12 | 3/15 | 4/9 | 7/36 |
-| Relationship edges | 0 | 0 | 0 | 0 |
-| World bible populated | No | No | Yes | 1/3 |
+| Superobjectives populated | 12/12 | 14/15 | 9/9 | 35/36 |
+| Relationship edges | 68 | 66 | 30 | 164 |
+| World bible populated | Yes | Yes | Yes | 3/3 |
 | Canonical tactic coverage | 79% (66 clusters from 297 raw strings) ||||
 
 Three plays gives us a modest but structurally interesting corpus: a Chekhovian ensemble drama, a Shakespearean tragedy, and a Wildean farce. The genre diversity is more useful than three plays of the same type would be — it lets us distinguish genre-invariant patterns from genre-specific ones.
 
 ### Data gaps to resolve before experiments begin
 
-Two data gaps block downstream work and should be investigated first:
+Two data gaps previously blocked downstream work. Both are now resolved:
 
-1. **Relationship edges are empty for all three plays.** The `relationship_builder.py` module exists and was documented as having built 134 directed edges, but the bibles JSON files show empty arrays. This may be a serialization/persistence bug, or an agent may have run a local experiment whose results were never written back. This needs debugging — cross-character factors (ψ_social, ψ_epistemic) require pairwise data.
+1. **~~RESOLVED~~ Relationship edges are empty for all three plays.** The `relationship_builder.py` module exists and was documented as having built 134 directed edges, but the bibles JSON files show empty arrays. This may be a serialization/persistence bug, or an agent may have run a local experiment whose results were never written back. This needs debugging — cross-character factors (ψ_social, ψ_epistemic) require pairwise data. **RESOLVED**: Relationship edges integrated into pipeline (Step 4b). Now 164 edges across all three plays.
 
-2. **Superobjectives are missing for 29/36 characters.** The three populated superobjectives in Hamlet are for minor characters (Barnardo, Marcellus, Reynaldo), which is the opposite of expected. This suggests a bug in the bible builder or a missing flag when the pipeline was run. Needs investigation before arc factor work can begin.
+2. **~~RESOLVED~~ Superobjectives are missing for 29/36 characters.** The three populated superobjectives in Hamlet are for minor characters (Barnardo, Marcellus, Reynaldo), which is the opposite of expected. This suggests a bug in the bible builder or a missing flag when the pipeline was run. Needs investigation before arc factor work can begin. **RESOLVED**: Superobjectives regenerated via arc sampling fix. Now 35/36 characters populated.
 
 ---
 
@@ -49,6 +49,8 @@ The 5D affect vector (valence, arousal, certainty, control, vulnerability) is ex
 **Concrete step:** Compute descriptive statistics (mean, std, quartiles) for each affect dimension, grouped by play and by character. Visualize as violin plots or ridge plots. This is cheap (zero API cost, pure computation over existing data) and immediately informative.
 
 The certainty and control dimensions are extracted but never used in generation or scoring (see [LATENT_STATE_ARCHITECTURE.md](LATENT_STATE_ARCHITECTURE.md) §6, limitation #6). Part of this analysis should explicitly test whether they earn their keep — do they discriminate characters or predict tactic choice? If not, dropping them would save tokens. If they do, that justifies continuing to extract them. This is testable locally (see §6, H1).
+
+**Eigendecomposition result**: The 5D affect covariance reduces to 3 independent axes capturing 91.6% of transition variance: Disempowerment (certainty+control+valence, 59.9%), Blissful Ignorance (valence vs certainty, 21.7%), and Burdened Power (control vs valence, 10.0%). Arousal is near-IID (lag-1 r=+0.036) — a stylistic modulator of utterance features, not a dramatic transition variable. The factor graph should use a 3+1 architecture: 3 latent transition axes + arousal for emission. This caveat applies: the eigenstructure is estimated from n=3 plays and should be re-validated on a larger corpus before hard commitment.
 
 ### 1.3 Ensemble extraction: deferred
 
@@ -226,6 +228,8 @@ With 1,305 beats and 66 canonical tactics, we can now estimate empirical transit
 
 Transition priors will be pooled across all plays. With n=3 plays (one per genre), per-genre estimation would give n=1 per genre — too few for reliable estimates, and genre is confounded with playwright. Genre conditioning can be revisited at 6+ plays. The information gain from tactic bigrams to tactic-desire conditioning is itself worth measuring as an experiment (see §6, H6).
 
+**Experimentally validated**: Desire conditioning (via semantic embeddings, not string matching) is statistically significant (r=+0.106, p=0.005). Persistence nearly doubles from 8.1% (low desire similarity) to 15.8% (high). The transition matrix changes structure, not just persistence rate — certain transitions are exclusive to desire shifts vs stability. Recommended design: two-part conditioning with continuous similarity scalar + discrete desire-type clustering (k=7). Character identity adds no predictive power beyond desire content (+0.1%).
+
 ### 4.2 Cross-character factors: now estimable
 
 With three plays featuring multi-character scenes, we can begin to estimate the cross-character coupling factors from §9.2:
@@ -240,9 +244,13 @@ The 6-axis scorer already functions as an implicit emission model — it evaluat
 - Collect scorer outputs (if available from evaluation runs) and correlate with BeatState dimensions
 - Even without scorer data, we can use the extracted BeatStates as a noisy P(state | utterance) and test whether the mapping is invertible: given a BeatState, can we predict features of the corresponding utterance (length, question density, imperative density, sentiment)?
 
+**Experimentally validated**: The emission model is weak overall (best R²=0.065 for sentiment polarity). Tactic classification from text features is at chance (14.3% vs 14.4% baseline). Coarse affect recovery achieves modest lift (1.37× for valence×arousal quadrant). The factor graph should be transition-dominated, not observation-dominated. However, tactic-specific emission constraints are reliable: PROBE→questions, COMMAND→imperatives, SHAME→'you' language. Arousal is the most text-recoverable axis (1.26× lift).
+
 ### 4.4 Superobjective and arc factors
 
-Only 7/36 characters have populated superobjectives. Before we can estimate the global arc factor ψ_arc, we need superobjectives for at least the major characters. This is a straightforward gap to close — see §0 for the investigation needed.
+35/36 characters now have populated superobjectives (see §0, resolved). The global arc factor ψ_arc can now be estimated.
+
+**Experimentally validated**: ψ_arc is real but weak — 6.25% information gain for tactic prediction, non-redundant with tactic clusters (ARI=0.008). Beat-level superobjective consistency is moderate (cosine 0.516). Model as a soft, context-modulated prior.
 
 ---
 
@@ -252,33 +260,33 @@ Items are ordered by (information value × feasibility), not by architectural el
 
 ### Tier 0: Data gap investigation (prerequisite)
 
-1. **Debug relationship edge persistence** (§0) — find where the 134 edges went and ensure they're written to bibles JSON
-2. **Investigate missing superobjectives** (§0) — determine whether the bible builder is failing or a flag was missing at runtime
+1. ✅ RESOLVED — **Debug relationship edge persistence** (§0) — find where the 134 edges went and ensure they're written to bibles JSON
+2. ✅ RESOLVED — **Investigate missing superobjectives** (§0) — determine whether the bible builder is failing or a flag was missing at runtime
 
 ### Tier 1: Zero-cost diagnostics (existing data, no API calls)
 
-3. **Tactic discriminant analysis** (§1.1) — validates whether our 66-cluster vocabulary is empirically grounded; equal play weighting
-4. **Affect distribution profiling** (§1.2) — violin plots per play, per character; includes testing whether certainty/control dimensions discriminate
-5. **Character clustering by tactic distribution** (§2.1) — focus on wit-driven deflectors and romantic idealists as primary sanity checks; include per-scene Hamlet sub-experiment
-6. **Character clustering by affect trajectory** (§2.2) — use windowed summaries (per-act) for cross-play comparison
-7. **Cross-genre discriminant validity** (§2.4) — are we capturing character or genre?
-8. **Transition prior estimation** (§4.1) — tactic bigrams, affect Gaussian, desire-conditioned transitions (pooled across plays)
-9. **Cross-character factor estimation** (§4.2) — status correlation in multi-character scenes
+3. ✅ COMPLETE — **Tactic discriminant analysis** (§1.1) — validates whether our 66-cluster vocabulary is empirically grounded; equal play weighting (reference EXPERIMENT_LOG.md)
+4. ✅ COMPLETE — **Affect distribution profiling** (§1.2) — violin plots per play, per character; includes testing whether certainty/control dimensions discriminate (reference EXPERIMENT_LOG.md)
+5. ✅ COMPLETE — **Character clustering by tactic distribution** (§2.1) — focus on wit-driven deflectors and romantic idealists as primary sanity checks; include per-scene Hamlet sub-experiment (reference EXPERIMENT_LOG.md)
+6. ✅ COMPLETE — **Character clustering by affect trajectory** (§2.2) — use windowed summaries (per-act) for cross-play comparison (reference EXPERIMENT_LOG.md)
+7. ✅ COMPLETE — **Cross-genre discriminant validity** (§2.4) — are we capturing character or genre? (reference EXPERIMENT_LOG.md)
+8. ✅ COMPLETE — **Transition prior estimation** (§4.1) — tactic bigrams, affect Gaussian, desire-conditioned transitions (pooled across plays) (reference EXPERIMENT_LOG.md)
+9. ✅ COMPLETE — **Cross-character factor estimation** (§4.2) — status correlation in multi-character scenes (reference EXPERIMENT_LOG.md)
 
 ### Tier 2: Low-cost data completion (~$2–5)
 
-10. **Populate relationship edges** for all three plays (§2.3) — prerequisite for relationship pair clustering and cross-character factors
-11. **Populate missing superobjectives** (§4.4) — prerequisite for arc factors
-12. **Text-grounded WorldBible** for Cherry Orchard and Hamlet (§3.2) — fills the gap and enables contamination delta measurement
+10. ✅ COMPLETE — **Populate relationship edges** for all three plays (§2.3) — prerequisite for relationship pair clustering and cross-character factors
+11. ✅ COMPLETE — **Populate missing superobjectives** (§4.4) — prerequisite for arc factors
+12. ✅ COMPLETE — **Text-grounded WorldBible** for Cherry Orchard and Hamlet (§3.2) — fills the gap and enables contamination delta measurement
 
 ### Tier 3: Insight-dependent experiments (~$5–15, deferred)
 
 These are logged for execution once Tier 1 results clarify which dimensions and structures earn their keep:
 
-13. **Gestalt extraction** for all three plays (§3.3) — establishes top-down signal; defer until bottom-up pipeline insights are in hand
-14. **Ensemble extraction calibration** (§1.3) — 90-beat sample across 3 plays; defer until we know which dimensions to calibrate
-15. **Gestalt vs. bottom-up comparison** (§3.3) — quantify agreement/disagreement patterns; depends on #13
-16. **Text-grounded vs. knowledge-grounded WorldBible comparison** (§3.2) — measure contamination delta; depends on #12
+13. Still deferred — **Gestalt extraction** for all three plays (§3.3) — establishes top-down signal; defer until bottom-up pipeline insights are in hand
+14. Still deferred — **Ensemble extraction calibration** (§1.3) — 90-beat sample across 3 plays; defer until we know which dimensions to calibrate
+15. Still deferred (depends on #13) — **Gestalt vs. bottom-up comparison** (§3.3) — quantify agreement/disagreement patterns; depends on #13
+16. ✅ COMPLETE — **Text-grounded vs. knowledge-grounded WorldBible comparison** (§3.2) — measure contamination delta (WorldBibles populated for all 3 plays)
 
 ---
 

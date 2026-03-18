@@ -9,7 +9,7 @@ This document describes the design of Phase B of the Uta Acting System: the intr
 ### What Phase A gave us
 - Point-estimate BeatStates extracted by single LLM calls
 - Free-text tactic and defense labels (297 unique tactics, many synonyms)
-- CharacterBibles for 2 of 58 characters across 2 plays
+- CharacterBibles for 36 characters across 3 plays (Cherry Orchard 12, Hamlet 15, Earnest 9)
 - All analysis uses Opus at $10–15/play
 - No learned priors, no transition models, no relationship tracking
 - Improvisation generates freely with no statistical grounding
@@ -18,7 +18,7 @@ This document describes the design of Phase B of the Uta Acting System: the intr
 - **Canonical vocabulary**: 66 canonical tactic clusters from 297 raw strings, with hand-crafted acting-theory definitions for the top 76. 79% of beat states normalized. (`analysis/vocabulary.py`)
 - **Model tiering**: per-step model selection via `MODEL_CONFIGS` — segmentation and bible building on Sonnet, WorldBible on Haiku, extraction and smoothing on Opus. ~40% cost reduction per play. (`config.py`)
 - **Incremental bible building**: `--bibles-only` mode builds CharacterBibles for remaining characters without re-running steps 1–4. All 25 significant characters now have bibles. (`scripts/run_analysis.py`, `analysis/bible_builder.py`)
-- **Relationship modeling**: 134 directed pairwise edges across both plays, 31 relational profiles with default warmth/status, variance, and per-partner deviations. Zero API cost. (`analysis/relationship_builder.py`)
+- **Relationship modeling**: 164 directed pairwise edges across 3 plays (68+66+30), 40 relational profiles with default warmth/status, variance, and per-partner deviations. Zero API cost. (`analysis/relationship_builder.py`)
 - **Dramaturgical feedback loop**: `StatisticalPrior` loaded per character at improv time. Deviations from tactic priors and affect baselines generate graduated director's-note feedback (3 tiers). (`improv/priors.py`)
 - **Revision traces**: `MIN_REVISION_ROUNDS=1` ensures every line gets feedback. Full `RevisionTrace` recorded per round. (`improv/improvisation_loop.py`)
 - **Test suite**: 108 tests across 7 test files. (`tests/`)
@@ -102,7 +102,7 @@ BeatStates are already extracted for ALL characters in both plays. A `--bibles-o
 
 ### 3.2 Character selection criteria
 
-Not all characters warrant bibles. Threshold: characters with ≥ 5 beat states (`--min-beat-states 5`). This yields 12 for Cherry Orchard and 15 for Hamlet. All 25 are now built.
+Not all characters warrant bibles. Threshold: characters with ≥ 5 beat states (`--min-beat-states 5`). This yields 12 for Cherry Orchard, 15 for Hamlet, and 9 for Earnest. All 36 are now built.
 
 ### 3.3 Cost
 
@@ -195,7 +195,11 @@ class BeatStateEstimate(BaseModel):
     consensus_confidence: float         # agreement measure
 ```
 
-### 5.5 Bridge to the factor graph
+### 5.5 Update from experiments
+
+**Update from experiments**: The eigendecomposition of affect transition covariance (EXPERIMENT_LOG.md) shows that the 5D affect space reduces to 3 independent axes (Disempowerment, Blissful Ignorance, Burdened Power) capturing 91.6% of variance. Ensemble calibration should focus on these rotated axes rather than raw dimensions. Arousal is near-IID and can be estimated from text features rather than calibrated via ensemble. The continuous affect aggregation (mean vector, per-dimension std) should be computed in the rotated basis for better conditioning.
+
+### 5.6 Bridge to the factor graph
 
 Ensemble estimates provide the observation likelihoods needed by the factor graph described in LATENT_STATE_ARCHITECTURE.md §9. The `tactic_posterior` becomes the emission factor, the `affect_mean`/`affect_std` become the Gaussian observation model, and `consensus_confidence` modulates the weight of each observation in belief propagation.
 
@@ -210,11 +214,11 @@ For each pair of characters co-occurring in ≥3 beats, aggregate the `social_st
 - `power_by_beat`: character A's `status` relative to B at each beat
 - `summary`: optional Sonnet call reading the time series (`--summaries` flag, ~$0.02/pair)
 
-Result: **68 directed edges** for Cherry Orchard, **66 for Hamlet**. Cost for numeric aggregation: $0.
+Result: **68 directed edges** for Cherry Orchard, **66 for Hamlet**, **30 for Earnest**. Cost for numeric aggregation: $0.
 
 ### 6.2 RelationalProfile: character-level social tendencies (implemented)
 
-Per character, aggregate social_state across ALL partners. **31 profiles** built across both plays:
+Per character, aggregate social_state across ALL partners. **40 profiles** built across 3 plays:
 
 ```python
 class RelationalProfile(BaseModel):
@@ -269,6 +273,8 @@ Loaded once per character at session start via `load_prior_for_character()`. Aut
 **Scoring + feedback** (`improv/priors.py`): After generation, two deviation analyses run:
 - **Tactic deviation**: maps generated tactic to canonical ID, computes P(tactic | character) and P(tactic | previous_tactic), assigns tier 1/2/3
 - **Affect deviation**: computes z-scores for valence, arousal, vulnerability against character's historical range
+
+**Experimental finding**: Desire content is a stronger predictor of tactic choice than character identity (18.2% vs 13.6% accuracy). The `character_tactic_prior` P(tactic | character) should be supplemented or replaced with a desire-conditioned prior. Desire similarity between consecutive beats modulates tactic persistence (8.1% → 15.8%), which should inform the graduated feedback thresholds.
 
 **State update**: The previous tactic is tracked across turns for transition analysis. Beat-shift detection via low-probability transitions is supported in the deviation analysis.
 
@@ -327,12 +333,12 @@ With MIN_REVISION_ROUNDS=1+, the revision traces reveal:
 
 ### Phase B.1 — Complete
 1. Canonical tactic vocabulary — `analysis/vocabulary.py`, 66 clusters, 79% coverage
-2. Incremental bible building — `--bibles-only` mode, 25 characters built
+2. Incremental bible building — `--bibles-only` mode, 36 characters built across 3 plays
 3. MIN_REVISION_ROUNDS + RevisionTrace — default 1, full trace recording
 4. Model tiering — `MODEL_CONFIGS` with per-step `{provider, model}`, ~40% savings
 
 ### Phase B.3 — Complete
-5. Relationship modeling — `analysis/relationship_builder.py`, 134 directed edges, 31 profiles
+5. Relationship modeling — `analysis/relationship_builder.py`, 164 directed edges, 40 profiles
 6. StatisticalPrior integration — `improv/priors.py`, graduated dramaturgical feedback in revision loop
 7. Test suite — 108 tests across `tests/`
 

@@ -73,6 +73,8 @@ Parsers produce one provisional beat per scene. The segmenter (`analysis/segment
 | `control` | [-1, 1] | powerless ↔ dominant |
 | `vulnerability` | [0, 1] | guarded ↔ exposed |
 
+**Empirical finding (EXPERIMENT_LOG.md):** Eigendecomposition of the affect transition covariance reveals that these 5 correlated dimensions reduce to 3 independent axes capturing 91.6% of beat-to-beat transition variance (condition number improves 4×). The three axes are: **Disempowerment** (certainty + control + valence, 59.9%), **Blissful Ignorance** (valence vs certainty, 21.7%), and **Burdened Power** (control vs valence, 10.0%). Arousal (5.9%) is near-IID (lag-1 autocorrelation +0.036) and functions as a stylistic modulator predicting utterance features rather than a transition variable. Vulnerability (2.5%) is invisible to text. The pipeline continues to extract all 5 raw dimensions, but the factor graph (§9) should operate on the rotated 3+1 architecture: 3 transition axes + arousal for emission. See EXPERIMENT_LOG.md for full eigenvalue analysis, eigenvector loadings, and per-PC text signatures.
+
 Each has a `rationale: str` explaining the rating.
 
 **SocialState** (`schemas.py:53-58`) — relational stance toward the addressee:
@@ -145,7 +147,7 @@ Per-play: `era`, `genre`, `social_norms`, `factual_timeline`, `genre_constraints
 
 Tracks pairwise character dynamics: `temperature_by_beat` (warmth float per beat), `power_by_beat` (A's power over B per beat), and a `summary`.
 
-**Caveat:** RelationshipEdges are defined in the schema but not currently populated by the pipeline. The `build_all_bibles` function does not build them. They would need a dedicated extraction step.
+**Status (updated):** RelationshipEdges are now populated by `analysis/relationship_builder.py`, integrated into `run_analysis.py` as Step 4b. Current counts: Cherry Orchard 68, Hamlet 66, Earnest 30 (164 total). Relational profiles saved to `data/vocab/`.
 
 ---
 
@@ -184,6 +186,10 @@ For each character, the LLM reads their full BeatState trajectory across the pla
 
 The smoother looks for: unmotivated tactic jumps, knowledge inconsistencies, abrupt emotional transitions, superobjective drift, missing contradictions.
 
+### Step 4b: Build relationship edges (`analysis/relationship_builder.py`)
+
+For each pair of characters co-occurring in ≥3 beats, aggregates `social_state` (warmth, status) across all shared beats to produce directed `RelationshipEdge` objects and `RelationalProfile` summaries. Zero API cost — pure computation over existing BeatStates. Now integrated into the pipeline between smoothing and bible building.
+
 ### Step 5: Build bibles (`analysis/bible_builder.py`)
 
 - **CharacterBible**: LLM reads the character's beat-by-beat arc + sample canonical lines → synthesizes the bible fields. `tactic_distribution` is counted directly from `BeatState.tactic_state`. `few_shot_lines` are sampled from actual utterances (up to 10, evenly distributed).
@@ -215,7 +221,7 @@ The LLM receives a structured control prompt containing all nine BeatState dimen
 - `defense_state`, `psychological_contradiction`
 - `epistemic_state.hidden_secrets` (up to 3)
 
-**What it omits:** `affect_state.certainty`, `affect_state.control`, `epistemic_state.known_facts`, `epistemic_state.false_beliefs`, `confidence`, `alternative_hypothesis`.
+**What it omits:** `affect_state.certainty`, `affect_state.control`, `epistemic_state.known_facts`, `epistemic_state.false_beliefs`, `confidence`, `alternative_hypothesis`. **Experimental note:** The omission of certainty and control is partially justified — these dimensions' primary signal is captured by the Disempowerment axis (PC1), which loads heavily on both. However, the eigendecomposition suggests that providing the rotated PC scores (Disempowerment, Blissful Ignorance, Burdened Power) instead of raw affect values would give the generation LLM more interpretable, less redundant control signals.
 
 ### Six-axis scoring (`improv/scorer.py`)
 
@@ -243,6 +249,25 @@ After each turn, a critic LLM reads the previous BeatState + the line delivered 
 **What the state updater receives from the previous state:** `desire_state`, `tactic_state`, affect (valence, arousal, vulnerability only), social (status, warmth), `defense_state`.
 
 **What it omits:** `obstacle`, `superobjective_reminder`, `epistemic_state`, `confidence`, `alternative_hypothesis`, `affect_state.certainty`, `affect_state.control`.
+
+### Experimental insight: desire subsumes character identity for tactic prediction
+
+Experiments (EXPERIMENT_LOG.md, Desire Conditioning section) established that for predicting which tactic a character will use, the desire embedding alone achieves 18.2% accuracy, while adding character identity on top achieves only 18.3% — a +0.1% improvement that is statistical noise.
+
+**What this means**: The desire string generated per-beat by the LLM already encodes the behaviorally relevant aspects of character identity. A desire like "to force Ophelia to reveal whether she has been honest with him" implicitly carries Hamlet's suspicion, his need for truth, and his position of power. A separate character identity variable is redundant because the desire is already character-flavored — the LLM bakes character psychology into the desire formulation.
+
+**What this does NOT mean**: Character identity is not useless everywhere in the system. It remains load-bearing for:
+- **Voice/style** — speech patterns, lexical signature, rhetorical habits (CharacterBible's job)
+- **Relational dynamics** — status/warmth toward specific partners (RelationshipEdge)
+- **Arc tracking** — superobjective, wounds/fears (ψ_arc factor)
+- **Epistemic state** — what the character knows/doesn't know (character-specific by definition)
+
+The finding is scoped specifically to the **tactic transition factor** (ψ_T in §9.2). The transition model can be parameterized as P(tactic_t | tactic_{t-1}, desire_similarity, desire_type) without a character-specific term. This simplifies the model (no per-character transition matrices to estimate, which would be sparse with 36+ characters) and improves generalizability (works for new characters without needing character-specific priors). Character-specific behavior emerges naturally because the LLM generates character-specific desires.
+
+**Practical implications for Pass 2:**
+- Generation prompts should continue to use the full CharacterBible for voice/style, but the statistical feedback system can rely on desire content rather than character identity for tactic deviation analysis.
+- The current `character_tactic_prior` in `StatisticalPrior` (P(tactic | character)) is less informative than a desire-conditioned prior would be. Future revisions should replace it with a desire-type-conditioned prior.
+- Desire similarity between consecutive beats is a continuous modulator of tactic persistence: persistence nearly doubles from 8.1% (low similarity) to 15.8% (high similarity). This should be reflected in the graduated feedback — a tactic shift is more expected when the desire also shifted.
 
 ---
 
@@ -396,16 +421,24 @@ The factored BeatState design was chosen specifically to enable this migration. 
 For a single character `c` at beat `t`, the factored state is:
 
 ```
-Z_c(t) = { D(t), T(t), A(t), S(t), K(t), Δ(t) }
+Z_c(t) = { D(t), T(t), A_trans(t), A_emit(t), S(t), K(t), Δ(t) }
 
 where:
-  D(t)  = desire / objective       (discrete: finite vocabulary of wants)
-  T(t)  = tactic                   (discrete: finite vocabulary of action verbs)
-  A(t)  = affect                   (continuous: 5D vector in [-1,1]^4 × [0,1])
-  S(t)  = social state             (continuous: 2D vector in [-1,1]^2)
-  K(t)  = epistemic state          (structured: sets of propositions)
-  Δ(t)  = defense / contradiction  (discrete or structured)
+  D(t)       = desire / objective       (discrete: finite vocabulary of wants)
+  T(t)       = tactic                   (discrete: finite vocabulary of action verbs)
+  A_trans(t) = transition affect        (continuous: 3D vector in rotated eigenspace)
+                 PC1: Disempowerment    (certainty + control + valence, 59.9% of variance)
+                 PC2: Blissful Ignorance (valence vs certainty, 21.7%)
+                 PC3: Burdened Power     (control vs valence, 10.0%)
+  A_emit(t)  = emissive affect          (continuous: scalar)
+                 Arousal                (near-IID, lag-1 r=+0.036; predicts utterance
+                                         features but has no transition dynamics)
+  S(t)       = social state             (continuous: 2D vector in [-1,1]^2)
+  K(t)       = epistemic state          (structured: sets of propositions)
+  Δ(t)       = defense / contradiction  (discrete or structured)
 ```
+
+The affect decomposition reflects the empirical finding that 91.6% of beat-to-beat affect transition variance is captured by 3 correlated axes (A_trans), while arousal (A_emit) fluctuates independently and predicts utterance style rather than dramatic movement. A_trans participates in transition factors (ψ_A); A_emit participates only in emission factors (ψ_emit). The pipeline continues to extract raw 5D affect vectors; the rotation to this basis is a modeling-time transformation.
 
 The factor graph connects these through several types of factors:
 
@@ -414,7 +447,8 @@ graph TD
     subgraph "t-1"
         D1["D(t-1)"]
         T1["T(t-1)"]
-        A1["A(t-1)"]
+        At1["A_trans(t-1)"]
+        Ae1["A_emit(t-1)"]
         S1["S(t-1)"]
         K1["K(t-1)"]
         Delta1["Δ(t-1)"]
@@ -422,7 +456,7 @@ graph TD
         U1(["U(t-1) — observed utterance"])
         D1 --- emit1
         T1 --- emit1
-        A1 --- emit1
+        Ae1 --- emit1
         emit1 --- U1
     end
 
@@ -437,7 +471,7 @@ graph TD
 
     D1 --- pD
     T1 --- pT
-    A1 --- pA
+    At1 --- pA
     S1 --- pS
     K1 --- pK
     Delta1 --- pDelta
@@ -446,7 +480,8 @@ graph TD
     subgraph "t"
         D2["D(t)"]
         T2["T(t)"]
-        A2["A(t)"]
+        At2["A_trans(t)"]
+        Ae2["A_emit(t)"]
         S2["S(t)"]
         K2["K(t)"]
         Delta2["Δ(t)"]
@@ -454,36 +489,42 @@ graph TD
         U2(["U(t) — observed utterance"])
         D2 --- emit2
         T2 --- emit2
-        A2 --- emit2
+        Ae2 --- emit2
         emit2 --- U2
     end
 
     pD --- D2
     pT --- T2
     D2 --- pT
-    pA --- A2
+    pA --- At2
     pS --- S2
     pK --- K2
     pDelta --- Delta2
 ```
 
+**Key structural distinction**: `A_trans` (Disempowerment, Blissful Ignorance, Burdened Power) connects to the transition factor ψ_A — it evolves through transition dynamics and captures the dramatic movement between beats. `A_emit` (Arousal) connects only to the emission factor ψ_emit — it is estimated from utterance features at each beat independently (near-IID) and shapes how the character speaks without participating in the dramatic transition structure. Note that `A_emit` has **no transition factor** and **no edge to ψ_A** — each beat's arousal is a fresh observation, not a propagated state.
+
 **Factor types:**
 
 1. **Transition factors** ψ_D, ψ_T, ψ_A, ψ_S, ψ_K, ψ_Δ: encode how each dimension evolves between beats. These capture the acting-theory constraint that state changes should be motivated.
    - ψ_T(T(t-1), T(t), D(t)): tactic transitions depend on whether the objective changed — same want often → same tactic; new want → likely new tactic.
-   - ψ_A(A(t-1), A(t)): affect transitions are smooth (small Δ per beat) unless a major event occurs. Implementable as a Gaussian transition kernel with learned variance.
+     **Experimentally validated**: desire similarity (via semantic embeddings) significantly predicts tactic persistence (r=+0.106, p=0.005). Two-part conditioning recommended: (a) continuous desire-similarity scalar modulating self-transition probability, (b) discrete desire-type latent variable (k=7 clusters) biasing the full transition distribution. Character identity can be dropped from ψ_T — it adds no predictive power beyond desire content.
+   - ψ_A(A_trans(t-1), A_trans(t)): transition affect evolves smoothly (small Δ per beat) unless a major event occurs. Implementable as a diagonal Gaussian transition kernel in the rotated eigenspace (3 independent step-size variances — one per axis). A_emit (arousal) does **not** participate in ψ_A — it has no transition dynamics (near-IID, lag-1 r=+0.036) and is instead estimated per-beat via ψ_emit from utterance features.
    - ψ_K(K(t-1), K(t), U(t-1)): epistemic state is monotonic for facts (you can't un-learn something you heard) with possible revelation events when secrets are exposed.
 
-2. **Emission factors** ψ_emit: P(utterance | state). These encode the probability of the observed dialogue given the hidden state. In the current system, the LLM acts as an implicit emission model — it generates text conditioned on state. In a probabilistic version, this becomes an explicit likelihood: how well does this utterance fit this tactic, this affect, this speech style?
+2. **Emission factors** ψ_emit: P(utterance | D, T, A_emit). These encode the probability of the observed dialogue given the hidden state. Note that ψ_emit connects to A_emit (arousal), not A_trans — arousal shapes how a character speaks (word count, sentence length, lexical diversity) while the transition affect axes shape what is dramatically happening. In the current system, the LLM acts as an implicit emission model — it generates text conditioned on state. In a probabilistic version, this becomes an explicit likelihood: how well does this utterance fit this tactic, this arousal level, this speech style?
+   **Experimentally validated**: The emission model is weak overall (R²<0.07 for all features). Inference should be transition-dominated, not observation-dominated. However, tactic-specific hard emission constraints are reliable: PROBE/INTERROGATE → high question density, COMMAND → high imperative density, SHAME → high second-person rate. A_emit (arousal) is the most text-recoverable axis (1.26× classification lift, top RF predictor for 6/9 utterance features) — it can be estimated directly from utterance features at each beat, bypassing the transition model entirely.
 
 3. **Cross-character factors**: connect states across characters present in the same beat.
    - ψ_social(S_c1(t), S_c2(t)): status is relational — if c1 claims high status, c2's status claim is constrained.
+     **Experimentally validated**: Status is relational/zero-sum across all three plays (Pearson r=-0.20, p<0.0001). Effect is moderate — partially but not fully zero-sum. Consistent across genres (Cherry Orchard -0.21, Hamlet -0.22, Earnest -0.27).
    - ψ_epistemic(K_c1(t), K_c2(t), U(t)): if c1 reveals a secret in utterance U(t), c2's known_facts must update.
    - ψ_relationship(R(c1,c2,t)): the `RelationshipEdge` schema already models this — `temperature_by_beat` and `power_by_beat` become time-varying edge potentials.
 
 4. **Global factors**: enforce play-level constraints.
    - ψ_arc(D(1), D(2), ..., D(T)): the character's desire trajectory should trace a coherent arc (the superobjective).
    - ψ_genre(all states): genre constraints (comedy vs. tragedy) bias the transition priors.
+   **Experimentally validated**: Superobjective provides 6.25% information gain for tactic prediction. It captures non-redundant information (ARI=0.008 vs tactic clusters). But beat-level consistency is only 0.516 — model as a soft, context-modulated prior, not a fixed parameter. ψ_genre: out of scope for factor graph v1.
 
 ### 9.3 Multi-agent POMDP formulation
 
@@ -556,17 +597,17 @@ The probabilistic formulation addresses several current limitations directly:
 
 1. **All extraction is single-shot LLM inference.** There is no probabilistic inference, belief propagation, or factor graph structure. Each BeatState is a point estimate from a single LLM call. The `confidence` and `alternative_hypothesis` fields exist in the schema but are underutilized — the LLM typically sets `confidence: 1.0` and leaves `alternative_hypothesis` empty.
 
-2. **Continuous dimensions are LLM-estimated, not grounded.** Affect and social state floats (valence, arousal, status, warmth, etc.) are produced by asking the LLM to output numbers. There is no calibration, no anchoring protocol, and no inter-annotator agreement baseline. The numbers are plausible but not validated.
+2. **Continuous dimensions are LLM-estimated, not grounded.** Affect and social state floats (valence, arousal, status, warmth, etc.) are produced by asking the LLM to output numbers. There is no calibration, no anchoring protocol, and no inter-annotator agreement baseline. The numbers are plausible but not validated. (partially addressed — eigendecomposition provides empirical grounding for affect covariance)
 
 3. **No temporal smoothing model.** The smoother (`analysis/smoother.py`) is an LLM review pass, not a statistical smoothing algorithm. There is no HMM, no Kalman filter, no belief propagation over time. State trajectories are not formally modeled as dynamical systems — they are corrected post hoc by a second LLM call.
 
-4. **RelationshipEdges are not populated.** The schema exists but `build_all_bibles` does not build them. Pairwise relationship dynamics are partially captured in `SocialState` (warmth/status per beat) but not aggregated into relationship trajectories.
+4. **RelationshipEdges are now populated** — 164 edges across 3 plays. Pipeline integration fixed.
 
 5. **Addressee estimation is not implemented.** `Utterance.addressee` is always `None`. The system prompts do not leverage addressee information, and the `SocialState` (status/warmth "toward addressee") has no explicit addressee binding when multiple characters are present.
 
 ### Information loss in the pipeline
 
-6. **Generation prompt omits several BeatState fields.** The generation prompt (`improvisation_loop.py:192-218`) sends `affect_state.valence`, `arousal`, and `vulnerability` but omits `certainty` and `control`. It omits `epistemic_state.known_facts` and `false_beliefs`. The state updater similarly operates on a subset of the full state. This means some extracted dimensions influence bible synthesis but not line generation.
+6. **Generation prompt omits several BeatState fields.** The generation prompt (`improvisation_loop.py:192-218`) sends `affect_state.valence`, `arousal`, and `vulnerability` but omits `certainty` and `control`. It omits `epistemic_state.known_facts` and `false_beliefs`. The state updater similarly operates on a subset of the full state. This means some extracted dimensions influence bible synthesis but not line generation. Note: eigenspace rotation potentially addresses this — providing 3 rotated PC scores instead of 5 raw affect values would reduce redundancy while preserving the information content that matters for transitions.
 
 7. **State updater does not update epistemic state.** After each improv turn, the updater adjusts desire, tactic, affect, social, and defense — but does not track changes to what the character knows, what secrets have been revealed, or what false beliefs have been corrected. Over a long improv session, the epistemic state drifts from reality.
 
@@ -592,7 +633,7 @@ The probabilistic formulation addresses several current limitations directly:
 
 14. **Beat summary is not populated during extraction.** `Beat.beat_summary` exists but is never set by the extractor or segmenter. It remains empty for all beats. The prior-context formatting in the extractor falls back to showing the first utterance of each prior beat.
 
-15. **No formal taxonomy for tactics or defenses.** `tactic_state` and `defense_state` are free-text strings. The LLM is prompted with example action verbs, but there is no controlled vocabulary, no canonical list, and no normalization. The same tactic may appear as "deflect", "deflection", or "avoid". The `tactic_distribution` in CharacterBible counts exact string matches.
+15. **No formal taxonomy for tactics or defenses.** `tactic_state` and `defense_state` are free-text strings. The LLM is prompted with example action verbs, but there is no controlled vocabulary, no canonical list, and no normalization. The same tactic may appear as "deflect", "deflection", or "avoid". The `tactic_distribution` in CharacterBible counts exact string matches. (partially addressed — 66 canonical tactic clusters with 79% coverage)
 
 16. **No `__init__.py` files.** The `ingest/`, `analysis/`, `improv/`, and `evaluation/` directories lack `__init__.py`. Imports work via `sys.path.insert(0, ...)` at the top of every file. This is fragile and prevents the project from being installed as a package.
 
@@ -600,11 +641,12 @@ The probabilistic formulation addresses several current limitations directly:
 
 ## 11. Current State of Pipeline Outputs
 
-Both plays have been fully processed:
+All three plays have been fully processed:
 
 | Play | Raw source | Beats cached | Full parse | Bibles |
 |---|---|---|---|---|
 | Cherry Orchard | `data/raw/cherry_orchard.txt` (419 KB) | Yes | Yes (1.7 MB) | Yes |
 | Hamlet | `data/raw/hamlet.xml` (583 KB) | Yes | Yes (2.7 MB) | Yes |
+| The Importance of Being Earnest | `data/raw/importance_of_being_earnest.txt` | Yes | Yes | Yes |
 
 The parsed JSON files contain the complete `Play` objects with all BeatStates, CharacterBibles, SceneBibles, and WorldBibles. These are viewable through the Redwood SDK viewer app (`viewer/`).
