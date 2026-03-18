@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import type { Beat, BeatState, SmoothedBeat } from '@/lib/types';
 import { getBeatStateForCharacter, valenceColor } from '@/lib/data';
 import type { ViewMode } from '../ViewModeSelector';
@@ -14,12 +13,7 @@ interface Props {
   viewMode?: ViewMode;
 }
 
-const BEAT_WIDTH = 64;
-const BEAT_HEIGHT = 120;
-
 export default function BeatTimeline({ beats, character, selectedBeatId, onSelectBeat, smoothedBeats, viewMode = 'llm' }: Props) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   if (beats.length === 0) {
     return (
       <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14, padding: 16 }}>
@@ -28,244 +22,223 @@ export default function BeatTimeline({ beats, character, selectedBeatId, onSelec
     );
   }
 
+  // Group beats by act, then scene
+  const groups: { act: number; scene: number; beats: Beat[] }[] = [];
+  const groupMap = new Map<string, typeof groups[number]>();
+
+  for (const beat of beats) {
+    const key = `${beat.act}-${beat.scene}`;
+    if (!groupMap.has(key)) {
+      const group = { act: beat.act, scene: beat.scene, beats: [] };
+      groupMap.set(key, group);
+      groups.push(group);
+    }
+    groupMap.get(key)!.beats.push(beat);
+  }
+
   return (
-    <div
-      ref={scrollRef}
-      style={{
-        overflowX: 'auto',
-        overflowY: 'visible',
-        paddingBottom: 8,
-        cursor: 'grab',
-      }}
-    >
-      <svg
-        width={beats.length * BEAT_WIDTH + 2}
-        height={BEAT_HEIGHT + 20}
-        style={{ display: 'block' }}
-      >
-        {beats.map((beat, i) => {
-          const bs: BeatState | undefined = getBeatStateForCharacter(beat, character);
-          const sb = smoothedBeats?.get(beat.id);
-          const useSmoothed = (viewMode === 'factor-graph' || viewMode === 'diff') && sb;
-
-          const valence = useSmoothed
-            ? (sb.affect_trans_mean[0] ?? 0)
-            : (bs?.affect_state.valence ?? 0);
-          const arousal = useSmoothed
-            ? sb.arousal
-            : (bs?.affect_state.arousal ?? 0);
-          const confidence = useSmoothed
-            ? sb.smoothed_tactic_prob
-            : (bs?.confidence ?? 0.5);
-          const tactic = useSmoothed
-            ? sb.smoothed_tactic
-            : (bs?.tactic_state ?? '');
-
-          // Background color from valence
-          const bgColor = valenceColor(valence);
-
-          // Arousal bar height
-          const arousalNorm = useSmoothed ? arousal : (arousal + 1) / 2;
-          const arousalH = Math.round(Math.max(0, Math.min(1, arousalNorm)) * 8);
-          const arousalColor =
-            arousalNorm > 0.6 ? '#f28b82' : arousalNorm < 0.3 ? '#8ab4f8' : '#fbbc04';
-
-          const isSelected = beat.id === selectedBeatId;
-          const isChanged = sb?.changed ?? false;
-          const x = i * BEAT_WIDTH;
-
-          return (
-            <g
-              key={beat.id}
-              onClick={() => onSelectBeat(beat.id)}
-              style={{ cursor: 'pointer' }}
-            >
-              {/* Background rect */}
-              <rect
-                x={x + 1}
-                y={0}
-                width={BEAT_WIDTH - 2}
-                height={BEAT_HEIGHT}
-                fill={bgColor}
-                opacity={0.3}
-                rx={4}
-              />
-
-              {/* Base surface */}
-              <rect
-                x={x + 1}
-                y={0}
-                width={BEAT_WIDTH - 2}
-                height={BEAT_HEIGHT}
-                fill="var(--md-sys-color-surface-container)"
-                opacity={0.85}
-                rx={4}
-              />
-
-              {/* Valence overlay */}
-              <rect
-                x={x + 1}
-                y={0}
-                width={BEAT_WIDTH - 2}
-                height={BEAT_HEIGHT}
-                fill={bgColor}
-                opacity={0.2}
-                rx={4}
-              />
-
-              {/* Diff mode: changed beat highlight */}
-              {viewMode === 'diff' && isChanged && (
-                <rect
-                  x={x + 1}
-                  y={0}
-                  width={BEAT_WIDTH - 2}
-                  height={BEAT_HEIGHT}
-                  fill="none"
-                  stroke="#f28b82"
-                  strokeWidth={2}
-                  strokeDasharray="4,2"
-                  rx={4}
-                />
-              )}
-
-              {/* Selected highlight */}
-              {isSelected && (
-                <rect
-                  x={x + 1}
-                  y={0}
-                  width={BEAT_WIDTH - 2}
-                  height={BEAT_HEIGHT}
-                  fill="none"
-                  stroke="var(--md-sys-color-primary)"
-                  strokeWidth={2}
-                  rx={4}
-                />
-              )}
-
-              {/* Beat index */}
-              <text
-                x={x + BEAT_WIDTH / 2}
-                y={14}
-                textAnchor="middle"
-                fontSize={10}
-                fill="var(--md-sys-color-on-surface-variant)"
-                fontWeight={500}
-              >
-                {beat.index ?? i + 1}
-              </text>
-
-              {/* Diff mode: changed indicator dot at top-right */}
-              {viewMode === 'diff' && isChanged && (
-                <circle
-                  cx={x + BEAT_WIDTH - 8}
-                  cy={8}
-                  r={4}
-                  fill="#f28b82"
-                  opacity={0.9}
-                />
-              )}
-
-              {/* Tactic label (rotated) */}
-              {tactic && (
-                <text
-                  x={x + BEAT_WIDTH / 2}
-                  y={BEAT_HEIGHT / 2 + 4}
-                  textAnchor="middle"
-                  fontSize={10}
-                  fill="var(--md-sys-color-on-surface)"
-                  opacity={0.4 + confidence * 0.6}
-                  transform={`rotate(-45, ${x + BEAT_WIDTH / 2}, ${BEAT_HEIGHT / 2 + 4})`}
-                  style={{ userSelect: 'none' }}
-                >
-                  {tactic.length > 12 ? tactic.slice(0, 11) + '...' : tactic}
-                </text>
-              )}
-
-              {/* Confidence dot at bottom */}
-              <circle
-                cx={x + BEAT_WIDTH / 2}
-                cy={BEAT_HEIGHT - 12}
-                r={3}
-                fill={
-                  confidence >= 0.7
-                    ? '#81c995'
-                    : confidence >= 0.4
-                    ? '#fbbc04'
-                    : '#f28b82'
-                }
-                opacity={0.9}
-              />
-
-              {/* Arousal bar at very bottom */}
-              {arousalH > 0 && (
-                <rect
-                  x={x + 2}
-                  y={BEAT_HEIGHT - arousalH}
-                  width={BEAT_WIDTH - 4}
-                  height={arousalH}
-                  fill={arousalColor}
-                  opacity={0.5}
-                  rx={2}
-                />
-              )}
-
-              {/* Divider */}
-              <line
-                x1={x + BEAT_WIDTH - 1}
-                y1={4}
-                x2={x + BEAT_WIDTH - 1}
-                y2={BEAT_HEIGHT - 4}
-                stroke="var(--md-sys-color-outline-variant)"
-                strokeWidth={0.5}
-                opacity={0.5}
-              />
-            </g>
-          );
-        })}
-
-        {/* Beat number axis at bottom */}
-        {beats.map((beat, i) => (
-          <text
-            key={beat.id + '-label'}
-            x={i * BEAT_WIDTH + BEAT_WIDTH / 2}
-            y={BEAT_HEIGHT + 14}
-            textAnchor="middle"
-            fontSize={9}
-            fill="var(--md-sys-color-on-surface-variant)"
-            opacity={0.5}
-          >
-            {beat.act}.{beat.scene}
-          </text>
-        ))}
-      </svg>
-
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
       {/* Legend */}
-      <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap', paddingLeft: 4 }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 12, flexWrap: 'wrap', paddingLeft: 4 }}>
         <LegendSwatch color="var(--affect-positive)" label={viewMode === 'factor-graph' ? 'Positive eigenspace' : 'Positive valence'} />
         <LegendSwatch color="var(--affect-negative)" label={viewMode === 'factor-graph' ? 'Negative eigenspace' : 'Negative valence'} />
-        <span style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#81c995' }} />
-          {viewMode === 'factor-graph' ? 'High tactic prob' : 'High confidence'}
-        </span>
-        <span style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
-          <span style={{ display: 'inline-block', width: 8, height: 8, background: '#8ab4f8', borderRadius: 2 }} />
-          Arousal (bottom bar)
-        </span>
+        <LegendDot color="#81c995" label={viewMode === 'factor-graph' ? 'High tactic prob' : 'High confidence'} />
         {viewMode === 'diff' && (
-          <span style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
-            <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#f28b82' }} />
-            Changed by smoother
-          </span>
+          <LegendDot color="#f28b82" label="Changed by smoother" />
         )}
       </div>
+
+      {groups.map((group, gi) => (
+        <div key={`${group.act}-${group.scene}`}>
+          {/* Act/Scene heading */}
+          {(gi === 0 || group.act !== groups[gi - 1].act) && (
+            <>
+              {gi > 0 && (
+                <hr style={{
+                  border: 'none',
+                  borderTop: '2px solid var(--md-sys-color-outline-variant)',
+                  margin: '16px 0 12px',
+                }} />
+              )}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                marginBottom: 8,
+                marginTop: gi > 0 ? 0 : 0,
+              }}>
+                <span style={{
+                  background: 'var(--md-sys-color-primary-container)',
+                  color: 'var(--md-sys-color-on-primary-container)',
+                  borderRadius: 8,
+                  padding: '3px 10px',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.5px',
+                  flexShrink: 0,
+                }}>
+                  ACT {group.act}
+                </span>
+                <div style={{ flex: 1, height: 1, background: 'var(--md-sys-color-outline-variant)' }} />
+              </div>
+            </>
+          )}
+
+          {/* Scene sub-heading */}
+          <div style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: 'var(--md-sys-color-on-surface-variant)',
+            marginBottom: 6,
+            marginLeft: 4,
+          }}>
+            Scene {group.scene}
+          </div>
+
+          {/* Beat rows */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
+            {group.beats.map((beat) => {
+              const bs: BeatState | undefined = getBeatStateForCharacter(beat, character);
+              const sb = smoothedBeats?.get(beat.id);
+              const useSmoothed = (viewMode === 'factor-graph' || viewMode === 'diff') && sb;
+
+              const valence = useSmoothed
+                ? (sb.affect_trans_mean[0] ?? 0)
+                : (bs?.affect_state.valence ?? 0);
+              const arousal = useSmoothed
+                ? sb.arousal
+                : (bs?.affect_state.arousal ?? 0);
+              const confidence = useSmoothed
+                ? sb.smoothed_tactic_prob
+                : (bs?.confidence ?? 0.5);
+              const tactic = useSmoothed
+                ? sb.smoothed_tactic
+                : (bs?.tactic_state ?? '');
+
+              const bgColor = valenceColor(valence);
+              const arousalNorm = useSmoothed ? arousal : (arousal + 1) / 2;
+              const isSelected = beat.id === selectedBeatId;
+              const isChanged = sb?.changed ?? false;
+
+              return (
+                <div
+                  key={beat.id}
+                  onClick={() => onSelectBeat(beat.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    background: isSelected
+                      ? 'var(--md-sys-color-secondary-container)'
+                      : 'var(--md-sys-color-surface-container)',
+                    border: isSelected
+                      ? '2px solid var(--md-sys-color-primary)'
+                      : viewMode === 'diff' && isChanged
+                        ? '2px dashed #f28b82'
+                        : '1px solid var(--md-sys-color-outline-variant)',
+                    transition: 'background 0.15s, border-color 0.15s',
+                    minWidth: 0,
+                  }}
+                >
+                  {/* Beat index */}
+                  <span style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: 'var(--md-sys-color-on-surface-variant)',
+                    minWidth: 20,
+                    textAlign: 'center',
+                    flexShrink: 0,
+                  }}>
+                    {beat.index ?? '?'}
+                  </span>
+
+                  {/* Valence bar */}
+                  <div style={{
+                    width: 6,
+                    height: 28,
+                    borderRadius: 3,
+                    background: bgColor,
+                    opacity: 0.7,
+                    flexShrink: 0,
+                  }} />
+
+                  {/* Tactic label */}
+                  <span style={{
+                    fontSize: 13,
+                    color: 'var(--md-sys-color-on-surface)',
+                    fontWeight: 500,
+                    flex: 1,
+                    minWidth: 0,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    opacity: 0.5 + confidence * 0.5,
+                  }}>
+                    {tactic || '—'}
+                  </span>
+
+                  {/* Arousal indicator */}
+                  <div style={{
+                    width: 32,
+                    height: 6,
+                    borderRadius: 3,
+                    background: 'var(--md-sys-color-outline-variant)',
+                    flexShrink: 0,
+                    overflow: 'hidden',
+                  }}>
+                    <div style={{
+                      width: `${Math.round(Math.max(0, Math.min(1, arousalNorm)) * 100)}%`,
+                      height: '100%',
+                      borderRadius: 3,
+                      background: arousalNorm > 0.6 ? '#f28b82' : arousalNorm < 0.3 ? '#8ab4f8' : '#fbbc04',
+                    }} />
+                  </div>
+
+                  {/* Confidence dot */}
+                  <span style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: confidence >= 0.7 ? '#81c995' : confidence >= 0.4 ? '#fbbc04' : '#f28b82',
+                    flexShrink: 0,
+                  }} />
+
+                  {/* Diff changed indicator */}
+                  {viewMode === 'diff' && isChanged && (
+                    <span style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: '50%',
+                      background: '#f28b82',
+                      flexShrink: 0,
+                    }} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
 
 function LegendSwatch({ color, label }: { color: string; label: string }) {
   return (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)' }}>
-      <span style={{ display: 'inline-block', width: 14, height: 14, background: color, borderRadius: 3, opacity: 0.7 }} />
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--md-sys-color-on-surface-variant)' }}>
+      <span style={{ display: 'inline-block', width: 12, height: 12, background: color, borderRadius: 3, opacity: 0.7 }} />
+      {label}
+    </span>
+  );
+}
+
+function LegendDot({ color, label }: { color: string; label: string }) {
+  return (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--md-sys-color-on-surface-variant)' }}>
+      <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: color }} />
       {label}
     </span>
   );

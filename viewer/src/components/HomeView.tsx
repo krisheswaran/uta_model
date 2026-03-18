@@ -47,7 +47,7 @@ export default function HomeView() {
               margin: 0,
             }}
           >
-            UTA Model Viewer
+            Uta Model Viewer
           </h1>
           <p style={{ color: 'var(--md-sys-color-on-surface-variant)', marginTop: 6, fontSize: 14 }}>
             Theatrical AI — beat analysis, character bibles, scene bibles

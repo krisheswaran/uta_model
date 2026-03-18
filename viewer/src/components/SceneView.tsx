@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import NavRail from './NavRail';
+import FullScreenModal from './FullScreenModal';
 import BeatStateDetail from './BeatStateDetail';
 import type { Play, Beat, BeatState, Utterance } from '@/lib/types';
 import { getScene, getSceneBible, confidenceClass, confidenceLabel } from '@/lib/data';
@@ -202,6 +203,7 @@ function SceneContent({
 
 function BeatCard({ beat, playId }: { beat: Beat; playId: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [modalBS, setModalBS] = useState<BeatState | null>(null);
 
   const characters = beat.characters_present ?? [
     ...new Set(beat.beat_states.map((bs) => bs.character)),
@@ -209,6 +211,19 @@ function BeatCard({ beat, playId }: { beat: Beat; playId: string }) {
 
   return (
     <div className="m3-card fade-in" style={{ border: '1px solid var(--md-sys-color-outline-variant)' }}>
+      {/* Beat detail modal */}
+      <FullScreenModal
+        open={modalBS !== null}
+        onClose={() => setModalBS(null)}
+        title={`${modalBS?.character ?? ''} - Beat ${beat.index ?? beat.id}`}
+      >
+        {modalBS && (
+          <div style={{ maxWidth: 700 }}>
+            <BeatStateDetail beat={beat} beatState={modalBS} playId={playId} />
+          </div>
+        )}
+      </FullScreenModal>
+
       {/* Beat header */}
       <div
         style={{
@@ -282,7 +297,7 @@ function BeatCard({ beat, playId }: { beat: Beat; playId: string }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
           <hr className="m3-divider" />
           {beat.beat_states.map((bs) => (
-            <BeatStateCompact key={bs.character} beat={beat} beatState={bs} />
+            <BeatStateCompact key={bs.character} beat={beat} beatState={bs} playId={playId} onOpenDetail={() => setModalBS(bs)} />
           ))}
         </div>
       )}
@@ -339,37 +354,14 @@ function UtteranceRow({ utterance: u }: { utterance: Utterance }) {
 function BeatStateCompact({
   beat,
   beatState: bs,
+  playId,
+  onOpenDetail,
 }: {
   beat: Beat;
   beatState: BeatState;
+  playId: string;
+  onOpenDetail: () => void;
 }) {
-  const [showFull, setShowFull] = useState(false);
-
-  if (showFull) {
-    return (
-      <div>
-        <button
-          onClick={() => setShowFull(false)}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: 'var(--md-sys-color-on-surface-variant)',
-            fontSize: 12,
-            marginBottom: 8,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 4,
-            padding: 0,
-          }}
-        >
-          <ChevronDown size={14} /> Collapse
-        </button>
-        <BeatStateDetail beat={beat} beatState={bs} />
-      </div>
-    );
-  }
-
   return (
     <div
       style={{
@@ -382,19 +374,22 @@ function BeatStateCompact({
         flexWrap: 'wrap',
         cursor: 'pointer',
       }}
-      onClick={() => setShowFull(true)}
+      onClick={onOpenDetail}
     >
       {/* Character + confidence */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 120 }}>
-        <span
+        <a
+          href={`/plays/${playId}/characters/${encodeURIComponent(bs.character)}`}
+          onClick={(e) => e.stopPropagation()}
           style={{
             fontSize: 13,
             fontWeight: 600,
             color: 'var(--md-sys-color-primary)',
+            textDecoration: 'none',
           }}
         >
           {bs.character}
-        </span>
+        </a>
         <span className={`confidence-badge ${confidenceClass(bs.confidence)}`} style={{ width: 24, height: 24, fontSize: 9 }}>
           {confidenceLabel(bs.confidence)}
         </span>
@@ -436,7 +431,7 @@ function BeatStateCompact({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            setShowFull(true);
+            onOpenDetail();
           }}
         >
           <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-tertiary-container)' }}>

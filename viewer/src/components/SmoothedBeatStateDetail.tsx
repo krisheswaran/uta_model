@@ -1,19 +1,28 @@
 'use client';
 
+import { ExternalLink } from 'lucide-react';
 import type { Beat, BeatState } from '@/lib/types';
 import type { SmoothedBeat } from '@/lib/types';
 import type { ViewMode } from './ViewModeSelector';
+
+/** Parse act and scene from a beat id like "hamlet_3_1_b5" */
+function parseActScene(beatId: string): { act: string; scene: string } | null {
+  const match = beatId.match(/(\d+)_(\d+)_b\d+$/i);
+  if (match) return { act: match[1], scene: match[2] };
+  return null;
+}
 
 interface Props {
   beat: Beat;
   beatState: BeatState;
   smoothedBeat?: SmoothedBeat;
   viewMode: ViewMode;
+  playId?: string;
 }
 
 const EIGENSPACE_LABELS = ['Disempowerment', 'Blissful Ignorance', 'Burdened Power'];
 
-export default function SmoothedBeatStateDetail({ beat, beatState: bs, smoothedBeat: sb, viewMode }: Props) {
+export default function SmoothedBeatStateDetail({ beat, beatState: bs, smoothedBeat: sb, viewMode, playId }: Props) {
   if (!sb) {
     return (
       <div className="m3-card" style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
@@ -39,20 +48,58 @@ export default function SmoothedBeatStateDetail({ beat, beatState: bs, smoothedB
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              fontFamily: 'var(--md-sys-typescale-display-font)',
-              fontSize: 15,
-              fontWeight: 500,
-              color: 'var(--md-sys-color-primary)',
-              margin: '0 0 2px',
-            }}
-          >
-            {bs.character}
-          </p>
+          {playId ? (
+            <a
+              href={`/plays/${playId}/characters/${encodeURIComponent(bs.character)}`}
+              style={{
+                fontFamily: 'var(--md-sys-typescale-display-font)',
+                fontSize: 15,
+                fontWeight: 500,
+                color: 'var(--md-sys-color-primary)',
+                margin: '0 0 2px',
+                textDecoration: 'none',
+                display: 'block',
+              }}
+            >
+              {bs.character}
+            </a>
+          ) : (
+            <p
+              style={{
+                fontFamily: 'var(--md-sys-typescale-display-font)',
+                fontSize: 15,
+                fontWeight: 500,
+                color: 'var(--md-sys-color-primary)',
+                margin: '0 0 2px',
+              }}
+            >
+              {bs.character}
+            </p>
+          )}
           <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)' }}>
             Beat {beat.id}
           </p>
+          {playId && (() => {
+            const parsed = parseActScene(beat.id);
+            if (!parsed) return null;
+            return (
+              <a
+                href={`/plays/${playId}/scenes/${parsed.act}/${parsed.scene}`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  marginTop: 4,
+                  fontSize: 11,
+                  color: 'var(--md-sys-color-tertiary)',
+                  textDecoration: 'none',
+                }}
+              >
+                <ExternalLink size={11} />
+                View in Scene
+              </a>
+            );
+          })()}
         </div>
         <span
           style={{

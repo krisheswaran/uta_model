@@ -7,6 +7,8 @@
     "dev": "vite dev",
     "build": "vite build",
     "sync": "node scripts/sync-data.mjs",
+    "upload-data": "bash scripts/upload-to-r2.sh",
+    "deploy": "npm run build && wrangler deploy",
     "preview": "wrangler dev"
   },
   "dependencies": {

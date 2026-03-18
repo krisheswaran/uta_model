@@ -70,7 +70,7 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
       >
         <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
           <span style={{ fontFamily: 'var(--md-sys-typescale-display-font)', fontSize: 24, color: 'var(--md-sys-color-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>
-            UTA
+            Uta
           </span>
         </div>
 

@@ -1,16 +1,25 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import type { Beat, BeatState } from '@/lib/types';
 import { confidenceClass, confidenceLabel } from '@/lib/data';
+
+/** Parse act and scene from a beat id like "hamlet_3_1_b5" */
+function parseActScene(beatId: string): { act: string; scene: string } | null {
+  // Try patterns: playname_ACT_SCENE_bN or ACT_SCENE_bN
+  const match = beatId.match(/(\d+)_(\d+)_b\d+$/i);
+  if (match) return { act: match[1], scene: match[2] };
+  return null;
+}
 
 interface Props {
   beat: Beat;
   beatState: BeatState;
+  playId?: string;
 }
 
-export default function BeatStateDetail({ beat, beatState: bs }: Props) {
+export default function BeatStateDetail({ beat, beatState: bs, playId }: Props) {
   const [epistemicOpen, setEpistemicOpen] = useState(false);
   const epistemicContentRef = useRef<HTMLDivElement>(null);
 
@@ -38,20 +47,59 @@ export default function BeatStateDetail({ beat, beatState: bs }: Props) {
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p
-            style={{
-              fontFamily: 'var(--md-sys-typescale-display-font)',
-              fontSize: 15,
-              fontWeight: 500,
-              color: 'var(--md-sys-color-primary)',
-              margin: '0 0 2px',
-            }}
-          >
-            {bs.character}
-          </p>
+          {playId ? (
+            <a
+              href={`/plays/${playId}/characters/${encodeURIComponent(bs.character)}`}
+              style={{
+                fontFamily: 'var(--md-sys-typescale-display-font)',
+                fontSize: 15,
+                fontWeight: 500,
+                color: 'var(--md-sys-color-primary)',
+                margin: '0 0 2px',
+                textDecoration: 'none',
+                display: 'block',
+              }}
+            >
+              {bs.character}
+            </a>
+          ) : (
+            <p
+              style={{
+                fontFamily: 'var(--md-sys-typescale-display-font)',
+                fontSize: 15,
+                fontWeight: 500,
+                color: 'var(--md-sys-color-primary)',
+                margin: '0 0 2px',
+              }}
+            >
+              {bs.character}
+            </p>
+          )}
           <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)' }}>
             Beat {beat.id}
           </p>
+          {/* View in Scene link */}
+          {playId && (() => {
+            const parsed = parseActScene(beat.id);
+            if (!parsed) return null;
+            return (
+              <a
+                href={`/plays/${playId}/scenes/${parsed.act}/${parsed.scene}`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  marginTop: 4,
+                  fontSize: 11,
+                  color: 'var(--md-sys-color-tertiary)',
+                  textDecoration: 'none',
+                }}
+              >
+                <ExternalLink size={11} />
+                View in Scene
+              </a>
+            );
+          })()}
         </div>
         <span className={`confidence-badge ${confidenceClass(bs.confidence)}`}>
           {confidenceLabel(bs.confidence)}

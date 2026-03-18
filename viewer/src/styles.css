@@ -312,3 +312,23 @@ body {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ─── Full Screen Modal ─────────────────────────────────────────────────── */
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Text Wrapping ─────────────────────────────────────────────────────── */
+.m3-body-medium, .m3-card p, .m3-card li, .m3-card span {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.m3-card, .m3-card-elevated, .m3-card-filled {
+  min-width: 0;
+}
+
+.m3-card > *, .m3-card-elevated > *, .m3-card-filled > * {
+  min-width: 0;
+}

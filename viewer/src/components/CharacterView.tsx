@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen } from 'lucide-react';
 import NavRail from './NavRail';
+import FullScreenModal from './FullScreenModal';
 import BeatStateDetail from './BeatStateDetail';
 import SmoothedBeatStateDetail from './SmoothedBeatStateDetail';
 import ViewModeSelector from './ViewModeSelector';
@@ -137,9 +138,9 @@ function CharacterContent({
 }) {
   const [activeTab, setActiveTab] = useState<TabId>('arc');
   const [viewMode, setViewMode] = useState<ViewMode>('llm');
-  const [selectedBeatId, setSelectedBeatId] = useState<string | null>(
-    beats.length > 0 ? beats[0].id : null
-  );
+  const [selectedBeatId, setSelectedBeatId] = useState<string | null>(null);
+  const [bibleModalOpen, setBibleModalOpen] = useState(false);
+  const [beatModalOpen, setBeatModalOpen] = useState(false);
 
   const hasSmoothed = smoothedPlay !== null;
 
@@ -181,174 +182,203 @@ function CharacterContent({
     { id: 'arc-by-scene', label: 'Arc by Scene' },
   ];
 
+  // When a beat is selected from the timeline, open the modal
+  const handleSelectBeat = (beatId: string) => {
+    setSelectedBeatId(beatId);
+    setBeatModalOpen(true);
+  };
+
   return (
-    <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'flex-start', maxWidth: 1200 }}>
-      {/* Left column: Character Bible */}
-      <div style={{ flex: '0 0 320px', minWidth: 280 }}>
+    <div style={{ maxWidth: 1200 }}>
+      {/* Character header with bible trigger */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
         <h1
           style={{
             fontFamily: 'var(--md-sys-typescale-display-font)',
             fontSize: 26,
             fontWeight: 400,
             color: 'var(--md-sys-color-on-surface)',
-            margin: '0 0 4px',
+            margin: 0,
           }}
         >
           {character}
         </h1>
-        <p style={{ margin: '0 0 16px', fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)' }}>
+        <span style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)' }}>
           {beats.length} beats
-        </p>
-
-        {bible ? (
-          <CharacterBibleCard bible={bible} />
-        ) : (
-          <div className="m3-card" style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
-            No character bible available for {character}.
-          </div>
-        )}
-      </div>
-
-      {/* Right column: Tabs */}
-      <div style={{ flex: 1, minWidth: 300 }}>
-        {/* View mode selector (lens) */}
-        <ViewModeSelector
-          mode={viewMode}
-          onModeChange={setViewMode}
-          disabled={!hasSmoothed}
-        />
-
-        {/* Tab bar */}
-        <div
-          style={{
-            display: 'flex',
-            borderBottom: '1px solid var(--md-sys-color-outline-variant)',
-            overflowX: 'auto',
-            marginBottom: 20,
-          }}
-        >
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`m3-tab ${activeTab === tab.id ? 'active' : ''}`}
-              style={{ border: 'none', background: 'none', flexShrink: 0 }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Diff summary card */}
-        {viewMode === 'diff' && smoothedCharData && (
-          <div
-            className="m3-card fade-in"
+        </span>
+        {bible && (
+          <button
+            onClick={() => setBibleModalOpen(true)}
             style={{
-              marginBottom: 16,
-              background: 'var(--md-sys-color-surface-container-high)',
-              display: 'flex',
-              gap: 24,
-              flexWrap: 'wrap',
+              display: 'inline-flex',
               alignItems: 'center',
+              gap: 6,
+              background: 'var(--md-sys-color-secondary-container)',
+              color: 'var(--md-sys-color-on-secondary-container)',
+              border: 'none',
+              borderRadius: 20,
+              padding: '6px 16px',
+              fontSize: 13,
+              fontWeight: 500,
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
             }}
           >
-            <div>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
-                Beats changed
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: changedCount > 0 ? '#f28b82' : '#81c995' }}>
-                {changedCount} <span style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 400 }}>of {totalSmoothed}</span>
-              </p>
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
-                Mean affect shift
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
-                {meanAffectShift.toFixed(3)}
-              </p>
-            </div>
-            <div>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
-                Tactic changes
-              </p>
-              <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
-                {smoothedCharData.num_tactic_changes}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Tab content */}
-        {activeTab === 'arc' && (
-          <div>
-            {beats.length === 0 ? (
-              <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
-                No beats found for {character}.
-              </div>
-            ) : (
-              <>
-                <BeatTimeline
-                  beats={beats}
-                  character={character}
-                  selectedBeatId={selectedBeatId}
-                  onSelectBeat={setSelectedBeatId}
-                  smoothedBeats={smoothedBeatsMap}
-                  viewMode={viewMode}
-                />
-                {selectedBeat && selectedBS && (
-                  <div
-                    style={{
-                      marginTop: 16,
-                      maxHeight: 'calc(100vh - 320px)',
-                      minHeight: 240,
-                      overflowY: 'auto',
-                      overscrollBehavior: 'contain',
-                      borderRadius: 12,
-                      maskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent 100%)',
-                      WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent 100%)',
-                      paddingBottom: 32,
-                    }}
-                  >
-                    {viewMode === 'llm' ? (
-                      <BeatStateDetail beat={selectedBeat} beatState={selectedBS} />
-                    ) : (
-                      <SmoothedBeatStateDetail
-                        beat={selectedBeat}
-                        beatState={selectedBS}
-                        smoothedBeat={selectedSmoothedBeat}
-                        viewMode={viewMode}
-                      />
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'affect' && (
-          <div>
-            <AffectTrajectory beats={beats} character={character} />
-          </div>
-        )}
-
-        {activeTab === 'tactics' && (
-          <div>
-            {bible ? (
-              <TacticBarChart distribution={bible.tactic_distribution} />
-            ) : (
-              <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
-                No tactic data available.
-              </div>
-            )}
-          </div>
-        )}
-
-        {activeTab === 'arc-by-scene' && (
-          <ArcByScene arcByScene={bible?.arc_by_scene ?? {}} playId={playId} />
+            <BookOpen size={14} />
+            Bible
+          </button>
         )}
       </div>
+
+      {/* Bible modal */}
+      <FullScreenModal
+        open={bibleModalOpen}
+        onClose={() => setBibleModalOpen(false)}
+        title={`${character} - Character Bible`}
+      >
+        {bible ? (
+          <div style={{ maxWidth: 600 }}>
+            <CharacterBibleCard bible={bible} />
+          </div>
+        ) : (
+          <p style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
+            No character bible available for {character}.
+          </p>
+        )}
+      </FullScreenModal>
+
+      {/* Beat detail modal */}
+      <FullScreenModal
+        open={beatModalOpen}
+        onClose={() => setBeatModalOpen(false)}
+        title={selectedBeat ? `Beat ${selectedBeat.index ?? selectedBeat.id}` : 'Beat Detail'}
+      >
+        {selectedBeat && selectedBS && (
+          <div style={{ maxWidth: 700 }}>
+            {viewMode === 'llm' ? (
+              <BeatStateDetail beat={selectedBeat} beatState={selectedBS} playId={playId} />
+            ) : (
+              <SmoothedBeatStateDetail
+                beat={selectedBeat}
+                beatState={selectedBS}
+                smoothedBeat={selectedSmoothedBeat}
+                viewMode={viewMode}
+                playId={playId}
+              />
+            )}
+          </div>
+        )}
+      </FullScreenModal>
+
+      {/* View mode selector (lens) */}
+      <ViewModeSelector
+        mode={viewMode}
+        onModeChange={setViewMode}
+        disabled={!hasSmoothed}
+      />
+
+      {/* Tab bar */}
+      <div
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid var(--md-sys-color-outline-variant)',
+          overflowX: 'auto',
+          marginBottom: 20,
+        }}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`m3-tab ${activeTab === tab.id ? 'active' : ''}`}
+            style={{ border: 'none', background: 'none', flexShrink: 0 }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Diff summary card */}
+      {viewMode === 'diff' && smoothedCharData && (
+        <div
+          className="m3-card fade-in"
+          style={{
+            marginBottom: 16,
+            background: 'var(--md-sys-color-surface-container-high)',
+            display: 'flex',
+            gap: 24,
+            flexWrap: 'wrap',
+            alignItems: 'center',
+          }}
+        >
+          <div>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+              Beats changed
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: changedCount > 0 ? '#f28b82' : '#81c995' }}>
+              {changedCount} <span style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 400 }}>of {totalSmoothed}</span>
+            </p>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+              Mean affect shift
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
+              {meanAffectShift.toFixed(3)}
+            </p>
+          </div>
+          <div>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+              Tactic changes
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
+              {smoothedCharData.num_tactic_changes}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Tab content */}
+      {activeTab === 'arc' && (
+        <div>
+          {beats.length === 0 ? (
+            <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
+              No beats found for {character}.
+            </div>
+          ) : (
+            <BeatTimeline
+              beats={beats}
+              character={character}
+              selectedBeatId={selectedBeatId}
+              onSelectBeat={handleSelectBeat}
+              smoothedBeats={smoothedBeatsMap}
+              viewMode={viewMode}
+            />
+          )}
+        </div>
+      )}
+
+      {activeTab === 'affect' && (
+        <div>
+          <AffectTrajectory beats={beats} character={character} />
+        </div>
+      )}
+
+      {activeTab === 'tactics' && (
+        <div>
+          {bible ? (
+            <TacticBarChart distribution={bible.tactic_distribution} />
+          ) : (
+            <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
+              No tactic data available.
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'arc-by-scene' && (
+        <ArcByScene arcByScene={bible?.arc_by_scene ?? {}} playId={playId} />
+      )}
     </div>
   );
 }
@@ -497,58 +527,110 @@ function ArcByScene({
     );
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-      {entries.map(([sceneKey, arcNote]) => {
-        // Try to parse "A1S2" or "1-2" format for link
-        const match = sceneKey.match(/[Aa]?(\d+)[Ss\-_](\d+)/);
-        const linkHref = match
-          ? `/plays/${playId}/scenes/${match[1]}/${match[2]}`
-          : null;
+  // Group entries by act number
+  const actGroups: { act: string; scenes: { sceneKey: string; sceneNum: string; arcNote: string; linkHref: string | null }[] }[] = [];
+  const actMap = new Map<string, typeof actGroups[number]>();
 
-        return (
-          <div key={sceneKey} className="m3-card fade-in">
-            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <div
-                style={{
-                  minWidth: 48,
+  for (const [sceneKey, arcNote] of entries) {
+    const match = sceneKey.match(/[Aa]?(\d+)[Ss\-_](\d+)/);
+    const actNum = match ? match[1] : '?';
+    const sceneNum = match ? match[2] : sceneKey;
+    const linkHref = match ? `/plays/${playId}/scenes/${match[1]}/${match[2]}` : null;
+
+    if (!actMap.has(actNum)) {
+      const group = { act: actNum, scenes: [] };
+      actMap.set(actNum, group);
+      actGroups.push(group);
+    }
+    actMap.get(actNum)!.scenes.push({ sceneKey, sceneNum, arcNote, linkHref });
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+      {actGroups.map((group, gi) => (
+        <div key={group.act}>
+          {/* Act heading with separator */}
+          {gi > 0 && (
+            <hr style={{
+              border: 'none',
+              borderTop: '1px solid var(--md-sys-color-outline-variant)',
+              margin: '20px 0 16px',
+            }} />
+          )}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            marginBottom: 12,
+          }}>
+            <div style={{
+              background: 'var(--md-sys-color-primary-container)',
+              color: 'var(--md-sys-color-on-primary-container)',
+              borderRadius: 8,
+              padding: '4px 12px',
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: '0.5px',
+            }}>
+              ACT {group.act}
+            </div>
+            <div style={{
+              flex: 1,
+              height: 1,
+              background: 'var(--md-sys-color-outline-variant)',
+            }} />
+          </div>
+
+          {/* Scenes within this act */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 4 }}>
+            {group.scenes.map(({ sceneKey, sceneNum, arcNote, linkHref }) => (
+              <div key={sceneKey} className="m3-card fade-in" style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                <div style={{
+                  minWidth: 40,
                   background: 'var(--md-sys-color-secondary-container)',
                   borderRadius: 6,
-                  padding: '4px 6px',
+                  padding: '4px 8px',
                   textAlign: 'center',
-                }}
-              >
-                {linkHref ? (
-                  <a
-                    href={linkHref}
-                    style={{
-                      fontSize: 12,
+                  flexShrink: 0,
+                }}>
+                  {linkHref ? (
+                    <a
+                      href={linkHref}
+                      style={{
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: 'var(--md-sys-color-on-secondary-container)',
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {sceneNum}
+                    </a>
+                  ) : (
+                    <span style={{
+                      fontSize: 13,
                       fontWeight: 600,
                       color: 'var(--md-sys-color-on-secondary-container)',
-                      textDecoration: 'none',
-                    }}
-                  >
-                    {sceneKey}
-                  </a>
-                ) : (
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: 'var(--md-sys-color-on-secondary-container)',
-                    }}
-                  >
-                    {sceneKey}
-                  </span>
-                )}
+                    }}>
+                      {sceneNum}
+                    </span>
+                  )}
+                </div>
+                <p style={{
+                  margin: 0,
+                  fontSize: 13,
+                  color: 'var(--md-sys-color-on-surface)',
+                  lineHeight: 1.6,
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  minWidth: 0,
+                }}>
+                  {arcNote}
+                </p>
               </div>
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--md-sys-color-on-surface)', lineHeight: 1.6 }}>
-                {arcNote}
-              </p>
-            </div>
+            ))}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }

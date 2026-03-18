@@ -1,8 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Globe, Users, BookOpen, Link2, Activity } from 'lucide-react';
+import { ArrowLeft, Globe, Users, BookOpen, Link2, Activity, ChevronDown, ChevronRight, Search } from 'lucide-react';
 import NavRail from './NavRail';
+import TruncatedChip from './TruncatedChip';
 import BeatSegmentationChart from './charts/BeatSegmentationChart';
 import type { Play, CharacterBible, SceneBible, RelationshipEdge } from '@/lib/types';
 
@@ -83,6 +84,40 @@ function PlaySkeleton() {
 }
 
 function PlayContent({ play, playId }: { play: Play; playId: string }) {
+  const [worldBibleOpen, setWorldBibleOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTacticChip, setActiveTacticChip] = useState<string | null>(null);
+
+  // Compute top 8 most common tactics across all characters
+  const topTactics = (() => {
+    const tacticCounts: Record<string, number> = {};
+    for (const cb of play.character_bibles) {
+      for (const [tactic, weight] of Object.entries(cb.tactic_distribution)) {
+        tacticCounts[tactic] = (tacticCounts[tactic] ?? 0) + weight;
+      }
+    }
+    return Object.entries(tacticCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 8)
+      .map(([t]) => t);
+  })();
+
+  // Filter characters
+  const filteredCharacters = play.character_bibles.filter((cb) => {
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q
+      || cb.character.toLowerCase().includes(q)
+      || cb.superobjective.toLowerCase().includes(q)
+      || Object.keys(cb.tactic_distribution).some((t) => t.toLowerCase().includes(q))
+      || cb.recurring_tactics.some((t) => t.toLowerCase().includes(q));
+
+    const matchesChip = !activeTacticChip
+      || cb.tactic_distribution[activeTacticChip] != null
+      || cb.recurring_tactics.includes(activeTacticChip);
+
+    return matchesSearch && matchesChip;
+  });
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1100 }}>
       {/* Header */}
@@ -103,11 +138,35 @@ function PlayContent({ play, playId }: { play: Play; playId: string }) {
         </p>
       </header>
 
-      {/* World Bible */}
+      {/* World Bible (collapsible) */}
       {play.world_bible && (
         <section id="world">
-          <SectionHeading icon={<Globe size={18} />} title="World Bible" />
-          <WorldBibleCard wb={play.world_bible} />
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginBottom: 12,
+              color: 'var(--md-sys-color-primary)',
+              cursor: 'pointer',
+            }}
+            onClick={() => setWorldBibleOpen((v) => !v)}
+          >
+            <Globe size={18} />
+            <h2
+              style={{
+                fontFamily: 'var(--md-sys-typescale-display-font)',
+                fontSize: 18,
+                fontWeight: 500,
+                margin: 0,
+                color: 'var(--md-sys-color-on-surface)',
+              }}
+            >
+              World Bible
+            </h2>
+            {worldBibleOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </div>
+          {worldBibleOpen && <WorldBibleCard wb={play.world_bible} />}
         </section>
       )}
 
@@ -115,6 +174,71 @@ function PlayContent({ play, playId }: { play: Play; playId: string }) {
       {play.character_bibles.length > 0 && (
         <section>
           <SectionHeading icon={<Users size={18} />} title="Characters" />
+
+          {/* Search input */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginBottom: 12,
+              background: 'var(--md-sys-color-surface-container-high)',
+              borderRadius: 28,
+              padding: '8px 16px',
+            }}
+          >
+            <Search size={16} style={{ color: 'var(--md-sys-color-on-surface-variant)', flexShrink: 0 }} />
+            <input
+              type="text"
+              placeholder="Search characters by name, superobjective, or tactic..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                flex: 1,
+                background: 'none',
+                border: 'none',
+                outline: 'none',
+                color: 'var(--md-sys-color-on-surface)',
+                fontSize: 14,
+                fontFamily: 'var(--md-sys-typescale-body-font)',
+              }}
+            />
+          </div>
+
+          {/* Tactic filter chips */}
+          {topTactics.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+              {topTactics.map((tactic) => (
+                <button
+                  key={tactic}
+                  onClick={() => setActiveTacticChip((prev) => (prev === tactic ? null : tactic))}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                    padding: '4px 12px',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    border: activeTacticChip === tactic
+                      ? '1px solid var(--md-sys-color-primary)'
+                      : '1px solid var(--md-sys-color-outline-variant)',
+                    background: activeTacticChip === tactic
+                      ? 'var(--md-sys-color-primary-container)'
+                      : 'transparent',
+                    color: activeTacticChip === tactic
+                      ? 'var(--md-sys-color-on-primary-container)'
+                      : 'var(--md-sys-color-on-surface-variant)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s, border-color 0.2s',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {tactic}
+                </button>
+              ))}
+            </div>
+          )}
+
           <div
             style={{
               display: 'grid',
@@ -122,10 +246,15 @@ function PlayContent({ play, playId }: { play: Play; playId: string }) {
               gap: 12,
             }}
           >
-            {play.character_bibles.map((cb) => (
+            {filteredCharacters.map((cb) => (
               <CharacterCard key={cb.character} cb={cb} playId={playId} />
             ))}
           </div>
+          {filteredCharacters.length === 0 && (
+            <p style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14 }}>
+              No characters match your search.
+            </p>
+          )}
         </section>
       )}
 
@@ -226,7 +355,7 @@ function WorldBibleCard({ wb }: { wb: NonNullable<Play['world_bible']> }) {
           <p className="m3-label-medium" style={{ marginBottom: 6 }}>GENRE CONSTRAINTS</p>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {wb.genre_constraints.map((gc, i) => (
-              <span key={i} className="m3-chip m3-chip-tertiary">{gc}</span>
+              <TruncatedChip key={i} text={gc} truncate className="m3-chip m3-chip-tertiary" />
             ))}
           </div>
         </div>
