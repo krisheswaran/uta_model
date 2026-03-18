@@ -28,6 +28,8 @@ const VOCAB_DEST_DIR = join(VIEWER_DIR, "public", "data", "vocab");
 const IMPROV_SOURCE_DIR = join(VIEWER_DIR, "..", "data", "improv");
 const IMPROV_DEST_DIR = join(VIEWER_DIR, "public", "data", "improv");
 const IMPROV_INDEX_PATH = join(VIEWER_DIR, "public", "data", "improv-index.json");
+const SMOOTHED_SOURCE_DIR = join(VIEWER_DIR, "..", "data", "smoothed");
+const SMOOTHED_DEST_DIR = join(VIEWER_DIR, "public", "data", "smoothed");
 const INDEX_PATH = join(VIEWER_DIR, "public", "data", "index.json");
 const CONFIG_PY = join(VIEWER_DIR, "..", "config.py");
 
@@ -234,6 +236,18 @@ async function main() {
     ok(`Wrote improv-index.json (${sessionMetas.length} session${sessionMetas.length !== 1 ? "s" : ""})`);
   } else {
     warn(`No improv directory found at ${IMPROV_SOURCE_DIR} — skipping`);
+  }
+
+  // ── Smoothed (factor graph output) ──────────────────────────────────────────
+  if (existsSync(SMOOTHED_SOURCE_DIR)) {
+    await mkdir(SMOOTHED_DEST_DIR, { recursive: true });
+    const smoothedFiles = (await readdir(SMOOTHED_SOURCE_DIR)).filter((f) => f.endsWith(".json"));
+    for (const filename of smoothedFiles) {
+      await copyFile(join(SMOOTHED_SOURCE_DIR, filename), join(SMOOTHED_DEST_DIR, filename));
+      ok(`Copied smoothed/${filename}`);
+    }
+  } else {
+    warn(`No smoothed directory found at ${SMOOTHED_SOURCE_DIR} — skipping`);
   }
 
   console.log("\n── Done ──────────────────────────────────────────────────\n");

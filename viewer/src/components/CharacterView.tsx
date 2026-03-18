@@ -4,14 +4,19 @@ import { useEffect, useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import NavRail from './NavRail';
 import BeatStateDetail from './BeatStateDetail';
+import SmoothedBeatStateDetail from './SmoothedBeatStateDetail';
+import ViewModeSelector from './ViewModeSelector';
+import type { ViewMode } from './ViewModeSelector';
 import AffectTrajectory from './charts/AffectTrajectory';
 import TacticBarChart from './charts/TacticBarChart';
 import BeatTimeline from './charts/BeatTimeline';
-import type { Play, CharacterBible, Beat, BeatState } from '@/lib/types';
+import type { Play, CharacterBible, Beat, BeatState, SmoothedPlay, SmoothedBeat } from '@/lib/types';
 import {
   getCharacterBible,
   getAllBeatsForCharacter,
   getBeatStateForCharacter,
+  getSmoothedBeatForCharacter,
+  fetchSmoothedPlay,
 } from '@/lib/data';
 
 interface Props {
@@ -23,19 +28,24 @@ type TabId = 'arc' | 'affect' | 'tactics' | 'arc-by-scene';
 
 export default function CharacterView({ playId, character }: Props) {
   const [play, setPlay] = useState<Play | null>(null);
+  const [smoothedPlay, setSmoothedPlay] = useState<SmoothedPlay | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const decodedCharacter = decodeURIComponent(character);
 
   useEffect(() => {
-    fetch(`/data/bibles/${playId}_bibles.json`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        setPlay(data as Play);
+    Promise.all([
+      fetch(`/data/bibles/${playId}_bibles.json`)
+        .then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          return r.json();
+        }),
+      fetchSmoothedPlay(playId),
+    ])
+      .then(([playData, smoothed]) => {
+        setPlay(playData as Play);
+        setSmoothedPlay(smoothed);
         setLoading(false);
       })
       .catch((err) => {
@@ -87,6 +97,7 @@ export default function CharacterView({ playId, character }: Props) {
             character={decodedCharacter}
             bible={bible}
             beats={beats}
+            smoothedPlay={smoothedPlay}
           />
         )}
       </main>
@@ -115,22 +126,53 @@ function CharacterContent({
   character,
   bible,
   beats,
+  smoothedPlay,
 }: {
   play: Play;
   playId: string;
   character: string;
   bible: CharacterBible | undefined;
   beats: Beat[];
+  smoothedPlay: SmoothedPlay | null;
 }) {
   const [activeTab, setActiveTab] = useState<TabId>('arc');
+  const [viewMode, setViewMode] = useState<ViewMode>('llm');
   const [selectedBeatId, setSelectedBeatId] = useState<string | null>(
     beats.length > 0 ? beats[0].id : null
   );
+
+  const hasSmoothed = smoothedPlay !== null;
+
+  // Build a Map of beat_id -> SmoothedBeat for efficient lookup
+  const smoothedBeatsMap = (() => {
+    if (!smoothedPlay) return undefined;
+    const charData = smoothedPlay.characters[character] ?? smoothedPlay.characters[character.toUpperCase()];
+    if (!charData) return undefined;
+    const map = new Map<string, SmoothedBeat>();
+    for (const sb of charData.beats) {
+      map.set(sb.beat_id, sb);
+    }
+    return map;
+  })();
+
+  const smoothedCharData = smoothedPlay
+    ? (smoothedPlay.characters[character] ?? smoothedPlay.characters[character.toUpperCase()] ?? null)
+    : null;
 
   const selectedBeat = beats.find((b) => b.id === selectedBeatId) ?? null;
   const selectedBS: BeatState | undefined = selectedBeat
     ? getBeatStateForCharacter(selectedBeat, character)
     : undefined;
+  const selectedSmoothedBeat: SmoothedBeat | undefined = selectedBeat && smoothedPlay
+    ? getSmoothedBeatForCharacter(smoothedPlay, character, selectedBeat.id)
+    : undefined;
+
+  // Diff summary stats
+  const changedCount = smoothedBeatsMap
+    ? Array.from(smoothedBeatsMap.values()).filter(sb => sb.changed).length
+    : 0;
+  const totalSmoothed = smoothedBeatsMap ? smoothedBeatsMap.size : 0;
+  const meanAffectShift = smoothedCharData?.mean_affect_shift ?? 0;
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'arc', label: 'Arc' },
@@ -169,6 +211,13 @@ function CharacterContent({
 
       {/* Right column: Tabs */}
       <div style={{ flex: 1, minWidth: 300 }}>
+        {/* View mode selector (lens) */}
+        <ViewModeSelector
+          mode={viewMode}
+          onModeChange={setViewMode}
+          disabled={!hasSmoothed}
+        />
+
         {/* Tab bar */}
         <div
           style={{
@@ -190,6 +239,46 @@ function CharacterContent({
           ))}
         </div>
 
+        {/* Diff summary card */}
+        {viewMode === 'diff' && smoothedCharData && (
+          <div
+            className="m3-card fade-in"
+            style={{
+              marginBottom: 16,
+              background: 'var(--md-sys-color-surface-container-high)',
+              display: 'flex',
+              gap: 24,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
+            <div>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+                Beats changed
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: changedCount > 0 ? '#f28b82' : '#81c995' }}>
+                {changedCount} <span style={{ fontSize: 13, color: 'var(--md-sys-color-on-surface-variant)', fontWeight: 400 }}>of {totalSmoothed}</span>
+              </p>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+                Mean affect shift
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
+                {meanAffectShift.toFixed(3)}
+              </p>
+            </div>
+            <div>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>
+                Tactic changes
+              </p>
+              <p style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 500, color: 'var(--md-sys-color-on-surface)' }}>
+                {smoothedCharData.num_tactic_changes}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Tab content */}
         {activeTab === 'arc' && (
           <div>
@@ -204,6 +293,8 @@ function CharacterContent({
                   character={character}
                   selectedBeatId={selectedBeatId}
                   onSelectBeat={setSelectedBeatId}
+                  smoothedBeats={smoothedBeatsMap}
+                  viewMode={viewMode}
                 />
                 {selectedBeat && selectedBS && (
                   <div
@@ -214,13 +305,21 @@ function CharacterContent({
                       overflowY: 'auto',
                       overscrollBehavior: 'contain',
                       borderRadius: 12,
-                      // Subtle scroll shadow at the bottom so the user knows more content is there
                       maskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent 100%)',
                       WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 32px), transparent 100%)',
                       paddingBottom: 32,
                     }}
                   >
-                    <BeatStateDetail beat={selectedBeat} beatState={selectedBS} />
+                    {viewMode === 'llm' ? (
+                      <BeatStateDetail beat={selectedBeat} beatState={selectedBS} />
+                    ) : (
+                      <SmoothedBeatStateDetail
+                        beat={selectedBeat}
+                        beatState={selectedBS}
+                        smoothedBeat={selectedSmoothedBeat}
+                        viewMode={viewMode}
+                      />
+                    )}
                   </div>
                 )}
               </>

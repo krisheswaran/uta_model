@@ -1,20 +1,23 @@
 'use client';
 
 import { useRef } from 'react';
-import type { Beat, BeatState } from '@/lib/types';
+import type { Beat, BeatState, SmoothedBeat } from '@/lib/types';
 import { getBeatStateForCharacter, valenceColor } from '@/lib/data';
+import type { ViewMode } from '../ViewModeSelector';
 
 interface Props {
   beats: Beat[];
   character: string;
   selectedBeatId: string | null;
   onSelectBeat: (beatId: string) => void;
+  smoothedBeats?: Map<string, SmoothedBeat>;
+  viewMode?: ViewMode;
 }
 
 const BEAT_WIDTH = 64;
 const BEAT_HEIGHT = 120;
 
-export default function BeatTimeline({ beats, character, selectedBeatId, onSelectBeat }: Props) {
+export default function BeatTimeline({ beats, character, selectedBeatId, onSelectBeat, smoothedBeats, viewMode = 'llm' }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   if (beats.length === 0) {
@@ -42,20 +45,33 @@ export default function BeatTimeline({ beats, character, selectedBeatId, onSelec
       >
         {beats.map((beat, i) => {
           const bs: BeatState | undefined = getBeatStateForCharacter(beat, character);
-          const valence = bs?.affect_state.valence ?? 0;
-          const arousal = bs?.affect_state.arousal ?? 0;
-          const confidence = bs?.confidence ?? 0.5;
-          const tactic = bs?.tactic_state ?? '';
+          const sb = smoothedBeats?.get(beat.id);
+          const useSmoothed = (viewMode === 'factor-graph' || viewMode === 'diff') && sb;
+
+          const valence = useSmoothed
+            ? (sb.affect_trans_mean[0] ?? 0)
+            : (bs?.affect_state.valence ?? 0);
+          const arousal = useSmoothed
+            ? sb.arousal
+            : (bs?.affect_state.arousal ?? 0);
+          const confidence = useSmoothed
+            ? sb.smoothed_tactic_prob
+            : (bs?.confidence ?? 0.5);
+          const tactic = useSmoothed
+            ? sb.smoothed_tactic
+            : (bs?.tactic_state ?? '');
 
           // Background color from valence
           const bgColor = valenceColor(valence);
 
-          // Arousal bar height: 0–8px at bottom of cell
-          const arousalH = Math.round(((arousal + 1) / 2) * 8);
+          // Arousal bar height
+          const arousalNorm = useSmoothed ? arousal : (arousal + 1) / 2;
+          const arousalH = Math.round(Math.max(0, Math.min(1, arousalNorm)) * 8);
           const arousalColor =
-            arousal > 0.3 ? '#f28b82' : arousal < -0.3 ? '#8ab4f8' : '#fbbc04';
+            arousalNorm > 0.6 ? '#f28b82' : arousalNorm < 0.3 ? '#8ab4f8' : '#fbbc04';
 
           const isSelected = beat.id === selectedBeatId;
+          const isChanged = sb?.changed ?? false;
           const x = i * BEAT_WIDTH;
 
           return (
@@ -97,6 +113,21 @@ export default function BeatTimeline({ beats, character, selectedBeatId, onSelec
                 rx={4}
               />
 
+              {/* Diff mode: changed beat highlight */}
+              {viewMode === 'diff' && isChanged && (
+                <rect
+                  x={x + 1}
+                  y={0}
+                  width={BEAT_WIDTH - 2}
+                  height={BEAT_HEIGHT}
+                  fill="none"
+                  stroke="#f28b82"
+                  strokeWidth={2}
+                  strokeDasharray="4,2"
+                  rx={4}
+                />
+              )}
+
               {/* Selected highlight */}
               {isSelected && (
                 <rect
@@ -123,6 +154,17 @@ export default function BeatTimeline({ beats, character, selectedBeatId, onSelec
                 {beat.index ?? i + 1}
               </text>
 
+              {/* Diff mode: changed indicator dot at top-right */}
+              {viewMode === 'diff' && isChanged && (
+                <circle
+                  cx={x + BEAT_WIDTH - 8}
+                  cy={8}
+                  r={4}
+                  fill="#f28b82"
+                  opacity={0.9}
+                />
+              )}
+
               {/* Tactic label (rotated) */}
               {tactic && (
                 <text
@@ -135,7 +177,7 @@ export default function BeatTimeline({ beats, character, selectedBeatId, onSelec
                   transform={`rotate(-45, ${x + BEAT_WIDTH / 2}, ${BEAT_HEIGHT / 2 + 4})`}
                   style={{ userSelect: 'none' }}
                 >
-                  {tactic.length > 12 ? tactic.slice(0, 11) + '…' : tactic}
+                  {tactic.length > 12 ? tactic.slice(0, 11) + '...' : tactic}
                 </text>
               )}
 
@@ -199,16 +241,22 @@ export default function BeatTimeline({ beats, character, selectedBeatId, onSelec
 
       {/* Legend */}
       <div style={{ display: 'flex', gap: 16, marginTop: 8, flexWrap: 'wrap', paddingLeft: 4 }}>
-        <LegendSwatch color="var(--affect-positive)" label="Positive valence" />
-        <LegendSwatch color="var(--affect-negative)" label="Negative valence" />
+        <LegendSwatch color="var(--affect-positive)" label={viewMode === 'factor-graph' ? 'Positive eigenspace' : 'Positive valence'} />
+        <LegendSwatch color="var(--affect-negative)" label={viewMode === 'factor-graph' ? 'Negative eigenspace' : 'Negative valence'} />
         <span style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#81c995' }} />
-          High confidence
+          {viewMode === 'factor-graph' ? 'High tactic prob' : 'High confidence'}
         </span>
         <span style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
           <span style={{ display: 'inline-block', width: 8, height: 8, background: '#8ab4f8', borderRadius: 2 }} />
           Arousal (bottom bar)
         </span>
+        {viewMode === 'diff' && (
+          <span style={{ fontSize: 11, color: 'var(--md-sys-color-on-surface-variant)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#f28b82' }} />
+            Changed by smoother
+          </span>
+        )}
       </div>
     </div>
   );

@@ -288,3 +288,33 @@ export interface ImprovSessionMeta {
 export interface ImprovIndex {
   sessions: ImprovSessionMeta[];
 }
+
+// ─── Factor Graph Smoothed Output ────────────────────────────────────────────
+
+export interface SmoothedBeat {
+  beat_id: string;
+  llm_tactic: string;
+  smoothed_tactic: string;
+  smoothed_tactic_prob: number;
+  tactic_distribution: Record<string, number>;
+  affect_trans_mean: number[];  // 3D eigenspace [Disempowerment, Blissful Ignorance, Burdened Power]
+  affect_trans_std: number[];
+  arousal: number;
+  desire_distribution: Record<string, number>;
+  social_mean: number[];  // [status, warmth]
+  social_std: number[];
+  changed: boolean;
+}
+
+export interface SmoothedCharacter {
+  num_beats: number;
+  num_tactic_changes: number;
+  mean_affect_shift: number;
+  beats: SmoothedBeat[];
+}
+
+export interface SmoothedPlay {
+  play_id: string;
+  smoothed_at: string;
+  characters: Record<string, SmoothedCharacter>;
+}

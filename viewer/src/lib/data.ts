@@ -5,6 +5,8 @@ import type {
   Scene,
   CharacterBible,
   SceneBible,
+  SmoothedPlay,
+  SmoothedBeat,
 } from "./types";
 
 // ─── Data Fetching ────────────────────────────────────────────────────────────
@@ -19,6 +21,16 @@ export async function fetchPlay(playId: string): Promise<Play> {
   const res = await fetch(`/data/bibles/${playId}_bibles.json`);
   if (!res.ok) throw new Error(`Failed to fetch play ${playId}: ${res.status}`);
   return res.json();
+}
+
+export async function fetchSmoothedPlay(playId: string): Promise<SmoothedPlay | null> {
+  try {
+    const res = await fetch(`/data/smoothed/${playId}.json`);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
 }
 
 // ─── Utility: Beat Accessors ──────────────────────────────────────────────────
@@ -134,4 +146,16 @@ export function confidenceLabel(confidence: number): string {
 
 export function sceneKey(act: number, scene: number): string {
   return `A${act}S${scene}`;
+}
+
+// ─── Factor Graph Helpers ────────────────────────────────────────────────────
+
+export function getSmoothedBeatForCharacter(
+  smoothedPlay: SmoothedPlay,
+  character: string,
+  beatId: string
+): SmoothedBeat | undefined {
+  const charData = smoothedPlay.characters[character] ?? smoothedPlay.characters[character.toUpperCase()];
+  if (!charData) return undefined;
+  return charData.beats.find(b => b.beat_id === beatId);
 }
