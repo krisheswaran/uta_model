@@ -1,4 +1,7 @@
+.vscode/
 __pycache__/
-data/raw/
+data/
 
 .env*
+
+uta_model_data.tar.gz
