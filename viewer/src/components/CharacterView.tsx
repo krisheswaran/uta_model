@@ -59,12 +59,12 @@ export default function CharacterView({ playId, character }: Props) {
   const beats = play ? getAllBeatsForCharacter(play, decodedCharacter) : [];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--md-sys-color-background)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)' }}>
       <NavRail playId={playId} character={decodedCharacter} />
 
       <main
         style={{ flex: 1, padding: '24px 16px' }}
-        className="ml-0 mb-[84px] md:ml-[88px] md:mb-0"
+        
       >
         {/* Breadcrumb */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>

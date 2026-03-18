@@ -313,6 +313,12 @@ body {
   100% { background-position: -200% 0; }
 }
 
+/* ─── Nav Menu Dropdown ─────────────────────────────────────────────────── */
+@keyframes menuDropdown {
+  from { opacity: 0; transform: scaleY(0.8) translateY(-8px); }
+  to   { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+
 /* ─── Full Screen Modal ─────────────────────────────────────────────────── */
 @keyframes modalFadeIn {
   from { opacity: 0; }

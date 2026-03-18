@@ -460,11 +460,11 @@ export default function ImprovSessionView({ sessionId }: { sessionId: string }) 
   }, [sessionId]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--md-sys-color-background)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)' }}>
       <NavRail />
 
       <main
-        className="ml-0 mb-[84px] md:ml-[88px] md:mb-0"
+        
         style={{ flex: 1, padding: '24px 20px', maxWidth: 860 }}
       >
         <a

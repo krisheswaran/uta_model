@@ -302,11 +302,11 @@ export default function VocabView({ playId }: { playId?: string }) {
   const availablePlays = Object.keys(playDataMap);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--md-sys-color-background)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--md-sys-color-background)' }}>
       <NavRail playId={playId} />
 
       <main
-        className="ml-0 mb-[84px] md:ml-[88px] md:mb-0"
+        
         style={{ flex: 1, padding: '24px 20px', maxWidth: 960 }}
       >
         <div style={{ marginBottom: 24 }}>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Home, BookOpen, User, LayoutList, Globe, ChevronDown, ChevronUp, Library, Drama } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Home, BookOpen, User, LayoutList, Globe, Library, Drama, Menu, X } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -19,7 +19,8 @@ interface NavRailProps {
 
 export default function NavRail({ playId, character, act, scene }: NavRailProps) {
   const path = typeof window !== 'undefined' ? window.location.pathname : '';
-  const [bottomHidden, setBottomHidden] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const items: NavItem[] = [
     { label: 'Plays', href: '/', icon: <Home size={22} />, exact: true },
@@ -43,165 +44,198 @@ export default function NavRail({ playId, character, act, scene }: NavRailProps)
     { label: 'Improv', href: '/improv', icon: <Drama size={22} /> },
   ];
 
+  const allItems = [...items, ...globalItems];
+
   function isActive(item: NavItem): boolean {
     if (item.exact) return path === item.href;
     return path.startsWith(item.href);
   }
 
+  // Close menu on outside click or Escape
+  useEffect(() => {
+    if (!menuOpen) return;
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setMenuOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [menuOpen]);
+
+  const activePage = allItems.find((item) => isActive(item));
+
   return (
-    <>
-      {/* ── Desktop: Left navigation rail ─────────────────────────────── */}
-      <nav
+    <div style={{ position: 'sticky', top: 0, left: 0, right: 0, zIndex: 200 }}>
+      {/* Top app bar */}
+      <header
         style={{
-          position: 'fixed',
-          top: 0, left: 0, bottom: 0,
-          width: 88,
-          background: 'var(--md-sys-color-surface-container-low)',
+          width: '100%',
+          height: 56,
+          background: 'var(--md-sys-color-surface-container)',
+          borderBottom: '1px solid var(--md-sys-color-outline-variant)',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
-          paddingTop: 16,
-          paddingBottom: 16,
-          gap: 4,
-          zIndex: 100,
-          borderRight: '1px solid var(--md-sys-color-outline-variant)',
+          padding: '0 8px 0 16px',
+          gap: 12,
         }}
-        className="hidden md:flex"
       >
-        <div style={{ width: 56, height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-          <span style={{ fontFamily: 'var(--md-sys-typescale-display-font)', fontSize: 24, color: 'var(--md-sys-color-primary)', fontWeight: 700, letterSpacing: '-0.5px' }}>
+        {/* Brand */}
+        <a href="/" style={{ textDecoration: 'none' }}>
+          <span style={{
+            fontFamily: 'var(--md-sys-typescale-display-font)',
+            fontSize: 20,
+            color: 'var(--md-sys-color-primary)',
+            fontWeight: 700,
+            letterSpacing: '-0.5px',
+          }}>
             Uta
           </span>
-        </div>
+        </a>
 
-        {items.map((item) => {
-          const active = isActive(item);
-          return (
-            <a
-              key={item.href}
-              href={item.href}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 4,
-                width: 72,
-                padding: '12px 8px',
-                borderRadius: 16,
-                textDecoration: 'none',
-                background: active ? 'var(--md-sys-color-secondary-container)' : 'transparent',
-                color: active ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)',
-                transition: 'background 0.2s, color 0.2s',
-              }}
-            >
-              {item.icon}
-              <span style={{ fontSize: 11, fontWeight: 500 }}>{item.label}</span>
-            </a>
-          );
-        })}
+        {/* Current page indicator */}
+        {activePage && (
+          <>
+            <span style={{ color: 'var(--md-sys-color-outline)', fontSize: 14 }}>/</span>
+            <span style={{
+              fontSize: 14,
+              fontWeight: 500,
+              color: 'var(--md-sys-color-on-surface)',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              flex: 1,
+              minWidth: 0,
+            }}>
+              {activePage.label}
+            </span>
+          </>
+        )}
 
         <div style={{ flex: 1 }} />
-        <div style={{ width: 40, height: 1, background: 'var(--md-sys-color-outline-variant)', margin: '4px 0' }} />
 
-        {globalItems.map((item) => {
-          const active = path.startsWith(item.href);
-          return (
-            <a
-              key={item.href}
-              href={item.href}
+        {/* FAB menu button */}
+        <div ref={menuRef} style={{ position: 'relative' }}>
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              border: 'none',
+              background: menuOpen
+                ? 'var(--md-sys-color-primary)'
+                : 'var(--md-sys-color-primary-container)',
+              color: menuOpen
+                ? 'var(--md-sys-color-on-primary)'
+                : 'var(--md-sys-color-on-primary-container)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'background 0.2s, color 0.2s, transform 0.2s',
+              transform: menuOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+              boxShadow: menuOpen ? 'none' : '0 2px 6px rgba(0,0,0,0.15)',
+            }}
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+
+          {/* Dropdown menu */}
+          {menuOpen && (
+            <div
               style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 4,
-                width: 72,
-                padding: '12px 8px',
+                position: 'absolute',
+                top: 52,
+                right: 0,
+                minWidth: 220,
+                background: 'var(--md-sys-color-surface-container-high)',
                 borderRadius: 16,
-                textDecoration: 'none',
-                background: active ? 'var(--md-sys-color-secondary-container)' : 'transparent',
-                color: active ? 'var(--md-sys-color-on-secondary-container)' : 'var(--md-sys-color-on-surface-variant)',
-                transition: 'background 0.2s, color 0.2s',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.2), 0 1px 4px rgba(0,0,0,0.1)',
+                padding: '8px 0',
+                animation: 'menuDropdown 0.2s cubic-bezier(0.2, 0, 0, 1)',
+                transformOrigin: 'top right',
+                overflow: 'hidden',
               }}
             >
-              {item.icon}
-              <span style={{ fontSize: 11, fontWeight: 500 }}>{item.label}</span>
-            </a>
-          );
-        })}
-      </nav>
+              {items.map((item) => {
+                const active = isActive(item);
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '12px 20px',
+                      textDecoration: 'none',
+                      color: active
+                        ? 'var(--md-sys-color-primary)'
+                        : 'var(--md-sys-color-on-surface)',
+                      background: active
+                        ? 'var(--md-sys-color-primary-container)'
+                        : 'transparent',
+                      fontWeight: active ? 600 : 400,
+                      fontSize: 14,
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <span style={{ opacity: active ? 1 : 0.7 }}>{item.icon}</span>
+                    {item.label}
+                  </a>
+                );
+              })}
 
-      {/* ── Mobile: Bottom navigation bar (collapsible) ────────────────── */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: 0, left: 0, right: 0,
-          zIndex: 100,
-          transform: bottomHidden ? 'translateY(calc(100% - 20px))' : 'translateY(0)',
-          transition: 'transform 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}
-        className="flex flex-col md:hidden"
-      >
-        {/* Drag handle / toggle strip */}
-        <button
-          onClick={() => setBottomHidden((v) => !v)}
-          aria-label={bottomHidden ? 'Show navigation' : 'Hide navigation'}
-          style={{
-            width: '100%',
-            height: 20,
-            background: 'var(--md-sys-color-surface-container-low)',
-            borderTop: '1px solid var(--md-sys-color-outline-variant)',
-            borderBottom: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
-            padding: 0,
-          }}
-        >
-          <div style={{ width: 32, height: 3, borderRadius: 2, background: 'var(--md-sys-color-outline)' }} />
-          {bottomHidden
-            ? <ChevronUp size={12} color="var(--md-sys-color-on-surface-variant)" />
-            : <ChevronDown size={12} color="var(--md-sys-color-on-surface-variant)" />}
-        </button>
+              {/* Divider */}
+              <div style={{
+                height: 1,
+                background: 'var(--md-sys-color-outline-variant)',
+                margin: '4px 16px',
+              }} />
 
-        {/* Nav items */}
-        <nav
-          style={{
-            background: 'var(--md-sys-color-surface-container-low)',
-            borderTop: '1px solid var(--md-sys-color-outline-variant)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            height: 64,
-            paddingBottom: 'env(safe-area-inset-bottom)',
-          }}
-        >
-          {[...items, ...globalItems].map((item) => {
-            const active = isActive(item);
-            return (
-              <a
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '8px 12px',
-                  borderRadius: 12,
-                  textDecoration: 'none',
-                  color: active ? 'var(--md-sys-color-primary)' : 'var(--md-sys-color-on-surface-variant)',
-                  transition: 'color 0.2s',
-                }}
-              >
-                {item.icon}
-                <span style={{ fontSize: 10, fontWeight: 500 }}>{item.label}</span>
-              </a>
-            );
-          })}
-        </nav>
-      </div>
-    </>
+              {globalItems.map((item) => {
+                const active = path.startsWith(item.href);
+                return (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '12px 20px',
+                      textDecoration: 'none',
+                      color: active
+                        ? 'var(--md-sys-color-primary)'
+                        : 'var(--md-sys-color-on-surface)',
+                      background: active
+                        ? 'var(--md-sys-color-primary-container)'
+                        : 'transparent',
+                      fontWeight: active ? 600 : 400,
+                      fontSize: 14,
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <span style={{ opacity: active ? 1 : 0.7 }}>{item.icon}</span>
+                    {item.label}
+                  </a>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </header>
+    </div>
   );
 }
