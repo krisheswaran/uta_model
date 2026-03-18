@@ -113,9 +113,7 @@ All learning runs over the 3 parsed plays in `data/parsed/`. No LLM calls requir
 - `desire_cluster_centroids.npy` — 7×384 matrix of cluster centroids
 - `persistence_modulation_beta.json` — learned β coefficient
 
-**Open question 1**: Should the base transition matrix be pooled across all plays (more data, less specific) or estimated per-play (more specific, sparser)? The experiment log recommends pooling at n=3, but we could also try leave-one-play-out cross-validation to check whether play-specific matrices outperform pooled on held-out data.
-
-> **ANSWER**: We have too little data to not pool the base transition matrix across plays. It's worthwhile running the leave-one-play-out cross-validation experiment once we've built our parameter learning pipeline.
+**Decision**: Transition matrices are pooled across all plays (insufficient data at n=3 to estimate per-play). Leave-one-play-out cross-validation can be run once more plays are added to verify this remains the right choice.
 
 ### 2.2 ψ_A: Affect transition factor
 
@@ -142,9 +140,7 @@ All learning runs over the 3 parsed plays in `data/parsed/`. No LLM calls requir
 - `affect_eigenvalues.npy` — 3 eigenvalues
 - `affect_transition_variance.npy` — 3 diagonal variances for the transition kernel
 
-**Open question 2**: Should the transition kernel be strictly Gaussian, or should we use a heavier-tailed distribution (e.g., Student-t) to accommodate occasional large affect jumps (revelations, betrayals)? A Gaussian penalizes large jumps quadratically, which might over-constrain dramatic moments. We could check the empirical distribution of ΔA_trans — if it has heavier tails than Gaussian, Student-t would be more appropriate.
-
-> **ANSWER**: My thought is a heavier-tail, but it's worth checking the empirical distribution to verify. If inconclusive, let's go with heavier-tail, especially given how small our corpus is, we don't want to over-constrain things.
+**Decision**: Student-t transition kernel (heavier tails than Gaussian). Empirical fit confirms df≈4.4 per axis, validating that dramatic affect jumps have heavier tails than Gaussian. With a small corpus, avoiding over-constraint is more important than tight fits.
 
 ### 2.3 A_emit: Arousal estimation from text
 
@@ -159,9 +155,7 @@ All learning runs over the 3 parsed plays in `data/parsed/`. No LLM calls requir
 - `arousal_regressor.pkl` — fitted Ridge model
 - `arousal_residual_variance.json` — σ² of the residuals
 
-**Open question 3**: Should arousal be estimated purely from text features (as proposed), or should we also allow a weak character-level prior? The variance decomposition shows only 24.5% of arousal variance is between-character (ICC=0.214), but for characters like Hamlet (consistently high arousal) that prior might help. A simple approach: arousal ~ text_features + character_mean_arousal, where character_mean_arousal is a constant from the CharacterBible.
-
-> **ANSWER**: I like the idea of computing a character mean arousal.
+**Decision**: Include character mean arousal as a feature in the regression (arousal ~ text_features + character_mean_arousal). The character mean is computed from the CharacterBible's beat_states during learning.
 
 ### 2.4 ψ_D: Desire transition factor
 
@@ -209,20 +203,7 @@ The blending weight should be small — superobjective provides only 6.25% infor
 - `superobjective_tactic_prior.json` — mapping from SO cluster → tactic distribution
 - `superobjective_cluster_centroids.npy` — cluster centroids
 
-**Open question 4**: How should the superobjective prior blend with the transition prior? Options:
-- (a) Multiplicative: P_final(T) ∝ P_transition(T) × P_arc(T)^λ, where λ controls influence
-- (b) Additive mixture: P_final(T) = (1-λ) P_transition(T) + λ P_arc(T)
-- (c) Only as initialization: use the SO prior for the first beat's tactic distribution, then let transitions take over
-
-> **ANSWER**: Help me understand the tradeoffs here to provide a more informed decision.
-
-**Tradeoff analysis**:
-
-- **(a) Multiplicative** acts as a persistent filter at every beat — the SO reshapes the tactic distribution always, even when the transition model is confident. Risk: suppresses valid dramatic departures at climactic moments. Benefit: ensures long-range coherence.
-- **(b) Additive mixture** acts as a fallback — nearly invisible when the transition model is confident (one tactic dominates), but fills the gap when the transition model is uncertain (flat distribution after a desire shift). Self-regulating: kicks in exactly when you'd want a character-level prior. Risk: with λ=0.06 (matching 6.25% IG), the effect is very subtle. Benefit: matches the data — beat-level SO consistency is only 0.516, suggesting the SO should be a gentle background influence.
-- **(c) Initialization only** sets the starting point then lets transitions take over. Weakest form — maximum freedom for scene dynamics, but no pull-back toward the SO over long scenes. Given the 0.516 consistency, this might overfit to scene-level noise.
-
-**Recommendation**: (b) additive mixture with small λ. Most self-regulating, strongest when uncertainty is high, invisible when transitions are confident.
+**Decision**: Additive mixture blending with λ=0.06: P_final(T) = (1-λ)·P_transition(T) + λ·P_arc(T). This is self-regulating — nearly invisible when the transition model is confident (one tactic dominates), but fills the gap when transitions are uncertain (e.g., after a desire shift). Matches the empirical beat-level SO consistency of 0.516, which indicates the superobjective should be a gentle background influence rather than a persistent filter or a one-time initialization.
 
 ### 2.7 ψ_emit: Emission factor
 
@@ -516,17 +497,20 @@ The `viewer/` app (Redwood SDK, Vite + React) currently consumes Pass 1 output �
 
 ---
 
-## 6. Open Questions Summary
+## 6. Design Decisions
 
-| # | Question | Decision |
-|---|---|---|
-| 1 | Pooled vs per-play transition matrices | **Pooled** (too little data to split). Run leave-one-out CV once learning pipeline is built. |
-| 2 | Gaussian vs heavy-tailed affect transitions | **Heavy-tailed** (Student-t). Verify empirically; default to heavy-tail given small corpus. |
-| 3 | Character-level arousal prior | **Yes** — include character mean arousal as a feature in the regression. |
-| 4 | Superobjective blending method | **Additive mixture** (b) with small λ. Self-regulating, matches SO consistency of 0.516. |
-| 5 | Factored vs particle-based inference | **Factored** for v1. Exact discrete + Kalman continuous. |
-| 6 | Posterior → BeatState conversion | **MAP** for generation, but also **sample** to discover multimodal posteriors. If modes found, frame choices deterministically in the prompt. |
-| 7 | Factor graph smoother vs LLM smoother | **Complementary layers.** LLM smoother stays in Pass 1 (semantic). Factor graph smoother is Pass 1.5 (statistical). No replacement needed. |
+All architectural questions have been resolved. Consolidated for reference:
+
+| # | Decision area | Choice | Rationale |
+|---|---|---|---|
+| 1 | Transition matrix pooling | Pooled across all plays | Insufficient data at n=3 for per-play estimation |
+| 2 | Affect transition kernel | Student-t (df≈4.4) | Empirically validated heavy tails; avoids over-constraining dramatic jumps |
+| 3 | Arousal estimation | Ridge regression on text features + character mean arousal | Near-IID (lag-1 r=+0.036); character mean adds modest signal (ICC=0.214) |
+| 4 | Superobjective blending | Additive mixture, λ=0.06 | Self-regulating; matches SO beat-level consistency of 0.516 |
+| 5 | Inference method | Factored: exact discrete (T×D=462 states) + Kalman continuous | Tractable, sufficient given weak emission model |
+| 6 | Posterior → BeatState | MAP for generation; periodic sampling for multimodality discovery | Deterministic by default; sample to detect when multiple tactics are viable |
+| 7 | Smoother architecture | LLM (Pass 1, semantic) + factor graph (Pass 1.5, statistical) | Complementary layers — each catches different classes of issues |
+| 8 | Transition smoothing | Semantically-informed Dirichlet (τ=0.7, embedding-distance-weighted α) | 21% entropy reduction vs uniform; 94.8% → 6.3% canonical disagreement rate |
 
 ---
 
