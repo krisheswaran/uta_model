@@ -86,11 +86,15 @@ All learning runs over the 3 parsed plays in `data/parsed/`. No LLM calls requir
 
 **Method**:
 
-1. **Base transition matrix** — already computed in `priors.py`. Pool across all characters and plays:
+1. **Base transition matrix** — pool across all characters and plays:
    - For each character's sequence of beats within a scene, extract (canonical_tactic_{t-1}, canonical_tactic_t) bigrams
    - Count matrix C[i,j] = number of times tactic i → tactic j observed
-   - Apply per-row Dirichlet smoothing: P[i,j] = (C[i,j] + α_i) / (Σ_j C[i,j] + 66·α_i)
-   - α_i should be proportional to observed transition entropy for row i (hub tactics get higher α, terminal tactics get lower α — see EXPERIMENT_LOG.md, Tactic Transition Priors)
+   - Apply **semantically-informed Dirichlet smoothing** (validated in EXPERIMENT_LOG.md):
+     ```
+     α_ij = α_base · scale_i · exp(-D[i,j] / τ)
+     P[i,j] = (C[i,j] + α_ij) / Σ_j(C[i,j] + α_ij)
+     ```
+     where D[i,j] is cosine distance between tactic embeddings (all-MiniLM-L6-v2 on full description strings), τ=0.7, and scale_i is proportional to observed row entropy (hub/terminal distinction). This concentrates smoothing mass on semantically plausible unseen transitions while preserving observed dramatic co-occurrence patterns including non-local jumps (e.g., MOCK→PLEAD)
 
 2. **Desire-type conditioning** — from desire embedding clusters (k=7):
    - Embed all desire_state strings with all-MiniLM-L6-v2

@@ -414,15 +414,34 @@ class EmissionFactor:
         "first_person_rate", "second_person_rate", "sentiment_polarity",
     ]
 
+    # Minimum std floor to prevent emission factor from dominating.
+    # With std=1e-6, a single feature mismatch of 1.0 produces
+    # log-likelihood ~ -0.5 * (1e6)^2 = -5e11, completely overwhelming
+    # the observation model (5 nats) and transition model.
+    # A floor of 0.5 ensures each feature contributes at most ~2 nats.
+    MIN_STD_FLOOR = 0.5
+
+    # Emission tempering: scale all emission log-likelihoods by this factor.
+    # This controls the relative influence of text features vs the LLM
+    # observation model (accuracy=0.7, log-odds=5.02 nats).
+    # A temperature of 0.1 means emission contributes at most ~10% of
+    # the observation signal, acting as soft evidence rather than override.
+    DEFAULT_EMISSION_TEMPERATURE = 0.1
+
     def __init__(
         self,
         tactic_profiles: dict[str, dict[str, tuple[float, float]]],
         arousal_regressor: object | None = None,
         feature_names: list[str] | None = None,
+        emission_temperature: float | None = None,
     ):
         self.tactic_profiles = tactic_profiles
         self.arousal_regressor = arousal_regressor
         self.feature_names = feature_names or self.DEFAULT_FEATURES
+        self.emission_temperature = (
+            emission_temperature if emission_temperature is not None
+            else self.DEFAULT_EMISSION_TEMPERATURE
+        )
 
         # Pre-compute log-likelihood parameters for each tactic
         # as arrays for vectorized computation
@@ -437,7 +456,7 @@ class EmissionFactor:
                 if fname in profile:
                     m, s = profile[fname]
                     means.append(m)
-                    stds.append(max(s, 1e-6))  # Floor std
+                    stds.append(max(s, self.MIN_STD_FLOOR))  # Robust floor
                 else:
                     # Missing feature: use non-informative (large std)
                     means.append(0.0)
@@ -446,10 +465,15 @@ class EmissionFactor:
             self._tactic_stds[tid] = np.array(stds, dtype=np.float64)
 
     def _log_emission(self, text_features: NDArray, tactic_id: str) -> float:
-        """Log-likelihood of text features given a tactic.
+        """Tempered log-likelihood of text features given a tactic.
 
         Assumes independent Gaussian per feature:
           log P(features | tactic) = sum_j -0.5 * ((f_j - μ_j) / σ_j)² - log(σ_j)
+
+        The result is scaled by emission_temperature to prevent emission from
+        dominating the observation model. Without tempering, emission
+        log-likelihoods can reach magnitudes of 10^10 (from near-zero stds),
+        completely overriding the LLM observation signal (~5 nats).
         """
         if tactic_id not in self._tactic_means:
             # Unknown tactic: return 0 (non-informative)
@@ -458,7 +482,8 @@ class EmissionFactor:
         sigma = self._tactic_stds[tactic_id]
         z = (text_features - mu) / sigma
         # Drop the constant -0.5*log(2π) terms since they cancel in normalization
-        return float(-0.5 * np.sum(z ** 2) - np.sum(np.log(sigma)))
+        raw_ll = float(-0.5 * np.sum(z ** 2) - np.sum(np.log(sigma)))
+        return raw_ll * self.emission_temperature
 
     def observe(
         self, text_features: NDArray, tactic_belief: DiscreteVariable

@@ -29,6 +29,9 @@ from sklearn.metrics import silhouette_score
 
 from config import FACTORS_DIR, PARSED_DIR, VOCAB_DIR
 
+# Semantic smoothing defaults (from scripts/experiments/semantic_dirichlet.py)
+DEFAULT_SEMANTIC_TAU = 0.7  # temperature for embedding-distance weighting
+
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -272,10 +275,59 @@ class FactorLearner:
     # 2.1  psi_T: Tactic transition (base)
     # ------------------------------------------------------------------ #
 
-    def learn_tactic_transition_base(self) -> dict:
-        """Compute pooled 66x66 tactic transition matrix with entropy-adaptive
-        Dirichlet smoothing. Saves tactic_transition_base.json."""
-        print("\n=== 2.1 psi_T: Tactic transition (base) ===")
+    def _compute_tactic_distance_matrix(self) -> np.ndarray:
+        """Compute pairwise cosine distance matrix between tactic embeddings.
+
+        Uses sentence-transformer (all-MiniLM-L6-v2) embeddings of tactic
+        descriptions from the vocabulary file. Cached for reuse.
+        """
+        if hasattr(self, "_tactic_dist_matrix"):
+            return self._tactic_dist_matrix
+
+        from sentence_transformers import SentenceTransformer
+        from scipy.spatial.distance import cosine as cosine_dist
+
+        vocab_path = VOCAB_DIR / "tactic_vocabulary.json"
+        with open(vocab_path) as f:
+            vocab = json.load(f)
+        id_to_desc = {e["canonical_id"]: e["description"] for e in vocab["tactics"]}
+        texts = [id_to_desc.get(tid, tid.lower()) for tid in self.canonical_ids]
+
+        print("  Loading sentence-transformers model for tactic embeddings...")
+        model = SentenceTransformer("all-MiniLM-L6-v2")
+        embeddings = model.encode(texts, show_progress_bar=False, normalize_embeddings=True)
+
+        N = len(self.canonical_ids)
+        D = np.zeros((N, N))
+        for i in range(N):
+            for j in range(N):
+                if i != j:
+                    D[i, j] = cosine_dist(embeddings[i], embeddings[j])
+
+        self._tactic_dist_matrix = D
+        return D
+
+    def learn_tactic_transition_base(
+        self,
+        semantic_smoothing: bool = True,
+        tau: float = DEFAULT_SEMANTIC_TAU,
+    ) -> dict:
+        """Compute pooled 66x66 tactic transition matrix with Dirichlet smoothing.
+
+        Parameters
+        ----------
+        semantic_smoothing : bool
+            If True, use semantically-informed Dirichlet smoothing where
+            alpha_ij = alpha_base * exp(-D[i,j] / tau), weighting pseudo-counts
+            by embedding distance. If False, use uniform Dirichlet (original).
+        tau : float
+            Temperature for semantic smoothing. Lower = more peaked toward
+            semantically similar tactics. Default from experiment: 0.7.
+
+        Saves tactic_transition_base.json.
+        """
+        smoothing_label = f"semantic (tau={tau})" if semantic_smoothing else "uniform"
+        print(f"\n=== 2.1 psi_T: Tactic transition (base) [{smoothing_label}] ===")
 
         N = self.n_tactics
         counts = np.zeros((N, N), dtype=float)
@@ -298,7 +350,7 @@ class FactorLearner:
 
         print(f"  Transitions: {n_transitions}, skipped: {n_skipped}")
 
-        # Compute per-row entropy
+        # Compute per-row entropy of raw counts (for adaptive scaling)
         row_entropies = np.zeros(N)
         for i in range(N):
             row_sum = counts[i].sum()
@@ -311,13 +363,36 @@ class FactorLearner:
         max_entropy = row_entropies.max() if row_entropies.max() > 0 else 1.0
         alpha_base = 0.1
 
-        # Per-row Dirichlet smoothing: alpha_i = alpha_base * (entropy_i / max_entropy)
+        # Build distance-weighted alpha matrix if semantic smoothing
+        if semantic_smoothing:
+            dist_matrix = self._compute_tactic_distance_matrix()
+            alpha_matrix = alpha_base * np.exp(-dist_matrix / tau)
+        else:
+            alpha_matrix = None
+
+        # Per-row Dirichlet smoothing
         transition_matrix = np.zeros((N, N), dtype=float)
         for i in range(N):
-            alpha_i = alpha_base * (row_entropies[i] / max_entropy) if max_entropy > 0 else alpha_base
-            alpha_i = max(alpha_i, 1e-6)  # avoid zero alpha
-            smoothed = counts[i] + alpha_i
+            scale_i = (row_entropies[i] / max_entropy) if max_entropy > 0 else 1.0
+            scale_i = max(scale_i, 1e-6)  # avoid zero alpha
+
+            if alpha_matrix is not None:
+                # Semantic: alpha_ij = alpha_base * scale_i * exp(-D[i,j] / tau)
+                alpha_row = alpha_matrix[i] * scale_i
+            else:
+                # Uniform: alpha_ij = alpha_base * scale_i for all j
+                alpha_row = np.full(N, alpha_base * scale_i)
+
+            smoothed = counts[i] + alpha_row
             transition_matrix[i] = smoothed / smoothed.sum()
+
+        # Report entropy statistics
+        ent = np.zeros(N)
+        for i in range(N):
+            p = transition_matrix[i][transition_matrix[i] > 0]
+            ent[i] = -np.sum(p * np.log2(p))
+        print(f"  Mean row entropy: {ent.mean():.4f} bits (max possible: {np.log2(N):.2f})")
+        print(f"  Mean max prob: {transition_matrix.max(axis=1).mean():.6f}")
 
         # Save as nested dict: {from_tactic: {to_tactic: prob}}
         result = {}
@@ -333,7 +408,7 @@ class FactorLearner:
         with open(out_path, "w") as f:
             json.dump(result, f, indent=2)
         print(f"  Saved {out_path} ({N}x{N} matrix, "
-              f"alpha_base={alpha_base}, entropy-adaptive)")
+              f"alpha_base={alpha_base}, {smoothing_label})")
 
         return result
 

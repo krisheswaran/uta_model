@@ -206,6 +206,44 @@ This distinction matters for the transition factor ψ_T in the factor graph. A u
 
 An alternative worth considering later: rather than smoothing the full 66×66 matrix, cluster tactics into super-categories (e.g., aggressive, defensive, affiliative) and estimate transitions at the category level first, then condition within-category transitions on the specific tactic. This hierarchical approach would handle sparsity naturally — category-level transitions would be well-populated even if specific tactic-to-tactic transitions are sparse.
 
+#### Semantically-informed Dirichlet smoothing (design choice, validated)
+
+Uniform Dirichlet smoothing treats all unseen transitions as equally plausible — DEFLECT→EVADE (semantically close) gets the same smoothing mass as DEFLECT→CONSECRATE (semantically distant). With 90% of cells unobserved, this flattens most rows to near-uniform distributions (43/66 rows had entropy > 3.0 out of a maximum of 4.19 for 66 states).
+
+**Semantic Dirichlet** replaces the uniform α with embedding-distance-weighted smoothing:
+
+```
+α_ij = α_base · scale_i · exp(-D[i,j] / τ)
+```
+
+where D[i,j] is the cosine distance between tactic i and j's sentence-transformer embeddings (same all-MiniLM-L6-v2 used for tactic clustering, embedding the full description strings like "deflect — redirect attention away from a threatening topic"), and τ controls the temperature. Observed transitions are unaffected — they dominate through raw counts regardless of semantic distance. Only unseen transitions are shaped by semantics.
+
+**Experiment results** (τ sweep, leave-one-out log-likelihood):
+
+| Method | Mean row entropy | LOO mean LL |
+|---|---|---|
+| Uniform Dirichlet | 4.09 bits | -4.40 |
+| Semantic τ=0.1 | 2.30 bits | -7.97 |
+| Semantic τ=0.2 | 2.41 bits | -6.09 |
+| Semantic τ=0.3 | 2.61 bits | -5.48 |
+| Semantic τ=0.5 | 2.99 bits | -5.02 |
+| **Semantic τ=0.7** | **3.24 bits** | **-4.83** |
+
+Best τ=0.7 (selected by LOO LL). Row entropy drops 20.9% vs uniform. The LOO LL is slightly worse than uniform (-4.83 vs -4.40), reflecting the tradeoff: semantic smoothing concentrates mass on plausible transitions at the cost of slightly penalizing rare but real dramatic reversals (e.g., MOCK→PLEAD). With more data this gap should close.
+
+**Combined with emission factor fix**: The 94.8% smoother disagreement rate was caused by *two* issues: (1) near-uniform transition rows from uniform smoothing, and (2) an emission factor bug where a std floor of 1e-6 produced log-likelihoods of magnitude 10^10, completely overwhelming all other factors. Fixing both:
+
+| Metric | Before | After |
+|---|---|---|
+| Overall smoother disagreement | 94.8% | 37.7% |
+| Canonical tactic disagreement | — | 6.3% (8/127) |
+| Non-canonical disagreement | — | 100% (64/64, structurally inevitable) |
+| LLM tactic in smoothed top-3 | — | 65.4% |
+
+The remaining 6.3% canonical disagreements are semantically reasonable near-synonyms (PLEAD→COAX, DISMISS→DEFLECT). The 64 non-canonical disagreements reflect the 21% vocabulary coverage gap — tactics the LLM produced that aren't in the 66-cluster vocabulary.
+
+**Decision**: Semantic Dirichlet smoothing with τ=0.7 adopted as the default for ψ_T. The key insight: semantic similarity between tactics provides a principled prior on *which unseen transitions are plausible*, while preserving observed dramatic co-occurrence patterns (including semantically distant but dramatically real transitions like MOCK→PLEAD).
+
 #### Affect transition kernels
 - **Strongest co-variation**: control↔vulnerability (r=-0.66). Gaining control means becoming less vulnerable.
 - Certainty↔control (r=+0.59): gaining certainty co-occurs with gaining control.
@@ -580,7 +618,7 @@ Each beat's arousal is essentially a fresh draw — it doesn't have dynamics wor
 ### Architectural implications — final
 
 1. **Affect state: 3+1 architecture.** Three independent axes (Disempowerment, Blissful Ignorance, Burdened Power) for **tactic transition dynamics** — 91.6% of transition variance, 4× better conditioned. A fourth axis (Arousal) for **utterance generation/scoring** — near-IID (lag-1 r=+0.036), no transition dynamics, but the strongest text predictor (1.26× lift, top RF feature for 6/9 utterance features). Exposure (PC5) dropped entirely. Eigenspace should be re-validated on larger corpus before hard commitment.
-2. **ψ_T (tactic transitions)**: Sparse Dirichlet with per-row α (hub/terminal distinction). Desire conditioning via two mechanisms: (a) continuous similarity scalar modulates self-transition probability (8% → 16%), (b) discrete desire-type latent variable (k=7) biases the full transition distribution.
+2. **ψ_T (tactic transitions)**: Semantically-informed Dirichlet smoothing (τ=0.7, embedding-distance-weighted α) with per-row entropy scaling. Desire conditioning via two mechanisms: (a) continuous similarity scalar modulates self-transition probability (8% → 16%), (b) discrete desire-type latent variable (k=7) biases the full transition distribution.
 3. **ψ_social**: Validated (status is zero-sum, r=-0.20).
 4. **ψ_arc (superobjective)**: Soft prior on tactic distribution conditioned on SO embedding. 6.25% information gain. Context-modulated, not fixed.
 5. **ψ_emission**: Weak overall — factor graph inference should be transition-dominated, not observation-dominated. Use tactic-specific hard emission constraints for distinctive tactics (PROBE→questions, COMMAND→imperatives, SHAME→"you" language). For affect recovery, sentiment polarity and first person rate are the two most informative text features.
