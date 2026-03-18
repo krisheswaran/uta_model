@@ -373,6 +373,196 @@ For the consistency test, each BeatState also has a `superobjective_reminder` fi
 
 ---
 
+## Desire Conditioning: How Desire Modulates Tactic Transitions
+
+Building on H6's finding that desire similarity predicts tactic persistence (r=0.106, p=0.005), this experiment investigates *how* desire conditions transitions — which specific transitions change, and whether desire content predicts tactic choice independently of character identity.
+
+**Method**: Desire embeddings (all-MiniLM-L6-v2, 384-dim) for all beat_states. Tactic bigrams split by desire similarity tercile. Desire embedding clustering (k-means, optimal k=7). Predictive models for tactic from desire embedding vs character identity.
+
+### Desire similarity reshapes the transition matrix, not just persistence
+
+Persistence rates scale monotonically:
+- Low tercile (similarity < 0.376): **8.1%** persistence
+- Medium tercile: **11.6%** persistence
+- High tercile (similarity ≥ 0.600): **15.8%** persistence
+
+This is a near-doubling of persistence from low to high — the continuous modulation from H6 is real and graded.
+
+More interestingly, *which transitions occur* changes across terciles:
+- **Desire-shift-exclusive transitions** (low tercile only): DEFLECT→DISMISS, SHAME→PLEAD, DEFLECT→FLATTER. These are confrontational or evasive pivots — when desire shifts, characters tend toward dismissal, mockery, or flattery.
+- **Desire-stability-exclusive transitions** (high tercile only): CHALLENGE→CHALLENGE, ALARM→REASSURE, APPEASE→DEFLECT. Stability-exclusive transitions include self-persistence and softer relational moves.
+
+This means a single scalar modulation on self-transition probability underestimates the effect. The transition matrix genuinely changes structure — consider at least a 2-regime model (stable vs shifting desire).
+
+### Desire clusters predict tactic distributions
+
+Optimal k=7 clusters (silhouette=0.083 — low but expected for 384-dim semantic space). Chi-square highly significant (χ²=464, p<0.000001, Cramér's V=0.288).
+
+Most distinctive tactic per desire cluster (by standardized residual):
+
+| Cluster | Desire type | Distinctive tactic | Residual |
+|---|---|---|---|
+| 0 | Intellectual posturing | MOCK | +5.38 |
+| 1 | Extraction / duty | RECRUIT | +3.25 |
+| 3 | Romantic / social | SEDUCE | +3.07 |
+| 4 | Confronting supernatural/reality | PROBE | +2.53 |
+| 5 | Emotional control / authority | SUMMON | +3.05 |
+| 6 | Protecting / manipulating others | REMINISCE | +3.99 |
+
+Desires are not interchangeable — different kinds of desires reliably trigger different tactics.
+
+### Desire adds predictive power; character identity does not
+
+| Model | Accuracy | vs baseline |
+|---|---|---|
+| Majority baseline (DEFLECT) | 14.5% | — |
+| Character-only | 13.6% | -0.9% |
+| Desire-only | 18.2% | +3.8% |
+| Character + desire | 18.3% | +3.9% |
+
+Character identity adds essentially nothing once you know the desire (+0.1%). The desire embedding is the informative feature. Per-tactic F1 is highest for INFORM (0.64), FLATTER (0.62), EMBRACE (0.62), MOCK (0.60) — these tactics are most predictable from desire content.
+
+### Desire shift direction: signal exists but too weak to model
+
+Delta-vector clustering (k=7) shows qualitatively different dominant target tactics per cluster, and a Mann-Whitney test confirms within-cluster similarity is significantly higher than between-cluster (p=0.021). But logistic regression on delta vectors achieves only 12.0% accuracy (= majority baseline). The signal is too weak/nonlinear for a simple model at this sample size.
+
+**Design recommendation for factor graph**: Use a two-part desire conditioning factor:
+1. **Continuous desire-similarity scalar** that modulates self-transition probability (near-doubling from low to high similarity)
+2. **Discrete desire-type latent variable** (k=7) that biases the full transition distribution via cluster-specific tactic priors
+
+Character identity can be dropped from the desire-conditioning factor since it adds no predictive power beyond desire content. Do not model delta direction explicitly.
+
+---
+
+## Emission Model: P(utterance features | BeatState)
+
+Tests whether the factor graph can connect hidden states to observable text — critical for any inference that runs "backward" from text to state.
+
+**Method**: Extracted 9 utterance features (word count, question/exclamation/imperative density, mean sentence length, lexical diversity, first/second person rates, sentiment polarity) for 1,305 (beat, character) observations. Trained prediction models in both directions: state→features (forward model) and features→state (invertibility).
+
+### Forward model: weak but structured
+
+R² values from ridge regression are uniformly low (best: sentiment_polarity at R²=0.059). Random forest with tactic one-hot improves question_density (R²=0.194) and word_count (R²=0.116) but most features remain unpredictable from state alone.
+
+Strongest individual correlations:
+
+| State dimension | Utterance feature | Pearson r |
+|---|---|---|
+| Valence | Sentiment polarity | +0.29 |
+| Arousal | Lexical diversity | -0.25 |
+| Arousal | Exclamation density | +0.23 |
+| Arousal | Word count | +0.22 |
+| Certainty | Question density | -0.24 |
+| Status | First person rate | -0.26 |
+
+These are theatrically sensible: uncertain characters ask more questions, high-status characters say "I" less, aroused characters use more exclamations and speak at greater length.
+
+### Tactic emission profiles: clear separation
+
+Individual tactics have very distinctive text signatures:
+
+| Tactic | Distinctive feature | z-score |
+|---|---|---|
+| PROBE / INTERROGATE | Question density | +1.84 to +1.99 |
+| COMMAND | Imperative density | +1.00 |
+| SHAME | Second person rate ("you") | +0.83 |
+| INSTRUCT / DOMINATE | Word count, sentence length | +1.5 to +2.5 |
+| SUMMON | Exclamation density | +1.81 |
+| COMPLY / DEFER | First person rate, lexical diversity | high |
+| EMBRACE / FLATTER | Sentiment polarity | +0.52 to +1.02 |
+
+These profiles show real separation in feature space — the emission distributions are not identical across states, even if they overlap considerably.
+
+### Invertibility: affect recoverable, tactic not
+
+| Task | Accuracy | Baseline | Lift |
+|---|---|---|---|
+| Tactic (50 classes) | 14.3% | 14.4% | 1.0× (chance) |
+| Tactic top-3 | 27.3% | 14.4% | 1.9× |
+| Affect quadrant (4 classes) | 45.0% | 32.9% | **1.37×** |
+| Certainty (binary) | — | — | 1.16× |
+| Control (binary) | — | — | 1.13× |
+| Valence (binary) | — | — | 1.11× |
+
+Fine-grained tactic classification from text features alone is at chance — these 9 features are too coarse for 50-class discrimination. But coarse affect recovery (valence×arousal quadrant) achieves a meaningful 1.37× lift. The emission model can inform affect state estimation, but tactic inference must come from transition dynamics.
+
+### Feature importance ranking
+
+| Rank | Feature | Mean importance |
+|---|---|---|
+| 1 | Sentiment polarity | 0.189 |
+| 2 | First person rate | 0.143 |
+| 3 | Mean sentence length | 0.131 |
+| 4 | Word count | 0.127 |
+| 5 | Lexical diversity | 0.111 |
+
+Sentiment polarity and first person rate carry disproportionate information about hidden state. If computational budget is limited, these two features should be prioritized.
+
+### Per-PC emission analysis: forward and inverse
+
+Each PC has a distinct text signature — both in what text features it predicts (forward) and how recoverable it is from text (inverse).
+
+**Forward model** (PC scores → utterance features): Ridge R² is identical for PCs vs raw dimensions (rotation invariance for linear models). Best-predicted feature: sentiment_polarity (R²=0.065). Most features have near-zero R².
+
+**Inverse model** (utterance features → PC scores): All PCs have weak continuous R² but meaningful binary classification lift (1.15–1.26×), except PC5 (1.03×).
+
+**Per-PC text signatures** (Pearson correlations):
+
+| PC | Text signature | Inverse lift | Interpretation |
+|---|---|---|---|
+| **PC1: Disempowerment** | +first_person_rate (r=+0.16), +question_density (r=+0.16), -word_count (r=-0.14) | 1.17× | Disempowered characters say "I" more, ask more questions, speak less |
+| **PC2: Blissful Ignorance** | **+sentiment_polarity (r=+0.28)** — strongest link in entire matrix | 1.15× | Blissfully ignorant characters use more positive language |
+| **PC3: Burdened Power** | -exclamation_density (r=-0.19), -sentiment_polarity (r=-0.17), +lexical_diversity (r=+0.15) | 1.18× | Burdened power speaks with controlled, varied vocabulary and fewer exclamations |
+| **PC4: Arousal** | +word_count (r=+0.23), -lexical_diversity (r=-0.20), +mean_sentence_length (r=+0.15) | **1.26×** | Aroused characters speak at length with repetitive, long sentences |
+| **PC5: Exposure** | No correlations above \|r\|=0.10 | 1.03× | Essentially invisible in text |
+
+**PC4 (Arousal) has the strongest text footprint despite explaining only 5.9% of transition variance.** It is the top RF predictor for 6/9 utterance features (word count, sentence length, lexical diversity, first/second person rates, imperative density). This creates an interesting asymmetry: Arousal is the *most recoverable* axis from text but the *least important* for transitions. Conversely, PC1 (Disempowerment, 59.9% of transitions) has only moderate text recoverability (1.17×).
+
+**PC5 (Exposure) is invisible to text and contributes only 2.5% of transition variance** — doubly justified for removal from the primary model.
+
+**What is arousal, architecturally?** The asymmetry between arousal's low transition importance (5.9%) and high text recoverability (1.26×, top predictor for 6/9 features) demands interpretation. A variance decomposition test clarifies:
+
+- Arousal is **not a character trait** — only 24.5% of variance is between-character (ICC=0.214, 4th of 5 dimensions). Vulnerability (ICC=0.432) is far more trait-like.
+- Arousal is **not scene context** — only 13.1% of variance is between-scene.
+- Arousal is **primarily moment-to-moment** — 55.1% of variance is within-cell (same character, same scene, beat-to-beat).
+
+So arousal fluctuates constantly, but those fluctuations don't participate in the dominant *patterns* of dramatic movement. The top 3 PCs capture certainty, control, valence, and vulnerability moving *together* in meaningful dramatic structures (gaining/losing agency, revelations, Pyrrhic victories). Arousal fluctuates independently of these correlated patterns — it's doing its own thing.
+
+Yet arousal strongly predicts how characters speak — word count, sentence length, lexical diversity. This makes it a **stylistic modulator**: it shapes the surface form of speech (verbose and repetitive vs terse and varied) without participating in the underlying dramatic structure. PC1-3 determine *what is dramatically happening*; arousal shapes *how it sounds*.
+
+**Arousal is near-IID.** Lag-1 autocorrelation confirms that arousal barely carries forward from one beat to the next:
+
+| Dimension | Lag-1 autocorrelation | Interpretation |
+|---|---|---|
+| Valence | **+0.137** | Most persistent — mood carries over |
+| Vulnerability | +0.076 | Moderate persistence |
+| Arousal | **+0.036** | Near-IID |
+| Control | +0.021 | Near-IID |
+| Certainty | -0.008 | Essentially IID |
+
+Each beat's arousal is essentially a fresh draw — it doesn't have dynamics worth modeling in a transition model. This also explains why certainty and control have low *individual* autocorrelation but high *transition importance*: they change a lot beat-to-beat, but they change *together* (the Disempowerment axis). The eigendecomposition captures their correlated movement, not their individual persistence.
+
+**Recommended architectural treatment**: Arousal belongs in the **emission model**, not the **transition model**. It is the strongest predictor of utterance style (word count, sentence length, lexical diversity) and the most recoverable axis from text (1.26× lift). But it has no transition dynamics worth modeling — it's near-IID and independent of the dramatic structure captured by PC1-3. The factor graph should:
+- Use 3 latent axes (Disempowerment, Blissful Ignorance, Burdened Power) for **tactic transition dynamics**
+- Use arousal as a 4th axis for **utterance generation/scoring** — estimated from text features or sampled fresh per beat, not propagated through transition factors
+- Drop Exposure (PC5) entirely — invisible to text and negligible in transitions
+
+**Implications for the eigenspace caveat**: The top-3 PCs (91.6% of transition variance) have mean classification lift of 1.17× — slightly better than PC4-5 mean of 1.15×. The case for 3 transition axes rests primarily on the variance argument (91.6%) and conditioning improvement (4×). Arousal's high text recoverability actually *supports* dropping it from the transition model — since it can be estimated directly from text, it doesn't need transition dynamics to infer it. Re-validate on a larger corpus before hard commitment.
+
+### Implications for factor graph architecture
+
+1. **The emission model is weak but structured.** The factor graph should rely heavily on **transition priors** (ψ_T), not observations. The posterior over hidden states will be dominated by P(state_t | state_{t-1}), not P(text | state_t).
+
+2. **Use tactic-specific hard emission constraints** rather than a uniform emission model. PROBE/INTERROGATE → question density, COMMAND → imperative density, SHAME → "you" language. These are reliable enough to serve as high-confidence emission factors for specific tactics, even though the general emission model is weak.
+
+3. **Affect is more recoverable than tactic from text.** The emission model should focus on coarse affect recovery (valence-arousal quadrant), with tactic inference delegated entirely to transition dynamics and desire conditioning.
+
+4. **Sentiment polarity and first person rate** are the two most informative observable features. A minimal emission model could use just these two.
+
+5. **PC-specific emission factors**: PC2 (Blissful Ignorance) can be partially recovered from sentiment polarity alone (r=+0.28). PC4 (Arousal) from word count and sentence length. PC1 and PC3 have weaker but real text correlates. These per-PC emission parameterizations are more informative than a generic affect→text model.
+
+---
+
 ## Summary: Hypothesis Resolution Status
 
 | Hypothesis | Status | Entropy | Action |
@@ -382,18 +572,22 @@ For the consistency test, each BeatState also has a `superobjective_reminder` fi
 | H3: Genre shifts tactic profiles | **Resolved: Localized** | Low | Genre-as-covariate deferrable |
 | H4: Pacing differs by play length | Not yet tested | Medium | Lower priority given eigendecomposition results |
 | H5: Gestalt adds information | **Deferred: out of scope for v1** | N/A | Bottom-up only for first factor graph |
-| H6: Desire predicts transitions | **Resolved: Yes (r=0.106, p=0.005)** | Low | Continuous desire similarity modulates ψ_T |
+| H6: Desire predicts transitions | **Resolved: Yes (r=0.106, p=0.005)** | Low | Two-part conditioning: similarity scalar + discrete desire type (k=7) |
+| Desire conditioning (detailed) | **Resolved** | Low | Character identity adds nothing beyond desire; transition matrix changes structure, not just persistence |
+| Emission model | **Resolved: weak but structured** | Low | Transition-dominated inference; tactic-specific hard emission constraints |
 | ψ_arc (superobjective) | **Resolved: Real but weak (6.25% IG)** | Low | Soft prior on tactic distribution |
 
 ### Architectural implications — final
 
-1. **Affect state: 3 independent axes** (Disempowerment, Blissful Ignorance, Burdened Power) — 91.6% of transition variance, 4× better conditioned. Arousal and Exposure carried as simple scalars.
-2. **ψ_T (tactic transitions)**: Sparse Dirichlet with per-row α; desire similarity continuously modulates persistence probability.
+1. **Affect state: 3+1 architecture.** Three independent axes (Disempowerment, Blissful Ignorance, Burdened Power) for **tactic transition dynamics** — 91.6% of transition variance, 4× better conditioned. A fourth axis (Arousal) for **utterance generation/scoring** — near-IID (lag-1 r=+0.036), no transition dynamics, but the strongest text predictor (1.26× lift, top RF feature for 6/9 utterance features). Exposure (PC5) dropped entirely. Eigenspace should be re-validated on larger corpus before hard commitment.
+2. **ψ_T (tactic transitions)**: Sparse Dirichlet with per-row α (hub/terminal distinction). Desire conditioning via two mechanisms: (a) continuous similarity scalar modulates self-transition probability (8% → 16%), (b) discrete desire-type latent variable (k=7) biases the full transition distribution.
 3. **ψ_social**: Validated (status is zero-sum, r=-0.20).
 4. **ψ_arc (superobjective)**: Soft prior on tactic distribution conditioned on SO embedding. 6.25% information gain. Context-modulated, not fixed.
-5. **ψ_genre / ψ_gestalt**: Out of scope for v1. Bottom-up only.
-6. Genre-as-covariate deferred past n=6 plays.
-7. Affect trajectory comparisons need de-meaning (subtract play baseline).
-8. Pass 2 revision notes should nudge along eigenspace axes, not raw affect dimensions.
-9. Plot-role archetypes (naifs) need superobjective or relationship representation, not tactic/affect.
-10. All data gaps resolved — dataset complete for factor graph implementation.
+5. **ψ_emission**: Weak overall — factor graph inference should be transition-dominated, not observation-dominated. Use tactic-specific hard emission constraints for distinctive tactics (PROBE→questions, COMMAND→imperatives, SHAME→"you" language). For affect recovery, sentiment polarity and first person rate are the two most informative text features.
+6. **ψ_genre / ψ_gestalt**: Out of scope for v1. Bottom-up only.
+7. **Character identity**: Can be dropped from the desire-conditioning factor — desire content subsumes it for tactic prediction.
+8. Genre-as-covariate deferred past n=6 plays.
+9. Affect trajectory comparisons need de-meaning (subtract play baseline).
+10. Pass 2 revision notes should nudge along eigenspace axes, not raw affect dimensions.
+11. Plot-role archetypes (naifs) need superobjective or relationship representation, not tactic/affect.
+12. All data gaps resolved — dataset complete for factor graph implementation.
