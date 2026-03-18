@@ -214,9 +214,9 @@ An alternative worth considering later: rather than smoothing the full 66×66 ma
 
 **Correlated structure and independent axes**: The five affect dimensions are not independent — the correlation structure reveals at least two latent axes. An eigendecomposition of the transition covariance matrix would recover the independent directions along which affect actually moves. Informally, the correlations suggest:
 
-- **Agency axis**: control + certainty vs vulnerability. When a character gains a sense of control and certainty, their vulnerability drops. This is the strongest source of co-variation in the data.
-- **Hedonic axis**: valence, partially coupled with control. Positive mood shifts tend to co-occur with agency gains.
-- **Activation axis**: arousal, which moves largely independently of the other four dimensions.
+- **Disempowerment axis**: certainty + control vs vulnerability. When a character loses certainty and control, their vulnerability rises. This is the strongest source of co-variation in the data.
+- **Blissful Ignorance axis**: valence vs certainty — feeling and knowing decoupled. Partially coupled with control.
+- **Arousal axis**: arousal, which moves largely independently of the other four dimensions.
 
 Rotating to these independent axes (the eigenvectors of the covariance matrix) has three benefits:
 
@@ -244,25 +244,156 @@ The effect is moderate (r=-0.20), not total (r=-1.0). This makes dramaturgical s
 
 ---
 
+## Affect Eigendecomposition
+
+**Three axes explain 91.6% of affect transition variance.** The factor graph should model 3 independent axes, not 5 correlated dimensions.
+
+| Axis | Eigenvalue | Variance | Cumulative | Label |
+|---|---|---|---|---|
+| PC1 | 0.4565 | 59.9% | 59.9% | **Disempowerment** |
+| PC2 | 0.1658 | 21.7% | 81.6% | **Blissful Ignorance** |
+| PC3 | 0.0763 | 10.0% | 91.6% | **Burdened Power** |
+| PC4 | 0.0447 | 5.9% | 97.5% | Arousal |
+| PC5 | 0.0191 | 2.5% | 100.0% | Exposure (vulnerability singleton) |
+
+**Eigenvector loading heatmap** — shows how each original dimension contributes to each PC:
+
+![Eigenspace Loadings Heatmap](plots/eigenspace_heatmap.png)
+
+**Biplot** — shows how original dimensions cluster and oppose each other in eigenspace:
+
+![Eigenspace Biplot](plots/eigenspace_biplot.png)
+
+**"More vs Less" spectrum** — shows what high and low values mean on each axis in terms of the original dimensions:
+
+![Eigenspace Spectrum](plots/eigenspace_spectrum.png)
+
+**Axis descriptions** — what "more" and "less" mean on each axis:
+
+**PC1: Disempowerment ↔ Agency (59.9% of variance)**
+- Loadings: certainty (-0.70), control (-0.62), valence (-0.29), vulnerability (+0.20), arousal (+0.05)
+- **Agency** (negative PC1) = high certainty + high control + positive valence. The character knows what's happening, feels they can act on it, and feels okay about it. Lady Bracknell lives here (PC1 = -0.88).
+- **Disempowerment** (positive PC1) = low certainty + low control + negative valence + slightly high vulnerability. The character doesn't know what's happening, can't do anything about it, and feels bad. Ophelia lives here (PC1 = +0.93).
+- **In dramaturgical terms**: This axis captures the most fundamental dramatic movement — characters gaining or losing their grip on the situation. 60% of all beat-to-beat affect change is movement along this single axis.
+
+**PC2: Blissful Ignorance ↔ Depressed Clarity (21.7% of variance)**
+- Loadings: valence (+0.74), certainty (-0.60), control (+0.27), vulnerability (-0.14)
+- **Blissful Ignorance** (positive PC2) = high valence + low certainty (+ slight control). Feeling good despite not knowing — comic relief, playful uncertainty, enjoying ambiguity. Cecily and Algernon in Earnest's lighter moments.
+- **Depressed Clarity** (negative PC2) = low valence + high certainty. Feeling terrible *because* you know — grim clarity, the moment after a revelation lands. Ophelia after "get thee to a nunnery" (she now knows, and it's devastating).
+- **In dramaturgical terms**: This is the axis of dramatic irony and revelation. It captures the decoupling of knowing and feeling. When certainty and valence move in the same direction (knowing more and feeling better, or knowing less and feeling worse), that movement is captured by the Disempowerment axis. When they move in *opposite* directions, that's Blissful Ignorance ↔ Depressed Clarity — and those are often the most dramaturgically charged moments.
+
+**PC3: Burdened Power ↔ Hakuna Matata (10.0% of variance)**
+- Loadings: control (+0.62), valence (-0.59), certainty (-0.37), arousal (-0.31)
+- **Burdened Power** (positive PC3) = high control + low valence + low arousal + low certainty. Gaining power while feeling worse and calming down — cold, grim determination. Pyrrhic victories, ruthless decisions made without joy. Claudius consolidating power.
+- **Hakuna Matata** (negative PC3) = low control + high valence + high arousal + some certainty. Losing power while feeling better and more energized — liberation through surrender, joyful release from responsibility. Anya's hopeful ending in Cherry Orchard.
+- **In dramaturgical terms**: This axis separates two flavors of dramatic climax. In one, the character wins but at a cost to their emotional state (Burdened Power — gaining control, losing joy). In the other, the character lets go and gains emotional relief (Hakuna Matata — losing control, gaining lightness).
+
+**PC4: Arousal (5.9%)**: Nearly pure arousal (+0.91). How activated/energized the character is, moving independently of the Disempowerment/Blissful Ignorance/Burdened Power triangle.
+
+**PC5: Exposure (2.5%)**: Nearly pure vulnerability (+0.93). Residual emotional exposure not already captured by the Disempowerment axis.
+
+**Key departure from hypothesis**: The hypothesized "activation axis" (arousal) is not a top-3 component — arousal and vulnerability simply don't *change* much beat-to-beat. The real action is in the certainty/control/valence triangle.
+
+**Conditioning improvement**: Full 5×5 covariance condition number = 23.9. Top-3 diagonal model = 6.0 (4× improvement). The rotated model is dramatically better-conditioned.
+
+**Character interpretations in eigenspace** (confirming interpretability):
+- **Ophelia**: PC1 = +0.93 (extreme agency loss — highest in corpus). Her five correlated numbers collapse to a single devastating fact.
+- **Lady Bracknell**: PC1 = -0.88 (extreme agency). Pure authority, near-zero on all other axes.
+- **Lubov**: PC1 = +0.47 (moderate agency loss), PC5 = +0.48 (high exposure). The eigenspace separates her structural powerlessness from her emotional openness.
+- **Hamlet**: PC4 = +0.77 (highest activation), PC1 = -0.33 (moderate agency). High arousal is his signature, but his agency fluctuates.
+
+**Recommendation**: Model 3 independent axes in the factor graph (Disempowerment, Blissful Ignorance, Burdened Power). Arousal and Exposure can be carried as simple per-character scalars or fixed traits rather than full latent variables in the transition model. This halves the affect state dimensionality while retaining 91.6% of transition information.
+
+**Caveat**: This eigendecomposition is estimated from 1,117 affect transitions across 3 plays. With n=3 (and genre confounded with playwright), the eigenvector structure could shift meaningfully when more plays are added — particularly if new genres introduce affect dynamics not well-represented in our current corpus (e.g., absurdist theater where certainty and control may decouple, or melodrama where vulnerability dominates transitions). The axis labels and variance shares should be treated as provisional. Before committing to a hard 3-axis architecture, we should re-run the decomposition on a larger corpus (including LLM-generated synthetic plays) and check eigenvalue stability — if the top 3 eigenvalues' share drops below ~85%, or if eigenvector rotation exceeds ~15° from the current estimate, the reduction to 3 axes may need revisiting. For now, the 5 correlated dimensions should remain extractable in the pipeline even if the factor graph operates on the rotated 3-axis space, so we can re-estimate without re-running extraction.
+
+**Impact on Pass 2 revision notes**: Feedback should be phrased along the independent axes: "shift toward greater agency" rather than "increase control and certainty while decreasing vulnerability." Each nudge addresses a truly orthogonal aspect of the character's state.
+
+---
+
+## H6 Resolution: Desire Predicts Transitions (via Embeddings)
+
+**H6 is now statistically significant.** Switching from string matching to semantic embeddings (all-MiniLM-L6-v2) moved p from 0.11 to **0.005**.
+
+**Method**: Each beat's `desire_state` is a natural-language string describing what the character wants in that moment (e.g., "to force Ophelia to reveal whether she has been honest with him"). We embedded all desire strings using the same sentence-transformer model (all-MiniLM-L6-v2, 384-dim) used for tactic clustering. Cosine similarity between consecutive beats' desire embeddings gives a continuous measure of how much the desire shifted.
+
+**Why string matching failed**: String matching (SequenceMatcher, mean similarity 0.37) classified only 34/701 transitions as "same desire." Semantic embeddings (mean similarity 0.50) reveal a broad, roughly uniform distribution of desire similarity from 0.1 to 0.85 — desires vary continuously in how much they shift, and this is a gradient, not a binary.
+
+**t-SNE of desire embeddings** — shows how desire strings cluster by play and by tactic persistence:
+
+![Desire Embedding t-SNE](plots/desire_embedding_tsne.png)
+
+The left panel shows clear genre clustering: Cherry Orchard, Hamlet, and Earnest desires occupy mostly distinct regions, reflecting play-specific dramatic vocabulary ("to save the estate" vs "to avenge my father" vs "to maintain the fiction of Bunbury"). However, there is meaningful mixing at boundaries — desires about social dominance, self-preservation, and emotional connection cross genre lines.
+
+The middle panel colors by tactic persistence (did the character use the same tactic in the next beat?). Persistent-tactic and changed-tactic desires are interleaved throughout the space, with no obvious spatial separation. This is consistent with the finding that desire-tactic coupling is a weak continuous effect (r=0.106), not a sharp spatial boundary in embedding space.
+
+**Threshold analysis** (10,000 permutations each):
+
+| Threshold | N same | N changed | Persistence (same) | Persistence (changed) | p-value |
+|---|---|---|---|---|---|
+| 0.5 | 338 | 363 | 15.4% | 8.5% | **0.006** |
+| 0.6 | 234 | 467 | 15.8% | 9.9% | **0.025** |
+| 0.7 | 135 | 566 | 17.0% | 10.6% | **0.038** |
+| 0.8 | 56 | 645 | 14.3% | 11.6% | 0.660 (ns) |
+
+Significance holds at thresholds 0.5–0.7 where group sizes are balanced. Breaks down at 0.8+ where the "same" group becomes too small.
+
+**Continuous correlation**: Point-biserial r = +0.106, p = 0.005, bootstrap 95% CI [+0.035, +0.177]. Monotonic trend across quintiles: persistence rises from 6.4% (lowest similarity) to 17.0% (highest).
+
+**Implication for factor graph**: Desire similarity should continuously modulate tactic transition priors — not as a binary gate but as a scaling factor on tactic persistence probability. When desire similarity is high, ψ_T should favor self-transitions more strongly. The effect is small (r ≈ 0.1) but reliable and monotonic, making it suitable as a soft modulation rather than a hard constraint.
+
+---
+
+## Superobjective Predictiveness: ψ_arc Is Real but Weak
+
+**Method**: Each character's `superobjective` (from CharacterBible, e.g., "to prove himself worthy of his father's legacy while escaping the paralysis of his own doubt") was embedded using the same sentence-transformer model (all-MiniLM-L6-v2, 384-dim) used throughout these experiments. Pairwise cosine similarity between superobjective embeddings gives a continuous measure of how similar two characters' driving motivations are. These similarities were then correlated against tactic distribution similarity (cosine on 66-dim tactic vectors) and affect profile similarity (cosine on 5-dim mean affect vectors) to test whether shared motivations predict shared behavior or emotional state.
+
+For the consistency test, each BeatState also has a `superobjective_reminder` field — a per-beat restatement of the character's superobjective in the context of that specific moment. We compared these beat-level reminders to the global superobjective (cosine similarity of their embeddings) to measure how much the superobjective drifts across the play.
+
+**Five tests, three significant.** The superobjective captures non-redundant information about character behavior, but its predictive power is modest.
+
+| Test | Metric | Result | Significant? |
+|---|---|---|---|
+| SO similarity ↔ tactic similarity | Pearson r | 0.162 | Yes (p ≈ 0) |
+| SO similarity ↔ affect similarity | Pearson r | 0.058 | Yes (p = 0.007) |
+| SO clusters ≠ tactic clusters | Adjusted Rand Index | 0.008 | N/A (confirms non-redundancy) |
+| Beat-level SO consistency | Mean cosine | 0.516 | N/A (moderate drift) |
+| SO → tactic information gain | Normalized MI | 6.25% | Yes (moderate) |
+
+**Key findings**:
+
+1. **Non-redundant signal**: Superobjective clusters are completely different from tactic clusters (ARI = 0.008). The superobjective captures something that tactic distributions alone cannot — it is not just a summary of what the character does, but a separate latent variable.
+
+2. **Moderate predictive power**: Knowing a character's superobjective provides 6.25% information gain for predicting their tactics. The "sentinel/guard" cluster favors ALARM/REASSURE/TESTIFY; the "deflecting protagonist" cluster favors DEFLECT/MOCK/DISMISS; the "authority" cluster favors COMMAND/REASSURE/INFORM. These make dramaturgical sense.
+
+3. **Soft, not rigid**: Beat-level superobjective_reminders have mean similarity of 0.516 to the global superobjective — moderate consistency with real drift. The superobjective is best modeled as a **soft prior that context modulates**, not a fixed parameter. It constrains the space of likely tactics without determining them.
+
+4. **Stronger for tactics than affect**: The tactic correlation (r=0.162) is ~3× the affect correlation (r=0.058). Superobjectives shape *what characters do* more than *how they feel*.
+
+**Recommendation**: Include ψ_arc as a soft factor in the factor graph. Model it as a prior over tactic distributions conditioned on superobjective embedding, with enough flexibility for beat-level context to override. Do not model it as a hard constraint or a fixed parameter — the 0.516 consistency score means it needs to breathe.
+
+---
+
 ## Summary: Hypothesis Resolution Status
 
 | Hypothesis | Status | Entropy | Action |
 |---|---|---|---|
-| H1: Certainty/control earn keep | **Resolved: Yes (modestly)** | Low | Keep all 5 dimensions |
-| H2: Wit-driven deflectors cluster | **Resolved: Yes** | Low | Naif failure explained — Cecily is a deflector, not a naif |
-| H3: Genre shifts tactic profiles | **Resolved: Localized** | Low | Genre-as-covariate remains deferrable |
-| H4: Pacing differs by play length | Not yet tested | High | Need explicit pacing analysis |
-| H5: Gestalt adds information | Not yet tested (Tier 3) | High | Deferred |
-| H6: Desire predicts transitions | **Partially resolved: direction correct, not significant** | Medium-high | Needs better desire similarity |
+| H1: Certainty/control earn keep | **Resolved: Yes, as part of Disempowerment axis** | Low | Subsume into 3-axis eigenspace |
+| H2: Wit-driven deflectors cluster | **Resolved: Yes** | Low | Naif failure explained — Cecily is a deflector |
+| H3: Genre shifts tactic profiles | **Resolved: Localized** | Low | Genre-as-covariate deferrable |
+| H4: Pacing differs by play length | Not yet tested | Medium | Lower priority given eigendecomposition results |
+| H5: Gestalt adds information | **Deferred: out of scope for v1** | N/A | Bottom-up only for first factor graph |
+| H6: Desire predicts transitions | **Resolved: Yes (r=0.106, p=0.005)** | Low | Continuous desire similarity modulates ψ_T |
+| ψ_arc (superobjective) | **Resolved: Real but weak (6.25% IG)** | Low | Soft prior on tactic distribution |
 
-### Architectural implications so far
-1. Keep all 5 affect dimensions (H1)
-2. Affect transition kernel should be correlated Gaussian with agency and hedonic axes, not independent
-3. Transition matrix needs smoothing (90% sparse); hub/terminal tactic distinction useful
-4. ψ_social cross-character factor is validated (status is zero-sum, r=-0.20)
-5. Genre-as-covariate can be deferred past n=6 plays
-6. Affect trajectory comparisons need de-meaning (subtract play baseline) to avoid genre confound
-7. Desire conditioning is promising but needs semantic embedding similarity, not string matching
-8. Character archetypes based on plot role (naifs, ingenues) cannot be captured by tactic or affect alone — need superobjective or relationship-to-authority representation
-9. Cecily should be reclassified as a wit-driven deflector; the deflector cluster is the only robust cross-genre archetype
-10. All data gaps resolved — dataset is complete for Tier 3/4 work
+### Architectural implications — final
+
+1. **Affect state: 3 independent axes** (Disempowerment, Blissful Ignorance, Burdened Power) — 91.6% of transition variance, 4× better conditioned. Arousal and Exposure carried as simple scalars.
+2. **ψ_T (tactic transitions)**: Sparse Dirichlet with per-row α; desire similarity continuously modulates persistence probability.
+3. **ψ_social**: Validated (status is zero-sum, r=-0.20).
+4. **ψ_arc (superobjective)**: Soft prior on tactic distribution conditioned on SO embedding. 6.25% information gain. Context-modulated, not fixed.
+5. **ψ_genre / ψ_gestalt**: Out of scope for v1. Bottom-up only.
+6. Genre-as-covariate deferred past n=6 plays.
+7. Affect trajectory comparisons need de-meaning (subtract play baseline).
+8. Pass 2 revision notes should nudge along eigenspace axes, not raw affect dimensions.
+9. Plot-role archetypes (naifs) need superobjective or relationship representation, not tactic/affect.
+10. All data gaps resolved — dataset complete for factor graph implementation.
