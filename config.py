@@ -18,8 +18,11 @@ PARSED_DIR = DATA_DIR / "parsed"
 BEATS_DIR = DATA_DIR / "beats"
 BIBLES_DIR = DATA_DIR / "bibles"
 IMPROV_DIR = DATA_DIR / "improv"
+VOCAB_DIR = DATA_DIR / "vocab"
+FACTORS_DIR = DATA_DIR / "factors"
+SMOOTHED_DIR = DATA_DIR / "smoothed"
 
-for _d in (RAW_DIR, PARSED_DIR, BEATS_DIR, BIBLES_DIR, IMPROV_DIR):
+for _d in (RAW_DIR, PARSED_DIR, BEATS_DIR, BIBLES_DIR, IMPROV_DIR, VOCAB_DIR, FACTORS_DIR, SMOOTHED_DIR):
     _d.mkdir(parents=True, exist_ok=True)
 
 # --------------------------------------------------------------------------- #
