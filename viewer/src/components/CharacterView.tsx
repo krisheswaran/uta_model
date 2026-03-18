@@ -137,7 +137,7 @@ function CharacterContent({
   smoothedPlay: SmoothedPlay | null;
 }) {
   const [activeTab, setActiveTab] = useState<TabId>('arc');
-  const [viewMode, setViewMode] = useState<ViewMode>('llm');
+  const [viewMode, setViewMode] = useState<ViewMode>(smoothedPlay ? 'factor-graph' : 'llm');
   const [selectedBeatId, setSelectedBeatId] = useState<string | null>(null);
   const [bibleModalOpen, setBibleModalOpen] = useState(false);
   const [beatModalOpen, setBeatModalOpen] = useState(false);

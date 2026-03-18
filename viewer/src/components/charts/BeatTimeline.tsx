@@ -13,7 +13,7 @@ interface Props {
   viewMode?: ViewMode;
 }
 
-export default function BeatTimeline({ beats, character, selectedBeatId, onSelectBeat, smoothedBeats, viewMode = 'llm' }: Props) {
+export default function BeatTimeline({ beats, character, selectedBeatId, onSelectBeat, smoothedBeats, viewMode = 'factor-graph' }: Props) {
   if (beats.length === 0) {
     return (
       <div style={{ color: 'var(--md-sys-color-on-surface-variant)', fontSize: 14, padding: 16 }}>

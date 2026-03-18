@@ -5,7 +5,8 @@ import { ArrowLeft, Globe, Users, BookOpen, Link2, Activity, ChevronDown, Chevro
 import NavRail from './NavRail';
 import TruncatedChip from './TruncatedChip';
 import BeatSegmentationChart from './charts/BeatSegmentationChart';
-import type { Play, CharacterBible, SceneBible, RelationshipEdge } from '@/lib/types';
+import type { Play, CharacterBible, SceneBible, RelationshipEdge, SmoothedPlay } from '@/lib/types';
+import { fetchSmoothedPlay } from '@/lib/data';
 
 interface Props {
   playId: string;
@@ -13,17 +14,19 @@ interface Props {
 
 export default function PlayView({ playId }: Props) {
   const [play, setPlay] = useState<Play | null>(null);
+  const [smoothedPlay, setSmoothedPlay] = useState<SmoothedPlay | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch(`/data/bibles/${playId}_bibles.json`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data) => {
-        setPlay(data as Play);
+    Promise.all([
+      fetch(`/data/bibles/${playId}_bibles.json`)
+        .then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); }),
+      fetchSmoothedPlay(playId),
+    ])
+      .then(([playData, smoothed]) => {
+        setPlay(playData as Play);
+        setSmoothedPlay(smoothed);
         setLoading(false);
       })
       .catch((err) => {
@@ -66,7 +69,7 @@ export default function PlayView({ playId }: Props) {
           </div>
         )}
 
-        {!loading && !error && play && <PlayContent play={play} playId={playId} />}
+        {!loading && !error && play && <PlayContent play={play} playId={playId} smoothedPlay={smoothedPlay} />}
       </main>
     </div>
   );
@@ -83,16 +86,37 @@ function PlaySkeleton() {
   );
 }
 
-function PlayContent({ play, playId }: { play: Play; playId: string }) {
+function PlayContent({ play, playId, smoothedPlay }: { play: Play; playId: string; smoothedPlay: SmoothedPlay | null }) {
   const [worldBibleOpen, setWorldBibleOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTacticChip, setActiveTacticChip] = useState<string | null>(null);
 
-  // Compute top 8 most common tactics across all characters
+  // Build smoothed tactic distributions per character from factor graph output
+  const smoothedTacticDists = (() => {
+    const dists: Record<string, Record<string, number>> = {};
+    if (!smoothedPlay) return dists;
+    for (const [char, charData] of Object.entries(smoothedPlay.characters)) {
+      const counts: Record<string, number> = {};
+      for (const beat of charData.beats) {
+        const tactic = beat.smoothed_tactic;
+        if (tactic) counts[tactic] = (counts[tactic] ?? 0) + 1;
+      }
+      dists[char] = counts;
+    }
+    return dists;
+  })();
+
+  // Get tactic distribution for a character — prefer smoothed (factor graph) over LLM
+  function getTacticDist(cb: CharacterBible): Record<string, number> {
+    return smoothedTacticDists[cb.character] ?? smoothedTacticDists[cb.character.toUpperCase()] ?? cb.tactic_distribution;
+  }
+
+  // Compute top 8 most common tactics across all characters (using factor graph labels when available)
   const topTactics = (() => {
     const tacticCounts: Record<string, number> = {};
     for (const cb of play.character_bibles) {
-      for (const [tactic, weight] of Object.entries(cb.tactic_distribution)) {
+      const dist = getTacticDist(cb);
+      for (const [tactic, weight] of Object.entries(dist)) {
         tacticCounts[tactic] = (tacticCounts[tactic] ?? 0) + weight;
       }
     }
@@ -105,14 +129,15 @@ function PlayContent({ play, playId }: { play: Play; playId: string }) {
   // Filter characters
   const filteredCharacters = play.character_bibles.filter((cb) => {
     const q = searchQuery.toLowerCase();
+    const dist = getTacticDist(cb);
     const matchesSearch = !q
       || cb.character.toLowerCase().includes(q)
       || cb.superobjective.toLowerCase().includes(q)
-      || Object.keys(cb.tactic_distribution).some((t) => t.toLowerCase().includes(q))
+      || Object.keys(dist).some((t) => t.toLowerCase().includes(q))
       || cb.recurring_tactics.some((t) => t.toLowerCase().includes(q));
 
     const matchesChip = !activeTacticChip
-      || cb.tactic_distribution[activeTacticChip] != null
+      || dist[activeTacticChip] != null
       || cb.recurring_tactics.includes(activeTacticChip);
 
     return matchesSearch && matchesChip;
@@ -247,7 +272,7 @@ function PlayContent({ play, playId }: { play: Play; playId: string }) {
             }}
           >
             {filteredCharacters.map((cb) => (
-              <CharacterCard key={cb.character} cb={cb} playId={playId} />
+              <CharacterCard key={cb.character} cb={cb} playId={playId} tacticDist={getTacticDist(cb)} />
             ))}
           </div>
           {filteredCharacters.length === 0 && (
@@ -373,8 +398,8 @@ function LabeledField({ label, value }: { label: string; value: string }) {
   );
 }
 
-function CharacterCard({ cb, playId }: { cb: CharacterBible; playId: string }) {
-  const tactics = Object.entries(cb.tactic_distribution)
+function CharacterCard({ cb, playId, tacticDist }: { cb: CharacterBible; playId: string; tacticDist: Record<string, number> }) {
+  const tactics = Object.entries(tacticDist)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 3);
 
