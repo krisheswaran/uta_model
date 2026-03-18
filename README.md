@@ -11,17 +11,41 @@ The system works in two passes:
 
 ## Release Notes
 
+### Phase B.2 — Factor Graph Implementation (2026-03-18)
+
+Phase B.2 introduces a factor graph model for probabilistic inference over dramatic states. The factor graph operates as **Pass 1.5** — after LLM analysis (Pass 1) produces BeatStates, but before improvisation (Pass 2). See [docs/FACTOR_GRAPH_IMPLEMENTATION.md](docs/FACTOR_GRAPH_IMPLEMENTATION.md) for the full design and [docs/EXPERIMENT_LOG.md](docs/EXPERIMENT_LOG.md) for the experimental findings that informed it.
+
+**Affect eigendecomposition.** The 5D affect state (valence, arousal, certainty, control, vulnerability) decomposes into 3 independent transition axes capturing 91.6% of beat-to-beat variance: Disempowerment (59.9%), Blissful Ignorance (21.7%), and Burdened Power (10.0%). Arousal is near-IID and functions as a stylistic modulator of utterance features. The factor graph uses a 3+1 architecture: 3 latent transition axes + arousal for emission.
+
+**Semantically-informed Dirichlet smoothing.** Transition matrix smoothing uses tactic embedding distances to weight the Dirichlet prior — semantically similar unseen transitions get more mass than distant ones. This reduces mean row entropy by 21% compared to uniform smoothing and drops the smoother disagreement rate from 94.8% to 6.3% on canonical tactics.
+
+**Desire conditioning validated.** Desire similarity (via semantic embeddings) significantly predicts tactic persistence (r=+0.106, p=0.005). Character identity adds no predictive power beyond desire content. The transition factor uses two-part conditioning: continuous desire-similarity scalar + discrete desire-type clustering (k=7).
+
+**Factor graph modules.** New `factor_graph/` package with parameter learning, inference engine (forward filtering + forward-backward smoothing), and improv integration:
+- `factor_graph/learning.py` — estimates all factor potentials from the corpus (zero API cost)
+- `factor_graph/inference.py` — forward filter (Pass 2) and forward-backward smoother (Pass 1.5)
+- `factor_graph/integration.py` — drop-in replacement for the LLM state updater
+- `scripts/run_smoothing.py` — CLI for running Pass 1.5 smoothing
+
+**Smoothing pipeline (Pass 1.5).** Forward-backward inference over LLM-extracted BeatStates produces smoothed posterior distributions. Pass 1 outputs in `data/parsed/` are read-only; smoothed results go to `data/smoothed/`. The LLM smoother (Pass 1, semantic) and factor graph smoother (Pass 1.5, statistical) are complementary layers.
+
+**Emission model.** Weak overall (R²<0.07) but structured: tactic-specific text signatures (PROBE→questions, COMMAND→imperatives, SHAME→"you" language) serve as hard emission constraints. Inference is transition-dominated, not observation-dominated.
+
+**Cross-character coupling.** Status is validated as relational/zero-sum (r=-0.20, p<0.0001) across all three plays, supporting the ψ_social coupling factor.
+
+**Superobjective prior.** ψ_arc provides 6.25% information gain for tactic prediction. Modeled as a soft additive mixture (λ=0.06) that strengthens when transition dynamics are uncertain.
+
 ### Phase B — Statistical Learning (2026-03-16)
 
 Phase B introduces statistical learning infrastructure over the analyzed corpus, bridging the symbolic Phase A system and the future probabilistic Phase C. See [docs/STATISTICAL_LEARNING_PHASE_DESIGN.md](docs/STATISTICAL_LEARNING_PHASE_DESIGN.md) for the full design.
 
 **Canonical tactic vocabulary.** The 297 free-text tactic strings extracted during analysis are clustered into 66 canonical categories using sentence-transformer embeddings (local, free). Hand-crafted acting-theory definitions for the top 76 tactics ensure high-quality clusters. 881/1114 beat states (79%) are normalized to canonical IDs; the remaining 179 singleton tactics are flagged for future assignment as the corpus grows. The vocabulary grows incrementally — new plays' tactics are either assigned to existing clusters or flagged as unmapped.
 
-**Incremental bible building.** A `--bibles-only` mode on `run_analysis.py` builds CharacterBibles for remaining characters without re-running segmentation, extraction, or smoothing. CharacterBibles are now built for all 25 significant characters (≥5 beat states) across both plays, up from the original 2.
+**Incremental bible building.** A `--bibles-only` mode on `run_analysis.py` builds CharacterBibles for remaining characters without re-running segmentation, extraction, or smoothing. CharacterBibles are now built for all 36 characters (≥5 beat states) across three plays.
 
 **Model tiering.** Each pipeline step now has its own model configuration via `MODEL_CONFIGS` in `config.py`. Segmentation and bible building use Sonnet, WorldBible uses Haiku, while extraction and smoothing remain on Opus. The provider-agnostic config structure supports future benchmarking with Gemini or OpenAI models. Estimated cost reduction: ~40% per play.
 
-**Relationship modeling.** Directed pairwise `RelationshipEdge` objects are now populated from existing BeatState social_state data (68 edges for Cherry Orchard, 66 for Hamlet). Per-character `RelationalProfile` aggregates capture default warmth, status claim, variance across partners, and per-partner deviations. Profiles are directed — Hamlet's sardonic distance (warmth=-0.01, status=+0.51) is independent of how others relate to him. All numeric aggregation is zero API cost.
+**Relationship modeling.** Directed pairwise `RelationshipEdge` objects are now populated from existing BeatState social_state data (164 edges across three plays). Per-character `RelationalProfile` aggregates capture default warmth, status claim, variance across partners, and per-partner deviations. Profiles are directed — Hamlet's sardonic distance (warmth=-0.01, status=+0.51) is independent of how others relate to him. All numeric aggregation is zero API cost.
 
 **Statistical priors and dramaturgical feedback.** The improvisation loop now loads a `StatisticalPrior` per character (tactic prior, transition matrix, relational profile). Priors act as a **critic, not a constraint** — the LLM generates freely, and deviations from the character's statistical patterns produce graduated director's-note feedback:
 - *Tier 1 (on target)*: encouragement and polish notes
@@ -30,7 +54,7 @@ Phase B introduces statistical learning infrastructure over the analyzed corpus,
 
 **Revision traces.** `MIN_REVISION_ROUNDS=1` ensures every line gets at least one feedback round. Every revision round is recorded in a `RevisionTrace` (candidate text, per-axis scores, feedback given), enabling analysis of how feedback changes outputs.
 
-**Test suite.** 108 tests covering imports, schemas, config, vocabulary clustering, bible builder logic, data integrity, relationship modeling, statistical priors, and dramaturgical feedback. Run with `python -m pytest tests/ -v`.
+**Test suite.** 184 tests covering imports, schemas, config, vocabulary clustering, bible builder logic, data integrity, relationship modeling, statistical priors, factor graph, and dramaturgical feedback. Run with `python -m pytest tests/ -v`.
 
 ---
 
@@ -57,6 +81,16 @@ conda activate uta_model
 pip install -r requirements.txt
 ```
 
+### Download pre-computed data
+
+The analyzed play data (parsed plays, character bibles, factor graph parameters, tactic vocabulary) is hosted separately from the repository. Download and extract it:
+
+```bash
+./scripts/download_data.sh
+```
+
+This populates the `data/` directory (~15MB uncompressed, ~3MB download). If you prefer to re-generate the data from scratch, see sections 1-2 below.
+
 ### Configuration
 
 Create a `.env` file in the project root with your Anthropic API key:
@@ -70,6 +104,8 @@ Model selection and pipeline parameters can be adjusted in `config.py`. Each pip
 ## Usage
 
 ### 1. Download plays
+
+Skip this if you've already run `./scripts/download_data.sh` — the raw texts are included in the data archive.
 
 Download the public-domain play texts (Chekhov from Project Gutenberg, Hamlet from Folger TEI):
 
@@ -106,6 +142,23 @@ Outputs are saved to `data/parsed/`, `data/bibles/`, and `data/beats/`.
 
 > **Note on cost**: Running the full analysis on Cherry Orchard costs ~$10, and Hamlet ~$15. The `--bibles-only` mode costs ~$0.18 per character since it reuses existing beat extractions.
 
+### 2b. Run factor graph smoothing (Pass 1.5)
+
+After analysis, run the factor graph to produce smoothed posterior distributions:
+
+```bash
+# Learn factor parameters from the corpus (run once, or when new plays are added)
+python -m factor_graph.learning --plays cherry_orchard hamlet importance_of_being_earnest
+
+# Run forward-backward smoothing on a play
+python scripts/run_smoothing.py cherry_orchard
+
+# Smooth all plays
+python scripts/run_smoothing.py --all
+```
+
+Outputs are saved to `data/smoothed/`. Pass 1 outputs in `data/parsed/` are never modified.
+
 ### 3. Improvise (Pass 2)
 
 Run an interactive improvisation session with a character. Statistical priors (tactic distributions, transition matrices, relational profiles) are automatically loaded when available and provide graduated dramaturgical feedback during revision rounds. All scenes are automatically saved to `data/improv/` as JSON.
@@ -129,6 +182,12 @@ python scripts/run_improvisation.py session \
   --character LOPAKHIN --play cherry_orchard \
   --setting "A bare office" --stakes "Everything is at risk" \
   --min-revisions 2
+
+# Use factor graph for state updates instead of LLM state updater (faster, free)
+python scripts/run_improvisation.py session \
+  --character LOPAKHIN --play cherry_orchard \
+  --setting "A bare office" --stakes "Everything is at risk" \
+  --factor-graph
 ```
 
 Each saved scene (`data/improv/{scene_id}.json`) includes:
@@ -178,7 +237,7 @@ Outputs: relationship edges are added to the parsed play JSON, and relational pr
 python -m pytest tests/ -v
 ```
 
-108 tests covering imports, schemas, config, vocabulary, bible builder, data integrity, relationships, and priors.
+184 tests covering imports, schemas, config, vocabulary, bible builder, data integrity, relationships, and priors.
 
 ### 7. Evaluate
 
@@ -202,12 +261,17 @@ uta_model/
 │   └── relationship_builder.py  # Pairwise edges + relational profiles (Phase B)
 ├── improv/                # Pass 2: state initialization, generation, reflection loop
 │   └── priors.py          # Statistical priors + graduated dramaturgical feedback (Phase B)
+├── factor_graph/          # Pass 1.5: factor graph learning, inference, smoothing
 ├── evaluation/            # Three-tier evaluation with LLM-as-judge
 ├── scripts/               # CLI entry points
-├── tests/                 # Test suite (108 tests)
-├── data/                  # Downloaded texts, parsed plays, cached beats, built bibles
-│   ├── improv/            # Saved improvisation scenes (JSON)
-│   └── vocab/             # Tactic vocabulary, relational profiles
+├── tests/                 # Test suite (184 tests)
+├── data/                  # Pre-computed pipeline outputs (download via scripts/download_data.sh)
+│   ├── parsed/            # Pass 1 output: full play JSONs with BeatStates
+│   ├── factors/           # Pass 1.5a: learned factor parameters
+│   ├── smoothed/          # Pass 1.5c: factor-graph-smoothed posteriors
+│   ├── vocab/             # Tactic vocabulary, relational profiles
+│   ├── bibles/            # Character/scene/world bibles
+│   └── improv/            # Saved improvisation scenes
 ├── docs/                  # Architecture and design documents
 │   ├── LATENT_STATE_ARCHITECTURE.md
 │   └── STATISTICAL_LEARNING_PHASE_DESIGN.md
